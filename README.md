@@ -1,8 +1,8 @@
 # HaniaFlight
 
-סימולטור טיסה תלת־ממדי של מטוסי קרב ישראליים, שרץ בדפדפן. גרסה 0.9: ארבעה מטוסים (F-15I רעם, F-16I סופה, F-35I אדיר, F-15 בז), חמש משימות (תקיפה, הגנת שמיים, קרב אוויר, תדלוק, הדרכה) וטיסת לילה.
+סימולטור טיסה תלת־ממדי של מטוסי קרב ישראליים, שרץ בדפדפן. גרסה 1.0: ארבעה מטוסים (F-15I רעם, F-16I סופה, F-35I אדיר, F-15 בז), חמש משימות (תקיפה, הגנת שמיים, קרב אוויר, תדלוק, הדרכה) וטיסת לילה.
 
-A browser flight simulator of Israeli fighter jets. Version 0.9: four aircraft (F-15I Ra'am, F-16I Sufa, F-35I Adir, F-15 Baz), five missions (strike, air defence, air combat, refuelling, training) and night flying.
+A browser flight simulator of Israeli fighter jets. Version 1.0: four aircraft (F-15I Ra'am, F-16I Sufa, F-35I Adir, F-15 Baz), five missions (strike, air defence, air combat, refuelling, training) and night flying.
 
 ## לשחק / Play
 
@@ -35,6 +35,10 @@ The game is a PWA: open the link, then use the in-game install button or the bro
 - הגנת שמיים: יירוט מטח כטב"מים וטילי שיוט; טיסת הדרכה עם מדריך ברדיו
 - טיסת לילה עם משקפת לילה (מקש I)
 - מפה טקטית (Tab), מבט נעול על המטרה (Z), יומן טייס
+- מזג אוויר (רוח צד, שכבת עננים ואובך), תקלות אקראיות ונטישה
+- פצצות מונחות לייזר עם תמונת פוד הכוונה
+- קוקפיט נפרד לכל מטוס, כבישים ושדות סביב היישובים
+- הקלטת הגיחה וצפייה חוזרת מהתחקיר
 - הגדרות שליטה: רגישות מוט, היפוך ציר, היגוי בהטיית הטלפון, כפתורי מגע גדולים
 - מבצע פטיש ברזל: המראה, יירוט, חדירה, תקיפה, נחיתה עם ILS ותחקיר
 - קרב אוויר: מפגש מהיר מול זוג מיג-29

@@ -25,3 +25,14 @@ for(const k of ['F15I','F35I']){const W=new World({plane:k,start:'air',mission:'
     else if(s<5){const t=W.drones.find(d=>d.alive);if(t){const r=vsub(t.pos,p.pos);apSteer(p,vnorm(r),0.7);if(s===2){W.cycleTarget();}else{W.arm=true;cd-=1/60;if(cd<=0){W.launch(MSL.AIM120,p,t);cd=10;}}}p.ctl.throttle=0.9;}
     else{W.arm=false;p.ctl.throttle=0.6;apSteer(p,v3(0,0,-1),0.5);}});
   console.log('train:',W.over&&W.over.title,'step',W.flags.step,'\n '+seen.join('\n '));}
+// laser-guided bombs: shorter reach, and the bomb misses if the laser is lost
+for(const keep of [true,false]){const W=new World({plane:'F15I',start:'air',mission:'strike',bomb:'lgb'});const p=W.player;W.migs.forEach(m=>m.alive=false);W.sam.radar.alive=false;W.select('SPICE');let rel=null;const g0=W.gtgt;
+  run(W,900,()=>{const g=W.gtgt||g0,r=vsub(g.pos,p.pos),d=vnorm(v3(r.x,0,r.z));p.fuel=6000;
+    if(rel==null){apSteer(p,v3(d.x,(7000-p.pos.y)/4000,d.z),0.6);p.ctl.throttle=1;const b=W.bombSol();if(b&&b.ok&&b.hd<b.rmax*0.8){W.arm=true;W.trigger(false,true,1/60);rel=W.time;}}
+    else{if(keep)apSteer(p,v3(d.x,0.05,d.z),0.3);else apSteer(p,v3(-d.x,0.3,-d.z),0.9);if(!W.bombs.length&&W.time-rel>3)W.over={};}});
+  console.log('LGB',W.plane.bomb.name,'x',W.plane.spice,keep?'overflew and banked hard (laser masked)':'turned away with the belly to the target','-> target alive:',g0.alive,'released at',rel&&Math.round(rel));}
+// random failure and ejection
+{const W=new World({plane:'F16I',start:'air',mission:'train',fail:true});W.failT=5;const p=W.player;run(W,20,()=>{apSteer(p,v3(1,0,0),0.4);});console.log('failure:',W.dmg.map(d=>d.t).join(','));
+  W.over=null;console.log('eject',W.eject());run(W,12);console.log(' ->',W.over&&W.over.title,W.over&&W.over.reason);}
+// wind drift
+{const W=new World({plane:'F15I',start:'air',mission:'train',wx:'wind'});const p=W.player;run(W,20);const e=p.euler();console.log('wind: crab angle deg',((e.hdg-Math.atan2(p.vel.x,-p.vel.z))*R.R2D).toFixed(1),'(nose into the wind, track unchanged)');}

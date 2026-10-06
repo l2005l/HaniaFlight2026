@@ -78,6 +78,11 @@ details[open] summary{margin-bottom:10px}
 #obj{inset-inline-start:16px;font-size:.85rem;color:var(--dim)}
 #toast{position:absolute;left:50%;bottom:140px;transform:translateX(-50%);z-index:4;max-width:calc(100% - 32px);background:rgba(8,12,14,.86);border:1px solid var(--amber);color:var(--amber);font-weight:700;padding:6px 14px;border-radius:2px;text-align:center;opacity:0;pointer-events:none;transition:opacity .25s}
 #toast[data-on="1"]{opacity:1}
+#replay{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);z-index:5;display:flex;gap:8px;align-items:center;direction:ltr;background:rgba(8,12,14,.86);border:1px solid var(--line);border-top:2px solid var(--sand);padding:8px 10px;width:min(46rem,calc(100% - 24px))}
+#replay[hidden]{display:none}
+#replay input{flex:1;min-width:60px;accent-color:var(--sand)}
+#replay button{padding:5px 12px;font-size:.85rem;white-space:nowrap}
+#replay span{font-family:var(--mono);font-size:.8rem;color:var(--dim)}
 #chips{position:absolute;top:48px;left:50%;transform:translateX(-50%);z-index:4;display:flex;gap:6px}
 #chips[hidden]{display:none}
 #chips button{background:rgba(8,12,14,.6);padding:4px 12px;font-size:.78rem;white-space:nowrap}
@@ -244,6 +249,22 @@ details[open] summary{margin-bottom:10px}
       <button id="todDusk" data-opt="tod" data-val="dusk">שקיעה</button>
       <button id="todNight" data-opt="tod" data-val="night">לילה</button>
     </div>
+    <div class="seg" role="group" aria-label="מזג אוויר">
+      <span>מזג אוויר</span>
+      <button data-opt="wx" data-val="clear">בהיר</button>
+      <button data-opt="wx" data-val="wind">רוח צד</button>
+      <button data-opt="wx" data-val="storm">מעונן וסוער</button>
+    </div>
+    <div class="seg" role="group" aria-label="תקלות אקראיות">
+      <span>תקלות אקראיות</span>
+      <button data-opt="fail" data-val="off">בלי</button>
+      <button data-opt="fail" data-val="on">עם</button>
+    </div>
+    <div class="seg" id="bombRow" role="group" aria-label="חימוש לקרקע">
+      <span>חימוש לקרקע</span>
+      <button data-opt="bomb" data-val="spice">דאייה (SPICE)</button>
+      <button data-opt="bomb" data-val="lgb">לייזר (GBU-12)</button>
+    </div>
     <div class="seg" role="group" aria-label="איכות גרפיקה">
       <span>גרפיקה</span>
       <button id="qHigh" data-opt="q" data-val="high">מלאה</button>
@@ -356,13 +377,17 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט.</p>
     </details>
-    <p class="note">גרסה 0.9 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות): שני מטוסים ושתי משימות. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
+    <p class="note">גרסה 1.0 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות): שני מטוסים ושתי משימות. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
   </section>
 
+  <div id="replay" hidden>
+    <button id="rpPlay">השהה</button><input id="rpSeek" type="range" min="0" max="1000" value="0" aria-label="מיקום בהקלטה"><span id="rpTime" dir="ltr">0:00</span>
+    <button id="rpSpeed">×1</button><button id="rpIn" aria-label="התקרב">+</button><button id="rpOut" aria-label="התרחק">−</button><button id="rpExit">סיום</button>
+  </div>
   <section id="pause" class="modal" hidden>
     <div class="card">
       <h2>הטיסה מושהית</h2>
-      <div class="acts"><button id="resume" class="go">המשך</button><button id="restart">התחל מחדש</button><button id="quit">לתדריך</button></div>
+      <div class="acts"><button id="resume" class="go">המשך</button><button id="restart">התחל מחדש</button><button id="ejectBtn">נטישה</button><button id="quit">לתדריך</button></div>
       <details>
         <summary>מדריך תצוגות</summary>
         <div id="guide2"></div>
@@ -382,6 +407,7 @@ details[open] summary{margin-bottom:10px}
         <kbd>I</kbd><span>משקפת לילה (בטיסת לילה)</span>
         <kbd>Tab</kbd><span>מפה טקטית</span>
         <kbd>Z</kbd><span>מבט נעול על המטרה</span>
+        <kbd>Backspace ×2</kbd><span>נטישה</span>
         <kbd>V · O · 0</kbd><span>מבט · האצת זמן · השתקה</span>
       </div>
       </details>
@@ -397,7 +423,7 @@ details[open] summary{margin-bottom:10px}
       <div><div class="eyebrow">תחקיר</div><h2 id="dTitle"></h2></div>
       <p id="dReason"></p>
       <dl id="dStats"></dl>
-      <div class="acts"><button id="again" class="go">טיסה נוספת</button><button id="back">לתדריך</button></div>
+      <div class="acts"><button id="again" class="go">טיסה נוספת</button><button id="watch">צפייה חוזרת</button><button id="back">לתדריך</button></div>
     </div>
   </section>
 </div>
