@@ -301,7 +301,7 @@ function goImmersive(){if(touchOn){try{const el=document.documentElement,pr=el.r
 function start(mode){startedAt=performance.now();goImmersive();hush();Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();newGame(mode);view=0;state='fly';show('menu',false);show('pause',false);show('debrief',false);$('app').dataset.fly='1';}
 function pause(){if(state!=='fly')return;hush();state='pause';show('pause',true);$('resume').focus();}
 function resume(){state='fly';show('pause',false);last=performance.now();}
-function toMenu(){hush();state='menu';show('pause',false);show('debrief',false);show('menu',true);$('app').dataset.fly='';newGame('runway');}
+function toMenu(){if(window.__hfPending){location.reload();return;}hush();state='menu';show('pause',false);show('debrief',false);show('menu',true);$('app').dataset.fly='';newGame('runway');}
 let lastMode='runway';
 $('startRwy').onclick=()=>start(lastMode='runway');$('startAir').onclick=()=>start(lastMode='air');
 $('resume').onclick=resume;$('restart').onclick=()=>start(lastMode);$('quit').onclick=toMenu;$('again').onclick=()=>start(lastMode);$('back').onclick=toMenu;

@@ -50,6 +50,11 @@ button:focus-visible{outline:2px solid var(--hud);outline-offset:2px}
 button.go{background:var(--sand);color:var(--sand-ink);border-color:var(--sand);flex:1 1 12rem}
 button.go:hover{filter:brightness(1.08)}
 button:disabled{opacity:.4;cursor:not-allowed}
+#update{border:1px solid var(--sand);background:rgba(210,180,124,.1);padding:10px 12px;display:flex;flex-direction:column;gap:8px;font-weight:600}
+#update .bar{height:5px;background:var(--line);overflow:hidden}
+#update .bar i{display:block;height:100%;width:8%;background:var(--sand);transition:width .25s}
+#update[data-done="1"] .bar{display:none}
+#update button{align-self:flex-start;padding:7px 16px;background:var(--sand);color:var(--sand-ink);border-color:var(--sand)}
 .seg{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .seg span{color:var(--dim);font-size:.9rem;margin-inline-end:6px;min-width:4.6rem}
 .seg button{padding:6px 18px}
@@ -138,6 +143,11 @@ details[open] summary{margin-bottom:10px}
         <li>חזרה ונחיתה בחצרים.</li>
       </ol>
     </div>
+    <div id="update" role="status" aria-live="polite" hidden>
+      <span id="updText">מוריד עדכון חדש…</span>
+      <div class="bar"><i id="updBar"></i></div>
+      <button id="updNow" hidden>עדכן עכשיו</button>
+    </div>
     <p id="loading" class="note" aria-live="polite">טוען את הזירה…</p>
     <p id="loadErr" class="err" hidden>לא ניתן להפעיל את מנוע התלת־ממד. נדרש דפדפן עם WebGL וחיבור לרשת.</p>
     <div class="acts">
@@ -192,7 +202,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, RT ו־LT למנוע, A לירי, B לנורים, X לנעילה, Y לחימוש הבא, LB למעצור, RB למבט, חצים למעלה ולמטה לכן נסע ולמדפים.</p>
     </details>
-    <p class="note">גרסה 0.4.2: מטוס אחד ומשימה אחת. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
+    <p class="note">גרסה 0.4.3 (5362172): מטוס אחד ומשימה אחת. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
   </section>
 
   <section id="pause" class="modal" hidden>
@@ -977,7 +987,7 @@ function goImmersive(){if(touchOn){try{const el=document.documentElement,pr=el.r
 function start(mode){startedAt=performance.now();goImmersive();hush();Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();newGame(mode);view=0;state='fly';show('menu',false);show('pause',false);show('debrief',false);$('app').dataset.fly='1';}
 function pause(){if(state!=='fly')return;hush();state='pause';show('pause',true);$('resume').focus();}
 function resume(){state='fly';show('pause',false);last=performance.now();}
-function toMenu(){hush();state='menu';show('pause',false);show('debrief',false);show('menu',true);$('app').dataset.fly='';newGame('runway');}
+function toMenu(){if(window.__hfPending){location.reload();return;}hush();state='menu';show('pause',false);show('debrief',false);show('menu',true);$('app').dataset.fly='';newGame('runway');}
 let lastMode='runway';
 $('startRwy').onclick=()=>start(lastMode='runway');$('startAir').onclick=()=>start(lastMode='air');
 $('resume').onclick=resume;$('restart').onclick=()=>start(lastMode);$('quit').onclick=toMenu;$('again').onclick=()=>start(lastMode);$('back').onclick=toMenu;
@@ -1226,6 +1236,22 @@ window.__raam={get W(){return W;},start,keys,setTOD,get state(){return state;}};
 
 },30);});
 </script>
-<script>if('serviceWorker' in navigator)addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});</script>
+<script>
+if('serviceWorker' in navigator){(function(){
+  var sw=navigator.serviceWorker,box=document.getElementById('update'),txt=document.getElementById('updText'),bar=document.getElementById('updBar'),btn=document.getElementById('updNow'),had=!!sw.controller,ready=false;
+  function show(t,done){box.hidden=false;box.dataset.done=done?'1':'';txt.textContent=t;btn.hidden=!done;}
+  btn.onclick=function(){location.reload();};
+  sw.addEventListener('message',function(e){if(e.data&&e.data.type==='hf-progress'&&had&&!ready){show('מוריד עדכון חדש…',false);bar.style.width=Math.round(e.data.done/e.data.total*100)+'%';}});
+  sw.addEventListener('controllerchange',function(){if(!had){had=true;return;}ready=true;
+    if(window.__raam&&window.__raam.state!=='menu'){window.__hfPending=true;show('עדכון חדש מוכן. הוא ייכנס בסיום הטיסה.',true);}
+    else{show('העדכון הותקן. טוען מחדש…',false);bar.style.width='100%';setTimeout(function(){location.reload();},900);}});
+  addEventListener('load',function(){sw.register('sw.js',{updateViaCache:'none'}).then(function(reg){
+    function watch(w){if(!w)return;if(had)show('מוריד עדכון חדש…',false);w.addEventListener('statechange',function(){if(w.state==='redundant'&&!ready)box.hidden=true;});}
+    watch(reg.installing);reg.addEventListener('updatefound',function(){watch(reg.installing);});
+    function chk(){reg.update().catch(function(){});}
+    document.addEventListener('visibilitychange',function(){if(!document.hidden)chk();});setInterval(chk,600000);
+  }).catch(function(){});});
+})();}
+</script>
 </body>
 </html>

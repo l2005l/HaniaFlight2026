@@ -1,7 +1,11 @@
 /* HaniaFlight service worker: keeps the game playable offline once it has been opened. Generated into /sw.js by build.py. */
 const CACHE='haniaflight-__VERSION__';
 const SHELL=['./','index.html','vendor/three.min.js','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png'];
-self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()));});
+/* fetch each file fresh (never from the HTTP cache) and report progress to the open page */
+const tell=m=>self.clients.matchAll({includeUncontrolled:true,type:'window'}).then(cs=>cs.forEach(c=>c.postMessage(m)));
+self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(async c=>{let done=0;
+  for(const u of SHELL){const res=await fetch(new Request(u,{cache:'reload'}));if(!res.ok)throw new Error('fetch '+u);await c.put(u,res);tell({type:'hf-progress',done:++done,total:SHELL.length});}
+}).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
 const keep=(req,res)=>{if(res&&(res.ok||res.type==='opaque')){const cp=res.clone();caches.open(CACHE).then(c=>c.put(req,cp));}return res;};
 self.addEventListener('fetch',e=>{
