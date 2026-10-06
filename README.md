@@ -1,8 +1,8 @@
 # HaniaFlight
 
-סימולטור טיסה תלת־ממדי של מטוסי קרב ישראליים, שרץ בדפדפן. גרסה 0.4: F-15I רעם ומשימה אחת מלאה.
+סימולטור טיסה תלת־ממדי של מטוסי קרב ישראליים, שרץ בדפדפן. גרסה 0.5: F-15I רעם ו-F-16I סופה, משימת תקיפה מלאה ומשימת קרב אוויר.
 
-A browser flight simulator of Israeli fighter jets. Version 0.4: the F-15I Ra'am and one full mission.
+A browser flight simulator of Israeli fighter jets. Version 0.5: the F-15I Ra'am and F-16I Sufa, a full strike mission and a quick air-combat mission.
 
 ## לשחק / Play
 
@@ -23,7 +23,9 @@ The game is a PWA: open the link, then use the in-game install button or the bro
 - מודל טיסה פיזיקלי: עילוי, גרר, הזדקרות, מגבלת G, מבער, דלק, אטמוספירה
 - חימוש: AIM-120, פייתון 5, SPICE-2000, תותח M61; מכ"ם, נעילה, אזורי שיגור על ה-HUD, מערכת התרעה
 - אויב: כטב"מי תקיפה, זוג מיג-29 עם בינה מלאכותית, סוללת נ"מ עם מיסוך שטח
-- משימה: המראה, יירוט, חדירה, תקיפה, נחיתה עם ILS ותחקיר
+- שני מטוסים: F-15I רעם ו-F-16I סופה, כל אחד עם מודל טיסה, מראה וחימוש משלו
+- מבצע פטיש ברזל: המראה, יירוט, חדירה, תקיפה, נחיתה עם ILS ותחקיר
+- קרב אוויר: מפגש מהיר מול זוג מיג-29
 - יום ושקיעה, דיווחי קשר בקול (כשיש קול עברי במכשיר)
 - שלוש רמות קושי, מצב גרפיקה חסכוני, מקלדת, מגע ושלט משחק
 
@@ -47,6 +49,7 @@ python3 build.py                 # rebuild index.html after editing src/
 node tests/flight-model.js       # performance, missile and bomb ranges
 node tests/takeoff-landing.js    # takeoff, landing and mission-complete flow
 node tests/mission-smoke.js      # crude autopilot flies the mission
+node tests/f16-and-duel.js       # F-16I performance and the air-combat mission
 ```
 
 `index.html` and `sw.js` are generated. Edit the files in `src/` and rebuild.

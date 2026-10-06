@@ -57,6 +57,7 @@ function terrainH(x,z){const{nx,nz,cell,x0,z0,h}=TER;
 /* ---------- aircraft ---------- */
 const TYPES={
   F15I:{name:'F-15I',S:56.5,mEmpty:15400,fuelMax:10200,Tmil:158e3,Tab:259e3,CLa:3.6,aStall:30*D2R,CD0:0.0225,K:0.13,nMax:9,gearH:2.4,pMax:4.0,rcs:10,hp:100},
+  F16I:{name:'F-16I',S:27.87,mEmpty:10200,fuelMax:5400,Tmil:79e3,Tab:129.7e3,CLa:4.1,aStall:27*D2R,CD0:0.0235,K:0.117,nMax:9,gearH:1.9,pMax:5.0,rcs:4,hp:80},
   MIG29:{name:'MiG-29',S:38,mEmpty:11600,fuelMax:3400,Tmil:100e3,Tab:162e3,CLa:3.5,aStall:28*D2R,CD0:0.023,K:0.14,nMax:8.5,gearH:1.9,pMax:4.2,rcs:5,hp:60}};
 function clCurve(a,t){const s=a<0?-0.75:1,x=Math.abs(a),as=t.aStall,a1=as*0.75;let cl;
   if(x<=a1)cl=t.CLa*x;
@@ -299,30 +300,37 @@ class SamSite{
 const DIFF={easy:{decoy:1.8,pull:0.6,samCd:17,samR:40000,samN:4,r27:1,cm:90,hp:220},
   normal:{decoy:1,pull:0.85,samCd:11,samR:45000,samN:8,r27:2,cm:60,hp:100},
   hard:{decoy:0.7,pull:1,samCd:8,samR:48000,samN:10,r27:2,cm:60,hp:100}};
+/* player aircraft: airframe type, load-out and the bomb it carries */
+const PLANES={
+  F15I:{type:'F15I',name:'F-15I רעם',unit:'טייסת 69 · הפטישים',call:'פטיש',aim120:4,python:2,spice:4,bomb:{name:'SPICE-2000',mass:950,soft:55,hard:14},fuelRwy:8000,fuelAir:7800,base:300,eye:[0,1.15,-4.6],chase:[8,34]},
+  F16I:{type:'F16I',name:'F-16I סופה',unit:'טייסת 107 · אבירי הזנב הכתום',call:'אביר',aim120:2,python:2,spice:4,bomb:{name:'SPICE-1000',mass:500,soft:38,hard:9},fuelRwy:5200,fuelAir:5000,base:250,eye:[0,1.0,-3.5],chase:[6.5,27]}};
 class World{
   constructor(o={}){
     buildTerrain();this.time=0;this.real=true;this.diff=DIFF[o.diff]?o.diff:'normal';this.d=DIFF[this.diff];this.events=[];this.missiles=[];this.bombs=[];this.bullets=[];
-    const air=o.start==='air';
-    this.player=new Aircraft('F15I',air?{x:9000,y:5500,z:0,hdg:Math.PI/2,pitch:0.055,speed:250,throttle:0.9,fuel:7800}
-      :{x:RWY.x1+110,y:SITES.base.h+2.4,z:0,hdg:Math.PI/2,speed:0,throttle:0,gear:true,flaps:true,onGround:true,fuel:8000});
-    if(air)this.player.vel=v3(250,0,0);
-    this.w={sel:'AIM120',aim120:4,python:2,gun:510,spice:4,chaff:this.d.cm,flare:this.d.cm};this.player.hp=this.d.hp;this.syncStores();
-    this.wps=[{n:'CAP',x:40000,z:0,alt:6000},{n:'IP',x:62000,z:4000,alt:9000},{n:'TGT',x:SITES.tgt.x,z:SITES.tgt.z,alt:9000},{n:'BASE',x:0,z:0,alt:1000}];this.wp=0;
-    this.drones=[];for(let i=0;i<4;i++)this.drones.push(new Drone(64000+i*2500,1500,-9000+i*6000,i));
-    this.migs=[];this.migAI=[];const home=v3(158000,7500,18000);
-    for(let i=0;i<2;i++){const m=new Aircraft('MIG29',{side:1,x:home.x+i*3000,y:home.y+i*300,z:home.z+9000*(i?-1:1),hdg:i?Math.PI/2:-Math.PI/2,speed:230,fuel:3000,storeCD:0.002});this.migs.push(m);const ai=new MigAI(m,home,i);ai.r27=this.d.r27;this.migAI.push(ai);}
+    const pl=this.plane=PLANES[o.plane]||PLANES.F15I,duel=o.mission==='duel',air=o.start==='air'||duel;this.missionId=duel?'duel':'strike';this.call=pl.call;
+    this.player=new Aircraft(pl.type,air?{x:duel?20000:9000,y:duel?6500:5500,z:0,hdg:Math.PI/2,pitch:0.055,speed:250,throttle:0.9,fuel:pl.fuelAir}
+      :{x:RWY.x1+110,y:SITES.base.h+TYPES[pl.type].gearH,z:0,hdg:Math.PI/2,speed:0,throttle:0,gear:true,flaps:true,onGround:true,fuel:pl.fuelRwy});
+    if(air)this.player.vel=v3(250,0,0);this.bingo=Math.round(pl.fuelRwy*0.22/100)*100;
+    this.w={sel:'AIM120',aim120:pl.aim120,python:pl.python,gun:510,spice:duel?0:pl.spice,chaff:this.d.cm,flare:this.d.cm};this.player.hp=this.d.hp*TYPES[pl.type].hp/100;this.syncStores();
+    this.wps=duel?[{n:'MERGE',x:62000,z:0,alt:6500},{n:'BASE',x:0,z:0,alt:1000}]
+      :[{n:'CAP',x:40000,z:0,alt:6000},{n:'IP',x:62000,z:4000,alt:9000},{n:'TGT',x:SITES.tgt.x,z:SITES.tgt.z,alt:9000},{n:'BASE',x:0,z:0,alt:1000}];this.wp=0;
+    this.drones=[];if(!duel)for(let i=0;i<4;i++)this.drones.push(new Drone(64000+i*2500,1500,-9000+i*6000,i));
+    this.migs=[];this.migAI=[];const home=duel?v3(66000,6500,0):v3(158000,7500,18000);
+    for(let i=0;i<2;i++){const m=new Aircraft('MIG29',duel?{side:1,x:home.x+i*2500,y:home.y+i*400,z:i?2600:-2600,hdg:-Math.PI/2,speed:250,fuel:3000,storeCD:0.002}
+        :{side:1,x:home.x+i*3000,y:home.y+i*300,z:home.z+9000*(i?-1:1),hdg:i?Math.PI/2:-Math.PI/2,speed:230,fuel:3000,storeCD:0.002});
+      this.migs.push(m);const ai=new MigAI(m,home,i);ai.r27=this.d.r27;this.migAI.push(ai);}
     this.air=[...this.drones,...this.migs];
     const G=(n,dx,dz,kind,primary,hp)=>{const s=kind==='radar'||kind==='launcher'?SITES.sam:SITES.tgt,x=s.x+dx,z=s.z+dz;return{name:n,kind,primary,hp,alive:true,side:1,pos:v3(x,terrainH(x,z),z),vel:v3()};};
-    this.ground=[G('SAM RADAR',0,0,'radar',false,1),G('TEL-1',260,-140,'tel',true,1),G('TEL-2',-310,190,'tel',true,1),G('BUNKER',20,430,'bunker',true,1),
+    this.ground=duel?[]:[G('SAM RADAR',0,0,'radar',false,1),G('TEL-1',260,-140,'tel',true,1),G('TEL-2',-310,190,'tel',true,1),G('BUNKER',20,430,'bunker',true,1),
       G('LNCH',160,120,'launcher',false,1),G('LNCH',-170,90,'launcher',false,1),G('LNCH',10,-190,'launcher',false,1)];
-    this.sam=new SamSite(this.ground[0]);this.sam.left=this.d.samN;
-    this.contacts=[];this.lock=null;this.gtgt=null;this.irTgt=null;this.dlz=null;this.migsActive=false;
-    this.stats={uav:0,leak:0,mig:0,tgt:0,sam:false,shots:0,start:o.start||'runway'};this.over=null;this.flags={};this.tS=0;this.tM=0;this.tD=0;this.gunT=0;this.cmT=0;this.stopT=0;
-    this.msg(air?'בקר: פטיש אחת, אתה בדרך לנקודה 1. ארבעה כטב"מי תקיפה נעים מערבה בגובה נמוך. רשאי אש.':'מגדל חצרים: פטיש אחת, רשאי להמריא ממסלול 09. מבער מלא, הרמת אף ב-150 קשר.');
+    this.sam=new SamSite(duel?{alive:false,pos:v3(SITES.sam.x,SITES.sam.h,SITES.sam.z)}:this.ground[0]);this.sam.left=this.d.samN;
+    this.contacts=[];this.lock=null;this.gtgt=null;this.irTgt=null;this.dlz=null;this.migsActive=duel;
+    this.stats={uav:0,leak:0,mig:0,tgt:0,sam:false,shots:0,start:air?'air':'runway'};this.over=null;this.flags={};this.tS=0;this.tM=0;this.tD=0;this.gunT=0;this.cmT=0;this.stopT=0;
+    this.msg(duel?'בקר: פטיש אחת, זוג מיג-29 מולך, 45 קילומטר, באותו גובה. רשאי אש.':air?'בקר: פטיש אחת, אתה בדרך לנקודה 1. ארבעה כטב"מי תקיפה נעים מערבה בגובה נמוך. רשאי אש.':'מגדל חצרים: פטיש אחת, רשאי להמריא ממסלול 09. מבער מלא, הרמת אף ב-150 קשר.');
     if(air)this.flags.airborne=true;
   }
-  msg(text){this.events.push({type:'msg',text});}
-  syncStores(){const w=this.w,p=this.player;p.storeMass=w.aim120*157+w.python*105+w.spice*950+300;p.storeCD=(w.aim120+w.python)*0.0005+w.spice*0.0022;}
+  msg(text){this.events.push({type:'msg',text:text.replace(/פטיש אחת/g,this.call+' אחת').replace(/SPICE/g,this.plane.bomb.name)});}
+  syncStores(){const w=this.w,p=this.player;p.storeMass=w.aim120*157+w.python*105+w.spice*this.plane.bomb.mass+this.plane.base;p.storeCD=(w.aim120+w.python)*0.0005+w.spice*0.0022;}
   los(a,b){for(let i=1;i<16;i++){const t=i/16;if(terrainH(lerp(a.x,b.x,t),lerp(a.z,b.z,t))>lerp(a.y,b.y,t))return false;}return true;}
   notched(obs,tgt,ground){if(!(ground||obs.y>tgt.pos.y+200))return false;const l=vnorm(vsub(tgt.pos,obs));
     return Math.abs(vdot(tgt.vel,l))<(this.time-(tgt.lastCM??-99)<4?85:30);}
@@ -352,7 +360,7 @@ class World{
   onBomb(b){
     this.events.push({type:'boom',pos:b.pos,size:5,ground:true});
     for(const g of this.ground){if(!g.alive)continue;const d=vdist(g.pos,b.pos);
-      if(d<(g.kind==='bunker'?14:55)){g.alive=false;this.events.push({type:'gkill',g});
+      if(d<(g.kind==='bunker'?this.plane.bomb.hard:this.plane.bomb.soft)){g.alive=false;this.events.push({type:'gkill',g});
         if(g.primary){this.stats.tgt++;const left=this.ground.filter(x=>x.primary&&x.alive).length;this.msg(left?`בקר: פגיעה טובה ב-${g.name}. נותרו ${left} מטרות.`:'בקר: כל המטרות הושמדו. חזור לבסיס לנחיתה.');}
         else if(g.kind==='radar'){this.stats.sam=true;this.msg('בקר: מכ"ם הסוללה הושמד. איום הנ"מ הוסר.');}
         if(this.gtgt===g)this.gtgt=null;}}}
@@ -402,6 +410,11 @@ class World{
   mission(){
     const p=this.player,f=this.flags,S=this.stats;
     if(!f.airborne&&!p.onGround&&p.agl>150){f.airborne=true;this.msg('בקר: פטיש אחת, קלטתי אותך. כן נסע ומדפים למעלה. פנה לנקודה 1, ארבעה כטב"מי תקיפה נעים מערבה בגובה נמוך. רשאי אש.');}
+    if(this.missionId==='duel'){
+      if(!f.bingo&&p.fuel<this.bingo){f.bingo=true;this.msg('בינגו דלק.');}
+      if(!p.alive){if(!this.over)this.over={win:false,title:'המטוס אבד',reason:p.crash};return;}
+      if(this.migs.every(m=>!m.alive)){this.wp=1;this.stopT+=0.5;if(this.stopT>3&&!this.over)this.over={win:true,title:'ניצחון בקרב האוויר',reason:'שני המיגים הופלו.'};}
+      return;}
     const wp=this.wps[this.wp],dwp=Math.hypot(wp.x-p.pos.x,wp.z-p.pos.z);
     const uavLeft=this.drones.filter(d=>d.alive).length;
     for(const d of this.drones)if(d.leaked&&!d.counted){d.counted=true;S.leak++;this.msg('בקר: כטב"ם חדר את קו ההגנה. ההגנה האווירית תטפל בו.');}
@@ -410,7 +423,7 @@ class World{
     if(this.wp<3&&this.ground.every(g=>!g.primary||!g.alive)){this.wp=3;f.rtb=true;}
     if(!this.migsActive&&p.pos.x>48000){this.migsActive=true;this.msg('בקר: זהירות, זוג מיג-29 פונה אליך ממזרח. טווח כ-90 קילומטר.');}
     if(!f.sam&&this.sam.tracking){f.sam=true;this.msg('בקר: סוללת נ"מ עוקבת אחריך. טווח יירוט כ-45 ק"מ ממנה. שקול להשמיד את המכ"ם מרחוק.');}
-    if(!f.bingo&&p.fuel<1800){f.bingo=true;this.msg('בינגו דלק. חזור לבסיס.');}
+    if(!f.bingo&&p.fuel<this.bingo){f.bingo=true;this.msg('בינגו דלק. חזור לבסיס.');}
     if(!f.winch&&f.airborne&&this.w.spice===0&&!f.rtb&&!this.bombs.length){f.winch=true;this.wp=3;this.msg('בקר: נגמר החימוש לקרקע. חזור לבסיס.');}
     if(!p.alive){if(!this.over){this.over={win:false,title:'המטוס אבד',reason:p.crash};}return;}
     if(p.onGround&&f.airborne&&p.wasAir){
@@ -444,5 +457,5 @@ class World{
       this.dlz=T&&p.alive?launchZone(s==='AIM120'?MSL.AIM120:MSL.PYTHON5,p.pos,p.vel,T.pos,T.vel):null;}
   }
 }
-const RAAM={DIFF,G0,D2R,R2D,KT,FT,NM,clamp,lerp,sstep,v3,vadd,vsub,vmul,vdot,vcross,vlen,vnorm,vdist,qmul,qrot,qrotInv,qaxis,qeuler,FWD,UP,RIGHT,atmo,TER,SITES,RWY,buildTerrain,terrainH,TYPES,Aircraft,apSteer,MSL,Missile,flyout,launchZone,SPICE,spiceRange,Bomb,Drone,MigAI,SamSite,World};
+const RAAM={DIFF,PLANES,G0,D2R,R2D,KT,FT,NM,clamp,lerp,sstep,v3,vadd,vsub,vmul,vdot,vcross,vlen,vnorm,vdist,qmul,qrot,qrotInv,qaxis,qeuler,FWD,UP,RIGHT,atmo,TER,SITES,RWY,buildTerrain,terrainH,TYPES,Aircraft,apSteer,MSL,Missile,flyout,launchZone,SPICE,spiceRange,Bomb,Drone,MigAI,SamSite,World};
 if(typeof module!=='undefined')module.exports=RAAM;

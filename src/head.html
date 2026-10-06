@@ -117,9 +117,19 @@ details[open] summary{margin-bottom:10px}
   <section id="menu" class="sheet">
     <header>
       <h1 dir="ltr">HaniaFlight</h1>
-      <div class="eyebrow">F-15I רעם · טייסת 69 · הפטישים</div>
+      <div id="unit" class="eyebrow">F-15I רעם · טייסת 69 · הפטישים</div>
     </header>
-    <div class="brief">
+    <div class="seg" role="group" aria-label="משימה">
+      <span>משימה</span>
+      <button id="mStrike" data-opt="mission" data-val="strike">פטיש ברזל</button>
+      <button id="mDuel" data-opt="mission" data-val="duel">קרב אוויר</button>
+    </div>
+    <div class="seg" role="group" aria-label="מטוס">
+      <span>מטוס</span>
+      <button id="pF15" data-opt="plane" data-val="F15I">F-15I רעם</button>
+      <button id="pF16" data-opt="plane" data-val="F16I">F-16I סופה</button>
+    </div>
+    <div id="briefStrike" class="brief">
       <h2>מבצע פטיש ברזל</h2>
       <p>גל כטב"מי תקיפה חוצה מערבה בגובה נמוך, ומאחוריו אתר שיגור טילים שמתכונן לירי. אתה ממריא לבד, מיירט, חודר מזרחה ומשמיד את האתר.</p>
       <ol class="steps">
@@ -128,6 +138,10 @@ details[open] summary{margin-bottom:10px}
         <li>השמדת שני משגרים ובונקר פיקוד. האתר מוגן בסוללת נ"מ בטווח 45 ק"מ.</li>
         <li>חזרה ונחיתה בחצרים.</li>
       </ol>
+    </div>
+    <div id="briefDuel" class="brief" hidden>
+      <h2>קרב אוויר</h2>
+      <p>אתה באוויר, בגובה 21,000 רגל. זוג מיג-29 מולך במרחק 45 ק"מ, חמוש בטילי מכ"ם וטילים תרמיים. בלי נ"מ ובלי מטרות קרקע: הפל את שניהם לפני שיפילו אותך.</p>
     </div>
     <div id="update" role="status" aria-live="polite" hidden>
       <span id="updText">מוריד עדכון חדש…</span>
@@ -164,13 +178,7 @@ details[open] summary{margin-bottom:10px}
     </div>
     <div>
       <h3>תצורת חימוש</h3>
-      <dl>
-        <div><dt>טילי אוויר־אוויר מכ"מיים</dt><dd>4 × AIM-120C</dd></div>
-        <div><dt>טילי אוויר־אוויר תרמיים</dt><dd>2 × PYTHON-5</dd></div>
-        <div><dt>פצצות דאייה מונחות</dt><dd>4 × SPICE-2000</dd></div>
-        <div><dt>תותח</dt><dd>M61A1 · 510</dd></div>
-        <div><dt>דלק</dt><dd>8,000 kg</dd></div>
-      </dl>
+      <dl id="loadout"></dl>
     </div>
     <details open>
       <summary>מקשים</summary>
@@ -188,7 +196,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, RT ו־LT למנוע, A לירי, B לנורים, X לנעילה, Y לחימוש הבא, LB למעצור, RB למבט, חצים למעלה ולמטה לכן נסע ולמדפים.</p>
     </details>
-    <p class="note">גרסה 0.4.3 (__BUILD__): מטוס אחד ומשימה אחת. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
+    <p class="note">גרסה 0.5 (__BUILD__): שני מטוסים ושתי משימות. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
   </section>
 
   <section id="pause" class="modal" hidden>
