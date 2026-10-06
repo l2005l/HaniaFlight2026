@@ -1,8 +1,8 @@
 # HaniaFlight
 
-סימולטור טיסה תלת־ממדי של מטוסי קרב ישראליים, שרץ בדפדפן. גרסה 0.7: F-15I רעם ו-F-16I סופה, משימת תקיפה מלאה, קרב אוויר ותדלוק אווירי.
+סימולטור טיסה תלת־ממדי של מטוסי קרב ישראליים, שרץ בדפדפן. גרסה 0.8: ארבעה מטוסים (F-15I רעם, F-16I סופה, F-35I אדיר, F-15 בז), חמש משימות (תקיפה, הגנת שמיים, קרב אוויר, תדלוק, הדרכה) וטיסת לילה.
 
-A browser flight simulator of Israeli fighter jets. Version 0.7: the F-15I Ra'am and F-16I Sufa, a full strike mission, air combat and aerial refuelling.
+A browser flight simulator of Israeli fighter jets. Version 0.8: four aircraft (F-15I Ra'am, F-16I Sufa, F-35I Adir, F-15 Baz), five missions (strike, air defence, air combat, refuelling, training) and night flying.
 
 ## לשחק / Play
 
@@ -31,7 +31,9 @@ The game is a PWA: open the link, then use the in-game install button or the bro
 - מודל טיסה פיזיקלי: עילוי, גרר, הזדקרות, מגבלת G, מבער, דלק, אטמוספירה
 - חימוש: AIM-120, פייתון 5, SPICE-2000, תותח M61; מכ"ם, נעילה, אזורי שיגור על ה-HUD, מערכת התרעה
 - אויב: כטב"מי תקיפה, זוג מיג-29 עם בינה מלאכותית, סוללת נ"מ עם מיסוך שטח
-- שני מטוסים: F-15I רעם ו-F-16I סופה, כל אחד עם מודל טיסה, מראה וחימוש משלו
+- ארבעה מטוסים: F-15I רעם, F-16I סופה, F-35I אדיר (חמקן, חימוש פנימי) ו-F-15 בז (אוויר־אוויר בלבד), כל אחד עם מודל טיסה, מראה וחימוש משלו
+- הגנת שמיים: יירוט מטח כטב"מים וטילי שיוט; טיסת הדרכה עם מדריך ברדיו
+- טיסת לילה עם משקפת לילה (מקש I)
 - מבצע פטיש ברזל: המראה, יירוט, חדירה, תקיפה, נחיתה עם ILS ותחקיר
 - קרב אוויר: מפגש מהיר מול זוג מיג-29
 - יום ושקיעה, דיווחי קשר בקול (כשיש קול עברי במכשיר)
@@ -63,6 +65,7 @@ python3 build.py                 # rebuild index.html after editing src/
 node tests/flight-model.js       # performance, missile and bomb ranges
 node tests/takeoff-landing.js    # takeoff, landing and mission-complete flow
 node tests/mission-smoke.js      # crude autopilot flies the mission
+node tests/content.js            # all aircraft, stealth, air defence, training
 node tests/f16-and-duel.js       # F-16I performance and the air-combat mission
 node tests/systems.js            # cold start, switches, damage, radar modes, refuelling
 ```

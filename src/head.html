@@ -78,6 +78,7 @@ details[open] summary{margin-bottom:10px}
 #obj{inset-inline-start:16px;font-size:.85rem;color:var(--dim)}
 #toast{position:absolute;left:50%;bottom:140px;transform:translateX(-50%);z-index:4;max-width:calc(100% - 32px);background:rgba(8,12,14,.86);border:1px solid var(--amber);color:var(--amber);font-weight:700;padding:6px 14px;border-radius:2px;text-align:center;opacity:0;pointer-events:none;transition:opacity .25s}
 #toast[data-on="1"]{opacity:1}
+#nvgBtn{position:absolute;top:48px;left:50%;transform:translateX(-50%);z-index:4;background:rgba(8,12,14,.7);padding:4px 12px;font-size:.78rem}
 #lookBack{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);z-index:4;background:rgba(8,12,14,.85);border-color:var(--sand);padding:7px 16px}
 #check{position:absolute;top:48px;inset-inline-start:16px;z-index:3;width:min(17rem,calc(100% - 32px));background:rgba(8,12,14,.86);border:1px solid var(--line);border-top:2px solid var(--sand);padding:8px 10px;display:flex;flex-direction:column;gap:6px;font-size:.86rem}
 #check[hidden]{display:none}
@@ -135,6 +136,7 @@ details[open] summary{margin-bottom:10px}
   <div id="radio" aria-live="polite"></div>
   <div id="toast" role="status" aria-live="polite"></div>
   <button id="lookBack" hidden>חזרה למבט קדימה</button>
+  <button id="nvgBtn" hidden>משקפת לילה</button>
   <div id="check" hidden>
     <div class="chead"><b>רשימת תיוג להתנעה</b><button id="autoStart">התנעה אוטומטית</button></div>
     <ol id="checkList"></ol>
@@ -164,13 +166,17 @@ details[open] summary{margin-bottom:10px}
     <div class="seg" role="group" aria-label="משימה">
       <span>משימה</span>
       <button id="mStrike" data-opt="mission" data-val="strike">פטיש ברזל</button>
+      <button id="mIcpt" data-opt="mission" data-val="intercept">הגנת שמיים</button>
       <button id="mDuel" data-opt="mission" data-val="duel">קרב אוויר</button>
       <button id="mTanker" data-opt="mission" data-val="tanker">תדלוק אווירי</button>
+      <button id="mTrain" data-opt="mission" data-val="train">הדרכה</button>
     </div>
     <div class="seg" role="group" aria-label="מטוס">
       <span>מטוס</span>
       <button id="pF15" data-opt="plane" data-val="F15I">F-15I רעם</button>
       <button id="pF16" data-opt="plane" data-val="F16I">F-16I סופה</button>
+      <button id="pF35" data-opt="plane" data-val="F35I">F-35I אדיר</button>
+      <button id="pF15C" data-opt="plane" data-val="F15C">F-15 בז</button>
     </div>
     <div id="briefStrike" class="brief">
       <h2>מבצע פטיש ברזל</h2>
@@ -181,6 +187,19 @@ details[open] summary{margin-bottom:10px}
         <li>השמדת שני משגרים ובונקר פיקוד. האתר מוגן בסוללת נ"מ בטווח 45 ק"מ.</li>
         <li>חזרה ונחיתה בחצרים.</li>
       </ol>
+    </div>
+    <div id="briefIcpt" class="brief" hidden>
+      <h2>הגנת שמיים</h2>
+      <p>מטח משולב בדרך מערבה: שמונה כטב"מי תקיפה בשני גלים, נמוכים ואיטיים, ואחריהם שני טילי שיוט מהירים בגובה נמוך מאוד. אין מיגים ואין נ"מ, רק אתה והשעון. המשימה מצליחה אם לא חדרו יותר משני איומים.</p>
+      <ol class="steps">
+        <li>כטב"ם קטן נראה במכ"ם רק מקרוב. טוס נמוך יחסית וחפש בטווח 20 מייל.</li>
+        <li>חסוך טילים: כטב"ם איטי הוא מטרה טובה לתותח.</li>
+        <li>את טילי השיוט מיירטים מהחזית. במרדף מאחור הם כמעט בלתי מושגים.</li>
+      </ol>
+    </div>
+    <div id="briefTrain" class="brief" hidden>
+      <h2>טיסת הדרכה</h2>
+      <p>טיסה ראשונה עם מדריך ברדיו, בלי אויב. הוא נותן משימה אחת בכל פעם ומחכה שתבצע: טיפוס, פנייה לכיוון, נעילת מכ"ם, שיגור טיל, ירי בתותח ונצירת הנשק. כעשר דקות.</p>
     </div>
     <div id="briefTanker" class="brief" hidden>
       <h2>תדלוק אווירי</h2>
@@ -214,6 +233,7 @@ details[open] summary{margin-bottom:10px}
       <span>שעת היום</span>
       <button id="todDay" data-opt="tod" data-val="day">יום</button>
       <button id="todDusk" data-opt="tod" data-val="dusk">שקיעה</button>
+      <button id="todNight" data-opt="tod" data-val="night">לילה</button>
     </div>
     <div class="seg" role="group" aria-label="איכות גרפיקה">
       <span>גרפיקה</span>
@@ -302,7 +322,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט.</p>
     </details>
-    <p class="note">גרסה 0.7 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות): שני מטוסים ושתי משימות. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
+    <p class="note">גרסה 0.8 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות): שני מטוסים ושתי משימות. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
   </section>
 
   <section id="pause" class="modal" hidden>
@@ -325,6 +345,7 @@ details[open] summary{margin-bottom:10px}
         <kbd>H · J</kbd><span>טייס אוטומטי · השלכת חימוש</span>
         <kbd>Y · , . · K</kbd><span>מצב מכ"ם · טווח · דלת תדלוק</span>
         <kbd>X</kbd><span>מבט אל לוח המתגים</span>
+        <kbd>I</kbd><span>משקפת לילה (בטיסת לילה)</span>
         <kbd>V · O · 0</kbd><span>מבט · האצת זמן · השתקה</span>
       </div>
       </details>
