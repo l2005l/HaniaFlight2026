@@ -43,13 +43,15 @@ function rawH(x,z){
   const rr=1-Math.abs(2*fbm(x/5200+4.4,z/5200+9.1)-1);h+=e*620*rr*rr*(0.35+n);
   h+=30*(fbm(x/2500,z/2500)-0.5)*(1+e*3);
   return lerp(-40,h,sstep(d,-500,5000));}
-function buildTerrain(){if(TER.h)return;const{nx,nz,cell,x0,z0}=TER,h=new Float32Array(nx*nz);
-  for(let j=0;j<nz;j++)for(let i=0;i<nx;i++)h[j*nx+i]=rawH(x0+i*cell,z0+j*cell);
+/* built in slices so a page can stay responsive while it loads; each yield reports progress 0..1 */
+function* terrainSteps(){if(TER.h)return;const{nx,nz,cell,x0,z0}=TER,h=new Float32Array(nx*nz);
+  for(let j=0;j<nz;j++){for(let i=0;i<nx;i++)h[j*nx+i]=rawH(x0+i*cell,z0+j*cell);if(j%12===11)yield j/nz;}
   for(const k in SITES){const s=SITES[k],hc=k==='base'?60:rawH(s.x,s.z);s.h=hc;
     const n=Math.ceil(s.r*2/cell)+1,ci=Math.round((s.x-x0)/cell),cj=Math.round((s.z-z0)/cell);
     for(let j=cj-n;j<=cj+n;j++)for(let i=ci-n;i<=ci+n;i++){if(i<0||j<0||i>=nx||j>=nz)continue;
       const dd=Math.hypot(x0+i*cell-s.x,z0+j*cell-s.z);h[j*nx+i]=lerp(hc,h[j*nx+i],sstep(dd,s.r,s.r*2));}}
   TER.h=h;}
+function buildTerrain(){for(const p of terrainSteps());}
 function terrainH(x,z){const{nx,nz,cell,x0,z0,h}=TER;
   let fx=clamp((x-x0)/cell,0,nx-1.001),fz=clamp((z-z0)/cell,0,nz-1.001);const i=fx|0,j=fz|0;fx-=i;fz-=j;const k=j*nx+i;
   const v=lerp(lerp(h[k],h[k+1],fx),lerp(h[k+nx],h[k+nx+1],fx),fz);return v>0?v:0;}
@@ -462,5 +464,5 @@ class World{
       this.dlz=T&&p.alive?launchZone(s==='AIM120'?MSL.AIM120:MSL.PYTHON5,p.pos,p.vel,T.pos,T.vel):null;}
   }
 }
-const RAAM={DIFF,PLANES,G0,D2R,R2D,KT,FT,NM,clamp,lerp,sstep,v3,vadd,vsub,vmul,vdot,vcross,vlen,vnorm,vdist,qmul,qrot,qrotInv,qaxis,qeuler,FWD,UP,RIGHT,atmo,TER,SITES,RWY,buildTerrain,terrainH,TYPES,Aircraft,apSteer,MSL,Missile,flyout,launchZone,SPICE,spiceRange,Bomb,Drone,MigAI,SamSite,World};
+const RAAM={DIFF,PLANES,G0,D2R,R2D,KT,FT,NM,clamp,lerp,sstep,v3,vadd,vsub,vmul,vdot,vcross,vlen,vnorm,vdist,qmul,qrot,qrotInv,qaxis,qeuler,FWD,UP,RIGHT,atmo,TER,SITES,RWY,buildTerrain,terrainSteps,terrainH,TYPES,Aircraft,apSteer,MSL,Missile,flyout,launchZone,SPICE,spiceRange,Bomb,Drone,MigAI,SamSite,World};
 if(typeof module!=='undefined')module.exports=RAAM;

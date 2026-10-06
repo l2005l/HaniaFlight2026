@@ -1,5 +1,5 @@
 'use strict';
-(()=>{
+(async()=>{
 const R=RAAM,{D2R,R2D,KT,FT,NM,clamp,lerp,sstep,v3,vadd,vsub,vmul,vdot,vlen,vnorm,vdist,qrot,qrotInv,FWD,UP,terrainH,TER,SITES,RWY}=R;
 const $=id=>document.getElementById(id),T=window.THREE;
 const glc=$('gl'),hudc=$('hud');let ctx=hudc.getContext('2d');
@@ -8,7 +8,10 @@ try{if(!T)throw 0;renderer=new T.WebGLRenderer({canvas:glc,antialias:true,logari
 catch(e){$('loadErr').hidden=false;$('loading').hidden=true;$('startRwy').disabled=$('startAir').disabled=true;return;}
 let W=null,state='menu',view=0,timeAcc=1,simAcc=0,muted=false,overT=0,gAcc=0,vw=1,vh=1,dpr=1,clock=0;
 const rnd=(()=>{let a=1234567;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};})();
-R.buildTerrain();
+/* loading is split into slices with a pause between them, so the page paints, the bar moves and taps register */
+const tick=()=>new Promise(r=>setTimeout(r,0)),loadBar=document.querySelector('#loading .bar i');
+const prog=p=>{if(loadBar){loadBar.style.animation='none';loadBar.style.width=Math.round(p*100)+'%';}return tick();};
+for(const p of R.terrainSteps())await prog(p*0.55);
 
 /* ================= scene ================= */
 const scene=new T.Scene(),HAZE=0xc3d2d6;scene.fog=new T.FogExp2(HAZE,1.25e-5);scene.background=new T.Color(HAZE);
@@ -36,6 +39,7 @@ function setTOD(k){tod=k;const c=TOD[k],pos=sky.geometry.attributes.position,col
   for(const m of cloudMats)m.color.set(c.cloud);sunSp.material.color.set(c.glow);sunHalo.material.color.set(c.glow);sunHalo.material.opacity=c.halo;if(seaMat)seaMat.color.set(c.sea);
   for(const d of duskOnly)d.visible=k==='dusk';
 }
+await prog(0.58);
 /* terrain */
 {const{nx,nz,cell,x0,z0,h}=TER,P=new Float32Array(nx*nz*3),C=new Float32Array(nx*nz*3),U=new Float32Array(nx*nz*2);
   const mix=(a,b,t)=>[lerp(a[0],b[0],t),lerp(a[1],b[1],t),lerp(a[2],b[2],t)];
@@ -58,6 +62,7 @@ function setTOD(k){tod=k;const c=TOD[k],pos=sky.geometry.attributes.position,col
   tmat.onBeforeCompile=s=>{s.fragmentShader=s.fragmentShader.replace('#include <map_fragment>',`vec2 u2=mat2(0.8,-0.6,0.6,0.8)*vUv;float dd=texture2D(map,vUv*9.0).g*texture2D(map,vUv).g*texture2D(map,u2*0.11+vec2(0.31,0.17)).g;diffuseColor.rgb*=dd*1.5;`);};
   const tm=new T.Mesh(g,tmat);tm.frustumCulled=false;scene.add(tm);
   seaMat=new T.MeshPhongMaterial({color:0x2d6d8c,specular:0x8a96a0,shininess:80});const sea=new T.Mesh(new T.PlaneGeometry(900000,900000),seaMat);sea.rotation.x=-Math.PI/2;sea.position.set(80000,0,0);scene.add(sea);}
+await prog(0.74);
 /* base */
 const BY=SITES.base.h;
 {const rt=canvasTex(2048,64,(x,w,h)=>{x.fillStyle='#2e3032';x.fillRect(0,0,w,h);x.fillStyle='#d9d9d2';
@@ -95,6 +100,7 @@ const BY=SITES.base.h;
     for(let j=0;j<n;j++){const s=new T.Sprite(cm),k=big*(0.6+rnd()*0.8);s.position.set(cx+(rnd()-0.5)*big*3.2,cy+(rnd()-0.3)*big*0.5,cz+(rnd()-0.5)*big*3.2);s.scale.set(k*1.6,k,1);scene.add(s);cloudSp.push(s);}}
   for(let i=0;i<26;i++){const s=new T.Sprite(ci);s.position.set(-60000+rnd()*300000,10800+rnd()*1500,-90000+rnd()*180000);const k=14000+rnd()*22000;s.scale.set(k*2.6,k*0.5,1);scene.add(s);}
 }
+await prog(0.84);
 /* ---------- aircraft models ---------- */
 function shapeGeo(pts,th,fin){const s=new T.Shape();pts.forEach((p,i)=>i?s.lineTo(p[0],p[1]):s.moveTo(p[0],p[1]));const g=new T.ExtrudeGeometry(s,{depth:th,bevelEnabled:false}),uv=g.attributes.uv;
   for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)*0.09,uv.getY(i)*0.09);if(fin)g.rotateY(-Math.PI/2);else g.rotateX(Math.PI/2);return g;}
@@ -190,6 +196,7 @@ function buildGround(gt){const G=new T.Group(),ol=lam(0x5e6247),gr=lam(0x9a9a8e)
   else if(gt.kind==='radar'){part(new T.BoxGeometry(8,3,3.5),ol,0,1.8,0,G);part(new T.CylinderGeometry(0.4,0.4,7,8),ol,0,6,0,G);const d=part(new T.BoxGeometry(7,5,0.6),gr,0,11,0,G);G.userData.dish=d;}
   else{part(new T.BoxGeometry(9,2.2,3.2),ol,0,1.6,0,G);for(let i=0;i<3;i++){const m=part(new T.CylinderGeometry(0.35,0.35,6,6),gr,1,4.4,-1+i,G);m.rotation.z=0.9;}}
   G.position.set(gt.pos.x,gt.pos.y,gt.pos.z);G.rotation.y=gt.pos.x%3;return G;}
+await prog(0.9);
 /* ---------- particles ---------- */
 const PM=9000,pp=new Float32Array(PM*3),pc=new Float32Array(PM*4),ps=new Float32Array(PM),P=[];let pHead=0;
 for(let i=0;i<PM;i++)P.push({on:false});
@@ -615,7 +622,9 @@ function applyOpts(){fillBrief();if(W&&state==='menu'&&W.plane.type!==opts.plane
 for(const b of document.querySelectorAll('[data-opt]'))b.onclick=()=>{opts[b.dataset.opt]=b.dataset.val;applyOpts();};
 let instEv=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();instEv=e;$('install').hidden=false;});
 $('install').onclick=()=>{if(instEv){instEv.prompt();instEv=null;$('install').hidden=true;}};
+await prog(0.96);
 applyOpts();newGame('runway',true);requestAnimationFrame(frame);
+{const n=$('loadMs');if(n)n.textContent=(performance.now()/1000).toFixed(1);}
 window.__raam={get W(){return W;},start,keys,setTOD,get state(){return state;},ready:true};
 $('loading').hidden=true;$('guide2').innerHTML=$('guide').innerHTML;
 /* a start button tapped while the world was still loading starts the flight now */
