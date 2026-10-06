@@ -6,7 +6,7 @@ A browser flight simulator of Israeli fighter jets. Version 0.4: the F-15I Ra'am
 
 ## לשחק / Play
 
-https://l2005l.github.io/HaniaFlight2026/ (אחרי הפעלת GitHub Pages על הענף `main` / once GitHub Pages is enabled on `main`).
+https://flight.hania360.com/
 
 ## התקנה כאפליקציה / Install as an app
 
