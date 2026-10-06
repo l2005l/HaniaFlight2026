@@ -5,7 +5,7 @@ const $=id=>document.getElementById(id),T=window.THREE;
 const glc=$('gl'),hudc=$('hud'),ctx=hudc.getContext('2d');
 let renderer;
 try{if(!T)throw 0;renderer=new T.WebGLRenderer({canvas:glc,antialias:true,logarithmicDepthBuffer:true,powerPreference:'high-performance'});}
-catch(e){$('loadErr').hidden=false;$('startRwy').disabled=$('startAir').disabled=true;return;}
+catch(e){$('loadErr').hidden=false;$('loading').hidden=true;$('startRwy').disabled=$('startAir').disabled=true;return;}
 let W=null,state='menu',view=0,timeAcc=1,simAcc=0,muted=false,overT=0,gAcc=0,vw=1,vh=1,dpr=1,clock=0;
 const rnd=(()=>{let a=1234567;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};})();
 R.buildTerrain();
@@ -219,7 +219,9 @@ addEventListener('keydown',e=>{
   if(m)act(m);else if(/^Digit[1-4]$/.test(e.code)){W.select(WSEL[+e.code[5]-1]);beep(900,0.04);}
   else if(e.code==='Escape'||e.code==='KeyP')pause();});
 addEventListener('keyup',e=>{keys[e.code]=false;});
-addEventListener('blur',()=>{for(const k in keys)keys[k]=false;if(state==='fly')pause();});
+let startedAt=0;
+addEventListener('blur',()=>{for(const k in keys)keys[k]=false;if(state==='fly'&&!touchOn&&performance.now()-startedAt>1500)pause();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='fly')pause();});
 const gpPrev=[];let padUsed=false;
 function readPad(dt){let gp=null;try{const l=navigator.getGamepads?navigator.getGamepads():[];for(const g of l)if(g&&g.connected){gp=g;break;}}catch(e){}if(!gp)return null;
   const dz=v=>{const a=Math.abs(v);return a<0.1?0:Math.sign(v)*Math.pow((a-0.1)/0.9,1.5);},b=i=>gp.buttons[i]?gp.buttons[i].value:0,std=gp.mapping==='standard';
@@ -248,8 +250,12 @@ function readInput(dt){const pad=readPad(dt);if(state!=='fly')return;
   th.addEventListener('pointerdown',e=>{th.setPointerCapture(e.pointerId);tm(e);});th.addEventListener('pointermove',e=>{if(e.buttons||e.pointerType==='touch')tm(e);});
   setInterval(()=>{tk.style.bottom=(lever/1.3*100)+'%';},100);
   for(const b of tz.querySelectorAll('button')){const a=b.dataset.a;
-    if(a==='fire'||a==='cm'||a==='brk'){b.addEventListener('pointerdown',e=>{e.preventDefault();touch[a]=true;});for(const ev of['pointerup','pointercancel','pointerleave'])b.addEventListener(ev,()=>{touch[a]=false;});}
-    else b.addEventListener('click',()=>a==='pause'?pause():act(a));}}
+    /* pointerdown, not click: a second finger does not produce a click while the first one holds the stick */
+    const hold=a==='fire'||a==='cm'||a==='brk';
+    b.addEventListener('pointerdown',e=>{e.preventDefault();b.dataset.down='1';buzz(12);if(hold)touch[a]=true;else if(a==='pause')pause();else act(a);});
+    for(const ev of['pointerup','pointercancel','pointerleave'])b.addEventListener(ev,()=>{b.dataset.down='';if(hold)touch[a]=false;});
+    b.addEventListener('contextmenu',e=>e.preventDefault());}}
+let buzzT=0;function buzz(p){try{if(touchOn&&navigator.vibrate&&!muted)navigator.vibrate(p);}catch(e){}}
 /* ================= audio ================= */
 const Snd={ac:null,master:null,
   init(){if(this.ac)return;try{const A=window.AudioContext||window.webkitAudioContext;const ac=this.ac=new A();this.master=ac.createGain();this.master.gain.value=muted?0:0.9;this.master.connect(ac.destination);
@@ -292,7 +298,7 @@ function updRadio(dt){radioT-=dt;const el=$('radio'),talking=Voice.busy&&clock-V
 function show(id,on){$(id).hidden=!on;}
 function goImmersive(){if(touchOn){try{const el=document.documentElement,pr=el.requestFullscreen&&el.requestFullscreen();if(pr&&pr.then)pr.then(()=>{try{const o=screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape');if(o&&o.catch)o.catch(()=>{});}catch(e){}}).catch(()=>{});}catch(e){}}
   try{if(navigator.wakeLock){const w=navigator.wakeLock.request('screen');if(w&&w.catch)w.catch(()=>{});}}catch(e){}}
-function start(mode){goImmersive();hush();Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();newGame(mode);view=0;state='fly';show('menu',false);show('pause',false);show('debrief',false);$('app').dataset.fly='1';}
+function start(mode){startedAt=performance.now();goImmersive();hush();Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();newGame(mode);view=0;state='fly';show('menu',false);show('pause',false);show('debrief',false);$('app').dataset.fly='1';}
 function pause(){if(state!=='fly')return;hush();state='pause';show('pause',true);$('resume').focus();}
 function resume(){state='fly';show('pause',false);last=performance.now();}
 function toMenu(){hush();state='menu';show('pause',false);show('debrief',false);show('menu',true);$('app').dataset.fly='';newGame('runway');}
@@ -307,16 +313,16 @@ function debrief(){hush();state='debrief';const o=W.over,s=W.stats,p=W.player,mm
 function handleEvents(){const p=W.player,cp=camera.position;
   for(const e of W.events){
     if(e.type==='msg')radioQ.push(e.text);
-    else if(e.type==='launch'){const m=new T.Mesh(mslGeo,lam(0xe8e8e2));dyn.add(m);meshOf.set(e.m,m);if(e.m.owner===p)Snd.whoosh();}
-    else if(e.type==='release'){beep(160,0.12,0.12,'sine');}
-    else if(e.type==='boom'){explosion(e.pos,e.size,e.ground);const d=Math.hypot(e.pos.x-cp.x,e.pos.y-cp.y,e.pos.z-cp.z);Snd.boom(clamp(0.9*e.size*800/(d+300),0.03,0.9));shake=Math.max(shake,clamp(e.size*700/(d+150),0,1.6));if(e.ground&&e.size>2)emitters.push({pos:{...e.pos},vel:v3(),until:clock+90,rate:0.12,t:0,smoke:true});}
+    else if(e.type==='launch'){const m=new T.Mesh(mslGeo,lam(0xe8e8e2));dyn.add(m);meshOf.set(e.m,m);if(e.m.owner===p){Snd.whoosh();buzz(45);}}
+    else if(e.type==='release'){beep(160,0.12,0.12,'sine');buzz(45);}
+    else if(e.type==='boom'){explosion(e.pos,e.size,e.ground);const d=Math.hypot(e.pos.x-cp.x,e.pos.y-cp.y,e.pos.z-cp.z);Snd.boom(clamp(0.9*e.size*800/(d+300),0.03,0.9));shake=Math.max(shake,clamp(e.size*700/(d+150),0,1.6));if(shake>0.3)buzz(Math.round(40+shake*60));if(e.ground&&e.size>2)emitters.push({pos:{...e.pos},vel:v3(),until:clock+90,rate:0.12,t:0,smoke:true});}
     else if(e.type==='kill'){const m=meshOf.get(e.e);if(m)m.visible=false;emitters.push({pos:{...e.e.pos},vel:{...e.e.vel},until:clock+40,rate:0.03,t:0,fall:true});}
     else if(e.type==='gkill'){const m=meshOf.get(e.g);if(m){m.traverse(o=>{if(o.material)o.material=lam(0x1d1b19);});m.scale.y=0.55;}}
     else if(e.type==='cm'){for(let i=0;i<2;i++)spawn(e.pos,vadd(vmul(e.vel,0.6),v3((rnd()-0.5)*40,-25-rnd()*15,(rnd()-0.5)*40)),2.8,26,10,[1,0.9,0.6],1,{grav:-9,drag:0.5});
       for(let i=0;i<6;i++)spawn(e.pos,vadd(vmul(e.vel,0.5),rv(30)),1.6,5,30,[0.95,0.95,0.95],0.5,{drag:1.5});}
-    else if(e.type==='gun')gunSnd=0.09;
+    else if(e.type==='gun'){gunSnd=0.09;if(clock-buzzT>0.09){buzzT=clock;buzz(25);}}
     else if(e.type==='spark')spawn(e.pos,rv(20),0.4,10,22,[1,0.85,0.5],1);
-    else if(e.type==='deny')beep(220,0.15,0.06);}
+    else if(e.type==='deny'){beep(220,0.15,0.06);buzz([20,50,20]);}}
   W.events.length=0;}
 /* ================= frame ================= */
 const tv=new T.Vector3(),tq=new T.Quaternion(),tv2=new T.Vector3();
@@ -538,5 +544,6 @@ for(const b of document.querySelectorAll('[data-opt]'))b.onclick=()=>{opts[b.dat
 let instEv=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();instEv=e;$('install').hidden=false;});
 $('install').onclick=()=>{if(instEv){instEv.prompt();instEv=null;$('install').hidden=true;}};
 applyOpts();newGame('runway');requestAnimationFrame(frame);
+$('startRwy').disabled=$('startAir').disabled=false;$('loading').hidden=true;
 window.__raam={get W(){return W;},start,keys,setTOD,get state(){return state;}};
 })();

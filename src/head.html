@@ -68,6 +68,8 @@ details[open] summary{margin-bottom:10px}
 .tb{display:grid;grid-template-columns:repeat(2,54px);grid-auto-rows:1fr;gap:4px;direction:rtl}
 .tb button{padding:0;font-size:.78rem;background:rgba(8,12,14,.6);min-width:0}
 .tb .wide{grid-column:span 2}
+.tb button[data-down="1"]{background:rgba(210,180,124,.45);border-color:var(--sand)}
+#touch,#touch *{-webkit-tap-highlight-color:transparent;touch-action:none}
 .tb button[data-a="fire"]{background:rgba(255,92,79,.4);border-color:var(--red);font-size:.95rem}
 @media (max-width:700px){
   .sheet{width:100%;padding-inline:16px}
@@ -122,10 +124,11 @@ details[open] summary{margin-bottom:10px}
         <li>חזרה ונחיתה בחצרים.</li>
       </ol>
     </div>
+    <p id="loading" class="note" aria-live="polite">טוען את הזירה…</p>
     <p id="loadErr" class="err" hidden>לא ניתן להפעיל את מנוע התלת־ממד. נדרש דפדפן עם WebGL וחיבור לרשת.</p>
     <div class="acts">
-      <button id="startRwy" class="go">המראה מהמסלול</button>
-      <button id="startAir">התחלה באוויר</button>
+      <button id="startRwy" class="go" disabled>המראה מהמסלול</button>
+      <button id="startAir" disabled>התחלה באוויר</button>
       <button id="install" hidden>התקנה כאפליקציה</button>
     </div>
     <div class="seg" role="group" aria-label="רמת קושי">
@@ -175,7 +178,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, RT ו־LT למנוע, A לירי, B לנורים, X לנעילה, Y לחימוש הבא, LB למעצור, RB למבט, חצים למעלה ולמטה לכן נסע ולמדפים.</p>
     </details>
-    <p class="note">גרסה 0.4: מטוס אחד ומשימה אחת. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
+    <p class="note">גרסה 0.4.1: מטוס אחד ומשימה אחת. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
   </section>
 
   <section id="pause" class="modal" hidden>
