@@ -27,7 +27,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16p
 #app{position:relative;height:100%;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
 #gl,#hud{position:absolute;inset:0;width:100%;height:100%;display:block}
 #hud{pointer-events:none}
-.sheet{position:absolute;inset-block:0;inset-inline-start:0;width:min(30rem,100%);overflow-y:auto;touch-action:pan-y;
+.sheet{z-index:5;position:absolute;inset-block:0;inset-inline-start:0;width:min(30rem,100%);overflow-y:auto;touch-action:pan-y;
   padding-block:28px;padding-inline:22px;background:var(--panel);border-inline-end:1px solid var(--line);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);display:flex;flex-direction:column;gap:22px}
 .eyebrow{font-size:.82rem;letter-spacing:.08em;color:var(--sand);font-weight:700}
@@ -50,6 +50,17 @@ button:focus-visible{outline:2px solid var(--hud);outline-offset:2px}
 button.go{background:var(--sand);color:var(--sand-ink);border-color:var(--sand);flex:1 1 12rem}
 button.go:hover{filter:brightness(1.08)}
 button:disabled{opacity:.4;cursor:not-allowed}
+#loading{margin:0;display:flex;flex-direction:column;gap:6px;color:var(--sand);font-weight:700}
+#loading .bar{display:block;height:4px;background:var(--line);overflow:hidden}
+#loading .bar i{display:block;height:100%;width:35%;background:var(--sand);animation:ld 1.1s linear infinite}
+@keyframes ld{from{transform:translateX(120%)}to{transform:translateX(-320%)}}
+@media (prefers-reduced-motion:reduce){#loading .bar i{animation:none;width:100%}}
+.guide{display:flex;flex-direction:column;gap:14px;font-size:.93rem}
+.guide h4{margin:0 0 4px;font-size:.95rem;color:var(--sand)}
+.guide ul{margin:0;padding-inline-start:1.1em;display:flex;flex-direction:column;gap:4px}
+.guide b{font-family:var(--mono);font-weight:400;color:var(--hud);direction:ltr;unicode-bidi:isolate}
+.guide i{display:inline-block;width:.75em;height:.75em;vertical-align:-.05em;margin-inline-end:.15em}
+.guide .g1{background:var(--hud);height:.4em;vertical-align:.12em}.guide .g2{border:2px solid var(--amber)}.guide .g3{border:2px solid var(--red)}.guide .g4{border:2px solid var(--hud);border-radius:50%}
 #update{border:1px solid var(--sand);background:rgba(210,180,124,.1);padding:10px 12px;display:flex;flex-direction:column;gap:8px;font-weight:600}
 #update .bar{height:5px;background:var(--line);overflow:hidden}
 #update .bar i{display:block;height:100%;width:8%;background:var(--sand);transition:width .25s}
@@ -65,7 +76,7 @@ details summary{cursor:pointer;font-weight:700;padding-block:4px}
 details[open] summary{margin-bottom:10px}
 .note{font-size:.88rem;color:var(--dim)}
 .err{color:var(--red);font-weight:700}
-.modal{position:absolute;inset:0;display:grid;place-items:center;background:rgba(4,7,9,.6);padding:16px;overflow:auto;touch-action:pan-y}
+.modal{z-index:5;position:absolute;inset:0;display:grid;place-items:center;background:rgba(4,7,9,.6);padding:16px;overflow:auto;touch-action:pan-y}
 .card{width:min(30rem,100%);background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--sand);padding:24px 22px;display:flex;flex-direction:column;gap:18px}
 #debrief[data-win="1"] .card{border-top-color:var(--hud)}
 #debrief:not([data-win="1"]) .card{border-top-color:var(--red)}
@@ -164,11 +175,11 @@ details[open] summary{margin-bottom:10px}
       <div class="bar"><i id="updBar"></i></div>
       <button id="updNow" hidden>עדכן עכשיו</button>
     </div>
-    <p id="loading" class="note" aria-live="polite">טוען את הזירה…</p>
+    <p id="loading" aria-live="polite"><span id="loadText">טוען את הזירה…</span><span class="bar"><i></i></span></p>
     <p id="loadErr" class="err" hidden>לא ניתן להפעיל את מנוע התלת־ממד. נדרש דפדפן עם WebGL וחיבור לרשת.</p>
     <div class="acts">
-      <button id="startRwy" class="go" disabled>המראה מהמסלול</button>
-      <button id="startAir" disabled>התחלה באוויר</button>
+      <button id="startRwy" class="go">המראה מהמסלול</button>
+      <button id="startAir">התחלה באוויר</button>
       <button id="install" hidden>התקנה כאפליקציה</button>
     </div>
     <div class="seg" role="group" aria-label="רמת קושי">
@@ -196,7 +207,42 @@ details[open] summary{margin-bottom:10px}
       <h3>תצורת חימוש</h3>
       <dl id="loadout"></dl>
     </div>
-    <details open>
+    <details>
+      <summary>מדריך תצוגות: HUD, מכ"ם ומסך איומים</summary>
+      <div id="guide"><div class="guide">
+        <div><h4>ה־HUD, התצוגה שמול העיניים</h4><ul>
+          <li>משמאל: מהירות בקשר בתוך המסגרת, ומתחתיה <b>M</b> מאך, <b>G</b> עומס, <b>α</b> זווית התקפה.</li>
+          <li>מימין: גובה ברגל בתוך המסגרת, <b>R</b> גובה מעל הקרקע (מופיע נמוך), <b>VS</b> קצב נסיקה ברגל לדקה.</li>
+          <li>למעלה: סרגל כיוון. <b>09</b> פירושו 090, מזרח. החץ הקבוע במרכז הוא הכיוון שלך, והחץ עם הרגל מראה לאן לפנות אל נקודת הציון.</li>
+          <li>הקווים האופקיים הם סולם זוויות, כל 5 מעלות. מקווקו פירושו מתחת לאופק.</li>
+          <li>העיגול עם הכנפיים מראה לאן המטוס טס בפועל. סימן ה־<b>W</b> מראה לאן האף מצביע.</li>
+          <li>ריבוע הוא מטרת אוויר נעולה, מעוין הוא מטרת הקרקע שנבחרה, עיגול קטן עם מספר הוא נקודת ציון.</li>
+          <li>הפס האנכי מימין הוא טווח: הקו העליון הוא הטווח המרבי של החימוש, הקו שמתחתיו הוא הטווח שממנו המטרה מתקשה לברוח, והחץ הוא הטווח שלך עכשיו. <b>SHOOT</b> או <b>IN RNG</b> פירושם שאתה בטווח.</li>
+          <li>למטה משמאל: החימוש שנבחר, כמה נשאר, ו־<b>ARM</b> או <b>SAFE</b>. למטה מימין: נקודת הציון, המרחק במיילים ימיים והזמן אליה.</li>
+          <li>ליד מטרה נעולה: סוג, טווח, <b>VC</b> מהירות הסגירה בקשר, וגובה באלפי רגל.</li>
+        </ul></div>
+        <div><h4>RDR, מסך המכ"ם</h4><ul>
+          <li>זה מבט מלמעלה. אתה בתחתית, באמצע. למעלה פירושו רחוק יותר קדימה, ימין ושמאל הם עד 60 מעלות מהאף.</li>
+          <li>המספר בכותרת הוא הטווח של קצה המסך העליון, במיילים ימיים. <b>RDR 80NM</b>: הקו העליון רחוק 80 מייל, וכל קו רשת הוא רבע מזה.</li>
+          <li><i class="g1"></i> מלבן ירוק מלא: מטוס או כטב"ם שהמכ"ם רואה. עיגול סביבו פירושו שהוא נעול.</li>
+          <li><i class="g2"></i> ריבוע כתום: מטרת קרקע, משגר או בונקר. <i class="g3"></i> ריבוע אדום: המכ"ם של סוללת הנ"מ. עיגול סביב ריבוע מסמן את המטרה שנבחרה לפצצה.</li>
+          <li><i class="g4"></i> עיגול ריק קטן: נקודת הציון הבאה. הקו האנכי שזז הוא אלומת הסריקה.</li>
+          <li>מטרה נעלמת מהמסך כשהיא יוצאת מ־60 המעלות, כשהר מסתיר אותה, או כשהיא טסה בניצב אליך ונמוך ממך.</li>
+        </ul></div>
+        <div><h4>TEWS, מסך האיומים</h4><ul>
+          <li>אתה במרכז, ולמעלה זה האף. כל סמל מראה מאיזה כיוון מכ"ם של האויב מאיר אותך.</li>
+          <li><b>29</b> מיג־29, <b>SA</b> סוללת נ"מ, <b>M</b> טיל שבדרך אליך.</li>
+          <li>ככל שהסמל קרוב יותר למרכז, האיום חמור יותר. בטבעת החיצונית הוא רק מחפש. מעוין כתום פירושו שהוא עוקב אחריך. אדום מהבהב פירושו שהוא שיגר.</li>
+          <li>הצלילים: ביפ איטי כשעוקבים אחריך, ביפ מהיר כששוגר טיל.</li>
+          <li><b>CH</b> ו־<b>FL</b> הם המוץ והנורים שנשארו.</li>
+        </ul></div>
+        <div><h4>השורות שמתחת למסכים</h4><ul>
+          <li><b>THR</b> אחוז המנוע, ו־<b>AB</b> כשהמבער פועל. <b>GEAR</b>, <b>FLAP</b>, <b>BRK</b> נדלקים כשכן הנסע, המדפים או המעצור פתוחים.</li>
+          <li><b>FUEL</b> הדלק בקילוגרמים. <b>120</b>, <b>PY</b>, <b>SP</b> הם מספר טילי ה־AIM-120, הפייתון ופצצות ה־SPICE שנשארו.</li>
+        </ul></div>
+      </div></div>
+    </details>
+    <details>
       <summary>מקשים</summary>
       <div class="keys">
         <kbd>↑ ↓ ← →  /  W A S D</kbd><span>מוט היגוי. חץ למטה מושך את האף למעלה.</span>
@@ -215,13 +261,19 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט.</p>
     </details>
-    <p class="note">גרסה 0.6 (2e9799e): שני מטוסים ושתי משימות. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
+    <p class="note">גרסה 0.6.1 (9feb954): שני מטוסים ושתי משימות. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
   </section>
 
   <section id="pause" class="modal" hidden>
     <div class="card">
       <h2>הטיסה מושהית</h2>
       <div class="acts"><button id="resume" class="go">המשך</button><button id="restart">התחל מחדש</button><button id="quit">לתדריך</button></div>
+      <details>
+        <summary>מדריך תצוגות</summary>
+        <div id="guide2"></div>
+      </details>
+      <details>
+        <summary>מקשים</summary>
       <div class="keys">
         <kbd>↑ ↓ ← → / WASD</kbd><span>מוט היגוי</span>
         <kbd>Shift / R · F</kbd><span>מצערת</span>
@@ -232,9 +284,14 @@ details[open] summary{margin-bottom:10px}
         <kbd>H · J</kbd><span>טייס אוטומטי · השלכת חימוש</span>
         <kbd>V · O · 0</kbd><span>מבט · האצת זמן · השתקה</span>
       </div>
+      </details>
     </div>
   </section>
 
+  <script>
+/* lets a start button work while the world is still loading: the tap is remembered and the flight starts when ready */
+(function(){var q=null;window.__hfQueue=function(){return q;};['startRwy','startAir'].forEach(function(id){document.getElementById(id).addEventListener('click',function(){if(!(window.__raam&&window.__raam.ready)){q=id;document.getElementById('loadText').textContent='טוען את הזירה. הטיסה תתחיל מיד…';}});});})();
+</script>
   <section id="debrief" class="modal" hidden>
     <div class="card">
       <div><div class="eyebrow">תחקיר</div><h2 id="dTitle"></h2></div>
@@ -994,7 +1051,7 @@ addEventListener('keydown',e=>{
 addEventListener('keyup',e=>{keys[e.code]=false;});
 let startedAt=0;
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false;if(state==='fly'&&!touchOn&&performance.now()-startedAt>1500)pause();});
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='fly')pause();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='fly'&&performance.now()-startedAt>2500)pause();});
 const gpPrev=[];let padUsed=false;
 function readPad(dt){let gp=null;try{const l=navigator.getGamepads?navigator.getGamepads():[];for(const g of l)if(g&&g.connected){gp=g;break;}}catch(e){}if(!gp)return null;
   const dz=v=>{const a=Math.abs(v);return a<0.1?0:Math.sign(v)*Math.pow((a-0.1)/0.9,1.5);},b=i=>gp.buttons[i]?gp.buttons[i].value:0,std=gp.mapping==='standard';
@@ -1074,7 +1131,7 @@ function say(text){if(muted||!Voice.v)return false;
 function updRadio(dt){radioT-=dt;const el=$('radio'),talking=Voice.busy&&clock-Voice.t<25;if(!talking)Voice.busy=false;
   if(radioT<=0&&!talking){if(radioQ.length){const m=radioQ.shift();el.textContent=m;el.dataset.on='1';radioT=say(m)?3:6.5;if(!Voice.busy)beep(1400,0.04,0.03,'sine');}else el.dataset.on='';}}
 function show(id,on){$(id).hidden=!on;}
-function goImmersive(){if(touchOn){try{const el=document.documentElement,pr=el.requestFullscreen&&el.requestFullscreen();if(pr&&pr.then)pr.then(()=>{try{const o=screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape');if(o&&o.catch)o.catch(()=>{});}catch(e){}}).catch(()=>{});}catch(e){}}
+function goImmersive(){if(touchOn&&!document.fullscreenElement&&!matchMedia('(display-mode: fullscreen)').matches){try{const el=document.documentElement,pr=el.requestFullscreen&&el.requestFullscreen();if(pr&&pr.then)pr.then(()=>{try{const o=screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape');if(o&&o.catch)o.catch(()=>{});}catch(e){}}).catch(()=>{});}catch(e){}}
   try{if(navigator.wakeLock){const w=navigator.wakeLock.request('screen');if(w&&w.catch)w.catch(()=>{});}}catch(e){}}
 function start(mode){startedAt=performance.now();goImmersive();hush();Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();newGame(mode);view=0;state='fly';show('menu',false);show('pause',false);show('debrief',false);$('app').dataset.fly='1';}
 function pause(){if(state!=='fly')return;hush();state='pause';show('pause',true);$('resume').focus();}
@@ -1304,7 +1361,7 @@ function drawHUD(){
   if(view===0&&(opts.q==='high'||(clock*30|0)%2===0)){const main=ctx,su=u,cv=cockpit.userData.cv;mfdSolid=true;u=1.3;
     ctx=cv.r.ctx;mfdRadar(0,0,256);cv.r.tex.needsUpdate=true;ctx=cv.t.ctx;mfdRwr(0,0,256);cv.t.tex.needsUpdate=true;ctx=cv.e.ctx;mfdEng(0,0,256,160);cv.e.tex.needsUpdate=true;
     ctx=main;u=su;mfdSolid=false;}
-  if(view===1||touchOn){const pad=10*u,y0=touchOn?pad+2:vh-ms-pad;mfdRadar(pad,y0,ms);mfdRwr(vw-ms-pad,y0,ms);
+  if(view===1||touchOn){const pad=10*u,y0=touchOn?pad+2+(document.fullscreenElement||fsMode?0:22):vh-ms-pad;mfdRadar(pad,y0,ms);mfdRwr(vw-ms-pad,y0,ms);
     if(touchOn){const ty2=y0+ms+16*u;ctx.fillStyle='rgba(4,14,9,0.62)';ctx.fillRect(pad-4*u,ty2-10*u,ms+8*u,36*u);ctx.fillRect(vw-pad-ms-4*u,ty2-10*u,ms+8*u,36*u);
       txt('THR '+thr,pad,ty2,'left',13,p.eng>1.01?AMB:HUDC);let tx=pad;
       for(const q of[['GEAR',p.gearPos>0.9,p.gearPos>0.05&&p.gearPos<=0.9],['FLAP',p.flaps],['BRK',p.brakePos>0.5]]){txt(q[0],tx,ty2+17*u,'left',12,q[2]?AMB:q[1]?HUDC:'rgba(116,255,150,0.3)');tx+=46*u;}
@@ -1316,7 +1373,7 @@ function drawHUD(){
   /* objectives */
   if((clock*2|0)!==drawHUD.t){drawHUD.t=clock*2|0;const s=W.stats;$('obj').textContent=W.missionId==='duel'?`מיגים ${s.mig}/2`:`כטב"מים ${s.uav}/4 · מטרות ${s.tgt}/3 · מיגים ${s.mig}/2`;}
 }
-const touchOn=matchMedia('(pointer:coarse)').matches;
+const touchOn=matchMedia('(pointer:coarse)').matches,fsMode=matchMedia('(display-mode: fullscreen)').matches;
 $('voiceTest').onclick=()=>{Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();if(!Voice.v)pickVoice();if(!say('בקר: פטיש אחת, שומע אותך חמש על חמש.'))pickVoice();};
 const opts={diff:'normal',tod:'day',q:touchOn?'low':'high',plane:'F15I',mission:'strike'};
 try{const o=JSON.parse(localStorage.getItem('haniaflight-opts')||'{}');for(const k in opts)if(typeof o[k]==='string')opts[k]=o[k];}catch(e){}
@@ -1334,8 +1391,11 @@ for(const b of document.querySelectorAll('[data-opt]'))b.onclick=()=>{opts[b.dat
 let instEv=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();instEv=e;$('install').hidden=false;});
 $('install').onclick=()=>{if(instEv){instEv.prompt();instEv=null;$('install').hidden=true;}};
 applyOpts();newGame('runway',true);requestAnimationFrame(frame);
-$('startRwy').disabled=$('startAir').disabled=false;$('loading').hidden=true;
-window.__raam={get W(){return W;},start,keys,setTOD,get state(){return state;}};
+window.__raam={get W(){return W;},start,keys,setTOD,get state(){return state;},ready:true};
+$('loading').hidden=true;$('guide2').innerHTML=$('guide').innerHTML;
+/* a start button tapped while the world was still loading starts the flight now */
+{const q=window.__hfQueue&&window.__hfQueue();if(q&&!$(q).hidden)start(lastMode=q==='startAir'?'air':'runway');}
+addEventListener('pointerdown',()=>{if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();},true);
 })();
 
 },30);});
