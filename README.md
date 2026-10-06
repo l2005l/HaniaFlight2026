@@ -1,8 +1,8 @@
 # HaniaFlight
 
-סימולטור טיסה תלת־ממדי של מטוסי קרב ישראליים, שרץ בדפדפן. גרסה 1.0: ארבעה מטוסים (F-15I רעם, F-16I סופה, F-35I אדיר, F-15 בז), חמש משימות (תקיפה, הגנת שמיים, קרב אוויר, תדלוק, הדרכה) וטיסת לילה.
+סימולטור טיסה תלת־ממדי של מטוסי קרב ישראליים, שרץ בדפדפן. גרסה 1.1: ארבעה מטוסים (F-15I רעם, F-16I סופה, F-35I אדיר, F-15 בז), חמש משימות (תקיפה, הגנת שמיים, קרב אוויר, תדלוק, הדרכה) וטיסת לילה.
 
-A browser flight simulator of Israeli fighter jets. Version 1.0: four aircraft (F-15I Ra'am, F-16I Sufa, F-35I Adir, F-15 Baz), five missions (strike, air defence, air combat, refuelling, training) and night flying.
+A browser flight simulator of Israeli fighter jets. Version 1.1: four aircraft (F-15I Ra'am, F-16I Sufa, F-35I Adir, F-15 Baz), five missions (strike, air defence, air combat, refuelling, training) and night flying.
 
 ## לשחק / Play
 
@@ -39,6 +39,9 @@ The game is a PWA: open the link, then use the in-game install button or the bro
 - פצצות מונחות לייזר עם תמונת פוד הכוונה
 - קוקפיט נפרד לכל מטוס, כבישים ושדות סביב היישובים
 - הקלטת הגיחה וצפייה חוזרת מהתחקיר
+- שתי זירות (דרום מדברי, צפון הררי), מערכה של חמישה שלבים מקושרים
+- משימות דיכוי נ"מ (טילי AGM-88) וסיור חמוש נגד שיירה נעה
+- מספר שתיים שטס במבנה ומקבל פקודות; סוחוי-27, מיג-21 וסוללות SA-6/SA-8/SA-10
 - הגדרות שליטה: רגישות מוט, היפוך ציר, היגוי בהטיית הטלפון, כפתורי מגע גדולים
 - מבצע פטיש ברזל: המראה, יירוט, חדירה, תקיפה, נחיתה עם ILS ותחקיר
 - קרב אוויר: מפגש מהיר מול זוג מיג-29
@@ -71,6 +74,7 @@ python3 build.py                 # rebuild index.html after editing src/
 node tests/flight-model.js       # performance, missile and bomb ranges
 node tests/takeoff-landing.js    # takeoff, landing and mission-complete flow
 node tests/mission-smoke.js      # crude autopilot flies the mission
+node tests/campaign.js [north]   # second theatre, SEAD, convoy, wingman, enemy types
 node tests/content.js            # all aircraft, stealth, air defence, training
 node tests/f16-and-duel.js       # F-16I performance and the air-combat mission
 node tests/systems.js            # cold start, switches, damage, radar modes, refuelling

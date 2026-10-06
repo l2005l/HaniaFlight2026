@@ -150,7 +150,7 @@ details[open] summary{margin-bottom:10px}
   <div id="radio" aria-live="polite"></div>
   <div id="toast" role="status" aria-live="polite"></div>
   <button id="lookBack" hidden>חזרה למבט קדימה</button>
-  <div id="chips" hidden><button id="mapBtn">מפה</button><button id="padBtn">מבט למטרה</button><button id="nvgBtn" hidden>משקפת לילה</button></div>
+  <div id="chips" hidden><button id="mapBtn">מפה</button><button id="wingBtn" hidden>שתיים</button><button id="padBtn">מבט למטרה</button><button id="nvgBtn" hidden>משקפת לילה</button></div>
   <div id="check" hidden>
     <div class="chead"><b>רשימת תיוג להתנעה</b><button id="autoStart">התנעה אוטומטית</button></div>
     <ol id="checkList"></ol>
@@ -181,9 +181,16 @@ details[open] summary{margin-bottom:10px}
       <span>משימה</span>
       <button id="mStrike" data-opt="mission" data-val="strike">פטיש ברזל</button>
       <button id="mIcpt" data-opt="mission" data-val="intercept">הגנת שמיים</button>
+      <button id="mSead" data-opt="mission" data-val="sead">דיכוי נ"מ</button>
+      <button id="mConvoy" data-opt="mission" data-val="convoy">סיור חמוש</button>
       <button id="mDuel" data-opt="mission" data-val="duel">קרב אוויר</button>
       <button id="mTanker" data-opt="mission" data-val="tanker">תדלוק אווירי</button>
       <button id="mTrain" data-opt="mission" data-val="train">הדרכה</button>
+    </div>
+    <div class="seg" role="group" aria-label="זירה">
+      <span>זירה</span>
+      <button data-opt="theatre" data-val="south">דרום · מדבר</button>
+      <button data-opt="theatre" data-val="north">צפון · הרים</button>
     </div>
     <div class="seg" role="group" aria-label="מטוס">
       <span>מטוס</span>
@@ -211,6 +218,24 @@ details[open] summary{margin-bottom:10px}
         <li>את טילי השיוט מיירטים מהחזית. במרדף מאחור הם כמעט בלתי מושגים.</li>
       </ol>
     </div>
+    <div id="briefSead" class="brief" hidden>
+      <h2>דיכוי הגנה אווירית</h2>
+      <p>שלוש סוללות נ"מ חוסמות את הדרך: אחת ארוכת טווח (SA-10) ושתיים בינוניות (SA-6). אתה נושא ארבעה טילי AGM-88 שמתבייתים על שידור המכ"ם. אחרי ההשמדה הראשונה מוזנק לעברך זוג מיג-21.</p>
+      <ol class="steps">
+        <li>בחר חימוש 4 ונעל על מכ"ם. הטיל ישוגר רק כשהמכ"ם משדר, כלומר כשהוא כבר רואה אותך.</li>
+        <li>גובה ומהירות מאריכים את טווח הטיל. מגובה רב הוא מגיע מעט רחוק יותר מטילי הסוללה.</li>
+        <li>הטיל עצמאי: שגר, פנה החוצה והתרחק מיד.</li>
+      </ol>
+    </div>
+    <div id="briefConvoy" class="brief" hidden>
+      <h2>סיור חמוש</h2>
+      <p>שיירה של שש משאיות נעה מערבה בציר הררי, מלווה בסוללה קצרת טווח (SA-8). צריך להשמיד את כולן לפני שהמובילה תגיע לקו.</p>
+      <ol class="steps">
+        <li>המטרות נעות. פצצת דאייה מכוונת לנקודה קבועה ותחטיא; פצצת לייזר עוקבת אחרי המשאית כל עוד הפוד רואה אותה.</li>
+        <li>התותח יעיל: גישה מאחור לאורך הציר, צלילה רדודה, אש מ-800 מטר.</li>
+        <li>הסוללה מגיעה ל-16 ק"מ בערך. השמד אותה קודם או תקוף מהצד הרחוק.</li>
+      </ol>
+    </div>
     <div id="briefTrain" class="brief" hidden>
       <h2>טיסת הדרכה</h2>
       <p>טיסה ראשונה עם מדריך ברדיו, בלי אויב. הוא נותן משימה אחת בכל פעם ומחכה שתבצע: טיפוס, פנייה לכיוון, נעילת מכ"ם, שיגור טיל, ירי בתותח ונצירת הנשק. כעשר דקות.</p>
@@ -236,6 +261,22 @@ details[open] summary{margin-bottom:10px}
       <button id="startAir">התחלה באוויר</button>
       <button id="install" hidden>התקנה כאפליקציה</button>
       <a id="apk" class="btn" href="https://github.com/l2005l/HaniaFlight2026/releases/download/android-latest/HaniaFlight.apk" hidden>הורדת האפליקציה לאנדרואיד</a>
+    </div>
+    <div class="seg" id="foeRow" role="group" aria-label="מטוסי האויב" hidden>
+      <span>יריב</span>
+      <button data-opt="foe" data-val="mig29">2 × מיג-29</button>
+      <button data-opt="foe" data-val="su27">2 × סוחוי-27</button>
+      <button data-opt="foe" data-val="mig21">3 × מיג-21</button>
+    </div>
+    <div class="seg" id="wingRow" role="group" aria-label="מספר שתיים">
+      <span>מספר שתיים</span>
+      <button data-opt="wing" data-val="on">טס איתך</button>
+      <button data-opt="wing" data-val="off">לבד</button>
+    </div>
+    <div id="campBox" class="brief">
+      <h2>מערכה</h2>
+      <p><b id="campStage"></b> <span id="campText"></span></p>
+      <div class="acts"><button id="campGo" class="go">טוס את שלב המערכה</button><button id="campReset">התחל את המערכה מחדש</button></div>
     </div>
     <div class="seg" role="group" aria-label="רמת קושי">
       <span>רמת קושי</span>
@@ -377,7 +418,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט.</p>
     </details>
-    <p class="note">גרסה 1.0 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות): שני מטוסים ושתי משימות. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
+    <p class="note">גרסה 1.1 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות): שני מטוסים ושתי משימות. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
   </section>
 
   <div id="replay" hidden>
@@ -408,6 +449,7 @@ details[open] summary{margin-bottom:10px}
         <kbd>Tab</kbd><span>מפה טקטית</span>
         <kbd>Z</kbd><span>מבט נעול על המטרה</span>
         <kbd>Backspace ×2</kbd><span>נטישה</span>
+        <kbd>7 · 8 · 9</kbd><span>מספר שתיים: תקוף את המטרה שלי · ציד חופשי · חזור למבנה</span>
         <kbd>V · O · 0</kbd><span>מבט · האצת זמן · השתקה</span>
       </div>
       </details>
@@ -421,7 +463,7 @@ details[open] summary{margin-bottom:10px}
   <section id="debrief" class="modal" hidden>
     <div class="card">
       <div><div class="eyebrow">תחקיר</div><h2 id="dTitle"></h2></div>
-      <p id="dReason"></p>
+      <p id="dReason"></p><p id="dCamp" class="note"></p>
       <dl id="dStats"></dl>
       <div class="acts"><button id="again" class="go">טיסה נוספת</button><button id="watch">צפייה חוזרת</button><button id="back">לתדריך</button></div>
     </div>
