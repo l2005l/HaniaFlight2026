@@ -10,7 +10,7 @@ console.log('F-16I level: SL mil',level(300,1,{}),'SL AB',level(300,1.3,{}),'11k
 for(const plane of ['F15I','F16I']){const W=new World({mission:'duel',plane,diff:'easy'}),p=W.player;let cm=0,log=[];
  for(let t=0;t<400&&!W.over;t+=1/60){if(W.contacts.length&&!W.lock)W.lock=W.contacts[0].e;let dir=v3(1,0,0);
   if(W.lock){dir=vnorm(vsub(W.lock.pos,p.pos));const sel=W.w.aim120?'AIM120':W.w.python?'PYTHON':'GUN';if(W.w.sel!==sel)W.select(sel);
-   const ok=sel==='GUN'?vdist(W.lock.pos,p.pos)<800:W.dlz&&W.dlz.R<W.dlz.rmax*0.5&&!W.missiles.some(m=>m.owner===p&&m.alive);W.trigger(!!ok,1/60);if(sel!=='GUN')W.trigger(false,1/60);}
+   const ok=sel==='GUN'?vdist(W.lock.pos,p.pos)<800:W.dlz&&W.dlz.R<W.dlz.rmax*0.5&&!W.missiles.some(m=>m.owner===p&&m.alive);W.trigger(sel==='GUN'&&!!ok,sel!=='GUN'&&!!ok,1/60);if(sel!=='GUN')W.trigger(false,false,1/60);}
   if(W.mwarn&&W.mwarn.R<9000){cm-=1/60;if(cm<=0){cm=0.5;W.dispense(p);}}
   if(p.agl<900)dir=vnorm(v3(dir.x,0.5,dir.z));apSteer(p,dir);p.ctl.throttle=1.3;W.step(1/60);
   for(const e of W.events)if(e.type==='msg')log.push((W.time|0)+'s '+e.text.slice(0,34));W.events.length=0;}

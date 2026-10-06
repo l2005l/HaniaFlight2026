@@ -9,11 +9,11 @@ for(let t=0;t<1500&&!W.over;t+=dt){
   // weapons logic
   if(W.w.sel!=='SPICE'){ if(W.contacts.length&&W.lock!==W.contacts[0].e)W.lock=W.contacts[0].e;
     if(W.lock){const Rr=vdist(W.lock.pos,p.pos);dir=vnorm(R.vsub(W.lock.pos,p.pos));
-      if(W.dlz&&W.dlz.R<W.dlz.rmax*0.5&&W.w.aim120>0&&!W.missiles.some(m=>m.owner===p&&m.target===W.lock)){W.w.sel='AIM120';W.trigger(true,dt);W.trigger(false,dt);}
-      else if(W.w.aim120===0&&Rr<900){W.w.sel='GUN';W.trigger(true,dt);} }
+      if(W.dlz&&W.dlz.R<W.dlz.rmax*0.5&&W.w.aim120>0&&!W.missiles.some(m=>m.owner===p&&m.target===W.lock)){W.w.sel='AIM120';W.trigger(false,true,dt);W.trigger(false,false,dt);}
+      else if(W.w.aim120===0&&Rr<900){W.w.sel='GUN';W.trigger(true,false,dt);} }
     if(W.wp>=2&&!W.contacts.length)W.select('SPICE');
     if(p.pos.y<terrainH(p.pos.x+p.vel.x*8,p.pos.z+p.vel.z*8)+700)dir=vnorm(v3(dir.x,0.5,dir.z));
-  } else { const b=W.bombSol(); if(b){dir=vnorm(v3(W.gtgt.pos.x-p.pos.x,R.clamp((9000-p.pos.y)/2500,-0.25,0.25)*40000,W.gtgt.pos.z-p.pos.z));dir=vnorm(v3(dir.x,R.clamp((9000-p.pos.y)/2500,-0.25,0.25),dir.z)); if(b.ok&&!W.bombs.some(x=>x.target===W.gtgt)){W.trigger(true,dt);W.trigger(false,dt);W.cycleTarget();} } }
+  } else { const b=W.bombSol(); if(b){dir=vnorm(v3(W.gtgt.pos.x-p.pos.x,R.clamp((9000-p.pos.y)/2500,-0.25,0.25)*40000,W.gtgt.pos.z-p.pos.z));dir=vnorm(v3(dir.x,R.clamp((9000-p.pos.y)/2500,-0.25,0.25),dir.z)); if(b.ok&&!W.bombs.some(x=>x.target===W.gtgt)){W.trigger(false,true,dt);W.trigger(false,false,dt);W.cycleTarget();} } }
   if(W.mwarn&&W.mwarn.R<9000){cmT-=dt;if(cmT<=0){cmT=0.5;W.dispense(p);}}
   apSteer(p,dir);p.ctl.throttle=p.V<270?1.3:0.95;
   W.step(dt);ev();

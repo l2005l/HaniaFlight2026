@@ -1,8 +1,8 @@
 # HaniaFlight
 
-סימולטור טיסה תלת־ממדי של מטוסי קרב ישראליים, שרץ בדפדפן. גרסה 0.5: F-15I רעם ו-F-16I סופה, משימת תקיפה מלאה ומשימת קרב אוויר.
+סימולטור טיסה תלת־ממדי של מטוסי קרב ישראליים, שרץ בדפדפן. גרסה 0.6: F-15I רעם ו-F-16I סופה, משימת תקיפה מלאה ומשימת קרב אוויר.
 
-A browser flight simulator of Israeli fighter jets. Version 0.5: the F-15I Ra'am and F-16I Sufa, a full strike mission and a quick air-combat mission.
+A browser flight simulator of Israeli fighter jets. Version 0.6: the F-15I Ra'am and F-16I Sufa, a full strike mission and a quick air-combat mission.
 
 ## לשחק / Play
 
@@ -27,6 +27,8 @@ The game is a PWA: open the link, then use the in-game install button or the bro
 - מבצע פטיש ברזל: המראה, יירוט, חדירה, תקיפה, נחיתה עם ILS ותחקיר
 - קרב אוויר: מפגש מהיר מול זוג מיג-29
 - יום ושקיעה, דיווחי קשר בקול (כשיש קול עברי במכשיר)
+- קוקפיט תלת־ממדי עם מבט חופשי, מסכים על לוח המחוונים ו-HUD מקובע לציר המטוס
+- בקרת נשק כמו במטוס: מאסטר ארם, הדק לתותח, פיקל לטילים ולפצצות
 - שלוש רמות קושי, מצב גרפיקה חסכוני, מקלדת, מגע ושלט משחק
 
 ## מבנה / Layout
@@ -61,8 +63,15 @@ node tests/f16-and-duel.js       # F-16I performance and the air-combat mission
 | Arrows / WASD | Stick (down arrow pulls the nose up) |
 | Q / E | Rudder, nosewheel steering |
 | Shift or R / F | Throttle up / down (above 100% is afterburner) |
-| G / L / B | Gear / flaps / speedbrake and wheel brakes |
-| 1-4, Enter | AIM-120, Python-5, gun, SPICE / next weapon |
+| M | Master arm. Nothing leaves the jet while it is SAFE |
+| Space | Trigger: gun |
+| Enter | Pickle (weapon release): the selected missile or bomb |
+| 1-4 | AIM-120, Python-5, gun sight, air-to-ground |
 | T / U | Lock next target / unlock |
-| Space / C | Fire or release / chaff and flares |
-| V / O / P / M | View / time acceleration / pause / mute |
+| C | Chaff and flares |
+| G / L / B | Gear / flaps / speedbrake and wheel brakes |
+| H / J | Autopilot (altitude and heading hold) / jettison air-to-ground stores |
+| Mouse drag | Look around the cockpit; the head recentres on release |
+| V / O / P / 0 | View / time acceleration / pause / mute |
+
+Gamepad: left stick flies, right stick looks, RT/LT throttle, RB trigger, A pickle, B countermeasures, X lock, Y next weapon, LB speedbrake; d-pad up gear, down flaps, right master arm, left view.

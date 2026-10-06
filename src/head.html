@@ -75,7 +75,9 @@ details[open] summary{margin-bottom:10px}
 .tb .wide{grid-column:span 2}
 .tb button[data-down="1"]{background:rgba(210,180,124,.45);border-color:var(--sand)}
 #touch,#touch *{-webkit-tap-highlight-color:transparent;touch-action:none}
-.tb button[data-a="fire"]{background:rgba(255,92,79,.4);border-color:var(--red);font-size:.95rem}
+.tb button[data-a="pickle"]{background:rgba(255,92,79,.4);border-color:var(--red);font-size:.95rem}
+.tb button[data-a="gun"]{border-color:var(--red)}
+.tb button[data-on="1"]{background:rgba(255,92,79,.5);border-color:var(--red);color:#fff}
 @media (max-width:700px){
   .sheet{width:100%;padding-inline:16px}
   #obj{top:auto;bottom:calc(100% - 34px);font-size:.75rem}
@@ -103,13 +105,13 @@ details[open] summary{margin-bottom:10px}
     <div class="tb">
       <button id="tbGear" data-a="gear">כן נסע</button><button id="tbFlaps" data-a="flaps">מדפים</button>
       <button id="tbBrk" data-a="brk">בלם</button><button id="tbView" data-a="view">מבט</button>
-      <button id="tbPause" class="wide" data-a="pause">השהיה</button>
+      <button id="tbArm" data-a="arm">מאסטר</button><button id="tbPause" data-a="pause">השהיה</button>
     </div>
     <div class="tgap"></div>
     <div class="tb">
-      <button id="tbFire" class="wide" data-a="fire">אש</button>
-      <button id="tbTgt" data-a="tgt">נעילה</button><button id="tbWpn" data-a="wpn">חימוש</button>
-      <button id="tbCm" class="wide" data-a="cm">מוץ ונורים</button>
+      <button id="tbPickle" class="wide" data-a="pickle">פיקל</button>
+      <button id="tbGun" data-a="gun">הדק</button><button id="tbTgt" data-a="tgt">נעילה</button>
+      <button id="tbWpn" data-a="wpn">חימוש</button><button id="tbCm" data-a="cm">נורים</button>
     </div>
     <div id="tThr"><div id="tThrK"></div></div>
   </div>
@@ -184,19 +186,22 @@ details[open] summary{margin-bottom:10px}
       <summary>מקשים</summary>
       <div class="keys">
         <kbd>↑ ↓ ← →  /  W A S D</kbd><span>מוט היגוי. חץ למטה מושך את האף למעלה.</span>
-        <kbd>Q  E</kbd><span>הגה כיוון, וניהוג על הקרקע</span>
-        <kbd>Shift / R</kbd><span>הוספת מנוע. מעל 100% נכנס מבער.</span>
-        <kbd>F</kbd><span>הפחתת מנוע</span>
-        <kbd>G · L · B</kbd><span>כן נסע · מדפים · מעצור אוויר ובלמים (בלחיצה רצופה)</span>
-        <kbd>1 2 3 4 / Enter</kbd><span>AIM-120 · פייתון · תותח · SPICE</span>
+        <kbd>Q  E</kbd><span>דוושות הגה, וניהוג על הקרקע</span>
+        <kbd>Shift / R · F</kbd><span>מצערת קדימה · אחורה. מעל 100% נכנס מבער.</span>
+        <kbd>M</kbd><span>מאסטר ארם. במצב SAFE שום חימוש לא יוצא מהמטוס.</span>
+        <kbd>Space</kbd><span>הדק: תותח</span>
+        <kbd>Enter</kbd><span>פיקל: שיגור הטיל או שחרור הפצצה שנבחרו</span>
+        <kbd>1 2 3 4</kbd><span>AIM-120 · פייתון · כוונת תותח · אוויר־קרקע</span>
         <kbd>T · U</kbd><span>נעילה על המטרה הבאה · שחרור נעילה</span>
-        <kbd>Space</kbd><span>ירי או שחרור</span>
         <kbd>C</kbd><span>מוץ ונורים</span>
-        <kbd>V · O · P · M</kbd><span>מבט · האצת זמן · השהיה · השתקה</span>
+        <kbd>G · L · B</kbd><span>כן נסע · מדפים · מעצור אוויר ובלמים (בלחיצה רצופה)</span>
+        <kbd>H · J</kbd><span>טייס אוטומטי (שומר גובה וכיוון) · השלכת חימוש קרקע</span>
+        <kbd>גרירת עכבר</kbd><span>הזזת הראש בקוקפיט. הראש חוזר למרכז כשמשחררים.</span>
+        <kbd>V · O · P · 0</kbd><span>מבט · האצת זמן · השהיה · השתקה</span>
       </div>
-      <p class="note">שלט משחק: מוט שמאלי להיגוי, RT ו־LT למנוע, A לירי, B לנורים, X לנעילה, Y לחימוש הבא, LB למעצור, RB למבט, חצים למעלה ולמטה לכן נסע ולמדפים.</p>
+      <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט.</p>
     </details>
-    <p class="note">גרסה 0.5 (__BUILD__): שני מטוסים ושתי משימות. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
+    <p class="note">גרסה 0.6 (__BUILD__): שני מטוסים ושתי משימות. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
   </section>
 
   <section id="pause" class="modal" hidden>
@@ -205,12 +210,13 @@ details[open] summary{margin-bottom:10px}
       <div class="acts"><button id="resume" class="go">המשך</button><button id="restart">התחל מחדש</button><button id="quit">לתדריך</button></div>
       <div class="keys">
         <kbd>↑ ↓ ← → / WASD</kbd><span>מוט היגוי</span>
-        <kbd>Q E</kbd><span>הגה כיוון</span>
-        <kbd>Shift / R · F</kbd><span>מנוע למעלה · למטה</span>
-        <kbd>G · L · B</kbd><span>כן נסע · מדפים · בלמים</span>
+        <kbd>Shift / R · F</kbd><span>מצערת</span>
+        <kbd>M</kbd><span>מאסטר ארם</span>
+        <kbd>Space · Enter</kbd><span>הדק (תותח) · פיקל (טיל או פצצה)</span>
         <kbd>1–4 · T · U</kbd><span>חימוש · נעילה · שחרור</span>
-        <kbd>Space · C</kbd><span>ירי · מוץ ונורים</span>
-        <kbd>V · O · M</kbd><span>מבט · האצת זמן · השתקה</span>
+        <kbd>C · G · L · B</kbd><span>נורים · כן נסע · מדפים · בלמים</span>
+        <kbd>H · J</kbd><span>טייס אוטומטי · השלכת חימוש</span>
+        <kbd>V · O · 0</kbd><span>מבט · האצת זמן · השתקה</span>
       </div>
     </div>
   </section>

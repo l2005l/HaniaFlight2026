@@ -324,7 +324,7 @@ class World{
     this.ground=duel?[]:[G('SAM RADAR',0,0,'radar',false,1),G('TEL-1',260,-140,'tel',true,1),G('TEL-2',-310,190,'tel',true,1),G('BUNKER',20,430,'bunker',true,1),
       G('LNCH',160,120,'launcher',false,1),G('LNCH',-170,90,'launcher',false,1),G('LNCH',10,-190,'launcher',false,1)];
     this.sam=new SamSite(duel?{alive:false,pos:v3(SITES.sam.x,SITES.sam.h,SITES.sam.z)}:this.ground[0]);this.sam.left=this.d.samN;
-    this.contacts=[];this.lock=null;this.gtgt=null;this.irTgt=null;this.dlz=null;this.migsActive=duel;
+    this.arm=air;this.contacts=[];this.lock=null;this.gtgt=null;this.irTgt=null;this.dlz=null;this.migsActive=duel;
     this.stats={uav:0,leak:0,mig:0,tgt:0,sam:false,shots:0,start:air?'air':'runway'};this.over=null;this.flags={};this.tS=0;this.tM=0;this.tD=0;this.gunT=0;this.cmT=0;this.stopT=0;
     this.msg(duel?'בקר: פטיש אחת, זוג מיג-29 מולך, 45 קילומטר, באותו גובה. רשאי אש.':air?'בקר: פטיש אחת, אתה בדרך לנקודה 1. ארבעה כטב"מי תקיפה נעים מערבה בגובה נמוך. רשאי אש.':'מגדל חצרים: פטיש אחת, רשאי להמריא ממסלול 09. מבער מלא, הרמת אף ב-150 קשר.');
     if(air)this.flags.airborne=true;
@@ -373,15 +373,20 @@ class World{
     if(!this.lock){let b=cs[0],ba=9;for(const c of cs){const a=Math.hypot(c.az,c.el);if(a<ba){ba=a;b=c;}}this.lock=b.e;}
     else this.lock=cs[(cs.findIndex(c=>c.e===this.lock)+1)%cs.length].e;this.dlz=null;}
   unlock(){this.lock=null;this.dlz=null;}
-  trigger(down,dt){
-    const w=this.w,p=this.player;if(!p.alive||!down){this.trigHeld=false;return;}
-    if(w.sel==='GUN'){this.gunT-=dt;while(this.gunT<=0&&w.gun>0){this.gunT+=0.02;w.gun=Math.max(0,w.gun-2);this.bullet(p,1030);this.events.push({type:'gun'});}if(this.gunT<0)this.gunT=0;return;}
-    if(this.trigHeld)return;this.trigHeld=true;
-    if(p.onGround){this.events.push({type:'deny'});return;}
+  /* trigger fires the gun; pickle (weapon release) sends the selected missile or bomb. Nothing leaves the jet with master arm SAFE. */
+  trigger(gun,pickle,dt){
+    const w=this.w,p=this.player;if(!p.alive){this.pickHeld=false;return;}
+    if(!this.arm){if((gun||pickle&&!this.pickHeld)&&this.time-(this.safeT??-9)>1.2){this.safeT=this.time;this.events.push({type:'safe'});}this.pickHeld=pickle;return;}
+    if(gun&&!p.onGround){this.gunT-=dt;while(this.gunT<=0&&w.gun>0){this.gunT+=0.02;w.gun=Math.max(0,w.gun-2);this.bullet(p,1030);this.events.push({type:'gun'});}if(this.gunT<0)this.gunT=0;}
+    if(!pickle){this.pickHeld=false;return;}
+    if(this.pickHeld)return;this.pickHeld=true;
+    if(p.onGround||w.sel==='GUN'){this.events.push({type:'deny'});return;}
     if(w.sel==='AIM120'){if(w.aim120>0&&this.lock){this.launch(MSL.AIM120,p,this.lock);w.aim120--;this.stats.shots++;}else this.events.push({type:'deny'});}
     else if(w.sel==='PYTHON'){if(w.python>0&&this.irTgt){this.launch(MSL.PYTHON5,p,this.irTgt);w.python--;this.stats.shots++;}else this.events.push({type:'deny'});}
     else if(w.sel==='SPICE'){const b=this.bombSol();if(w.spice>0&&b&&b.ok){this.bombs.push(new Bomb(p,this.gtgt,vadd(p.pos,vmul(qrot(p.q,UP),-2)),p.vel));w.spice--;this.stats.shots++;this.events.push({type:'release'});}else this.events.push({type:'deny'});}
     this.syncStores();}
+  /* emergency jettison of the air-to-ground stores */
+  jettison(){const w=this.w,p=this.player;if(!p.alive||p.onGround||!w.spice)return false;w.spice=0;this.gtgt=null;this.syncStores();this.events.push({type:'release'});this.msg('בקר: קיבלתי, השלכת את חימוש האוויר־קרקע.');return true;}
   bombSol(){const g=this.gtgt,p=this.player;if(!g||!g.alive)return null;const r=vsub(g.pos,p.pos),hd=Math.hypot(r.x,r.z),rmax=spiceRange(-r.y,p.V);
     const f=qrot(p.q,FWD),brg=Math.acos(clamp((f.x*r.x+f.z*r.z)/(Math.hypot(f.x,f.z)*hd||1),-1,1));
     return{hd,rmax,rmin:2500,brg,ok:hd<rmax&&hd>2500&&brg<50*D2R&&Math.abs(p.euler().roll)<1.05,tof:hd/250};}
@@ -409,7 +414,7 @@ class World{
   }
   mission(){
     const p=this.player,f=this.flags,S=this.stats;
-    if(!f.airborne&&!p.onGround&&p.agl>150){f.airborne=true;this.msg('בקר: פטיש אחת, קלטתי אותך. כן נסע ומדפים למעלה. פנה לנקודה 1, ארבעה כטב"מי תקיפה נעים מערבה בגובה נמוך. רשאי אש.');}
+    if(!f.airborne&&!p.onGround&&p.agl>150){f.airborne=true;this.msg('בקר: פטיש אחת, קלטתי אותך. כן נסע ומדפים למעלה, חמש את מערכת הנשק. פנה לנקודה 1, ארבעה כטב"מי תקיפה נעים מערבה בגובה נמוך. רשאי אש.');}
     if(this.missionId==='duel'){
       if(!f.bingo&&p.fuel<this.bingo){f.bingo=true;this.msg('בינגו דלק.');}
       if(!p.alive){if(!this.over)this.over={win:false,title:'המטוס אבד',reason:p.crash};return;}
