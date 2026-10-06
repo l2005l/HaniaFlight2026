@@ -1,8 +1,8 @@
 # HaniaFlight
 
-סימולטור טיסה תלת־ממדי של מטוסי קרב ישראליים, שרץ בדפדפן. גרסה 0.6: F-15I רעם ו-F-16I סופה, משימת תקיפה מלאה ומשימת קרב אוויר.
+סימולטור טיסה תלת־ממדי של מטוסי קרב ישראליים, שרץ בדפדפן. גרסה 0.7: F-15I רעם ו-F-16I סופה, משימת תקיפה מלאה, קרב אוויר ותדלוק אווירי.
 
-A browser flight simulator of Israeli fighter jets. Version 0.6: the F-15I Ra'am and F-16I Sufa, a full strike mission and a quick air-combat mission.
+A browser flight simulator of Israeli fighter jets. Version 0.7: the F-15I Ra'am and F-16I Sufa, a full strike mission, air combat and aerial refuelling.
 
 ## לשחק / Play
 
@@ -37,6 +37,10 @@ The game is a PWA: open the link, then use the in-game install button or the bro
 - יום ושקיעה, דיווחי קשר בקול (כשיש קול עברי במכשיר)
 - קוקפיט תלת־ממדי עם מבט חופשי, מסכים על לוח המחוונים ו-HUD מקובע לציר המטוס
 - בקרת נשק כמו במטוס: מאסטר ארם, הדק לתותח, פיקל לטילים ולפצצות
+- קוקפיט לחיץ: לוח מתגים פעיל, רצף התנעה מלא עם רשימת תיוג, והסעה למסלול
+- נזק חלקי: מנוע מושבת, אש, דליפת דלק, תקלות מכ"ם, מסך איומים והידראוליקה
+- מכ"ם עם מצבי חיפוש וקרב צמוד, טווח ידני וזיהוי עמית־טורף
+- תדלוק אווירי ממתדלק בזרוע, כמשימה נפרדת וגם בתוך משימת התקיפה
 - שלוש רמות קושי, מצב גרפיקה חסכוני, מקלדת, מגע ושלט משחק
 
 ## מבנה / Layout
@@ -60,6 +64,7 @@ node tests/flight-model.js       # performance, missile and bomb ranges
 node tests/takeoff-landing.js    # takeoff, landing and mission-complete flow
 node tests/mission-smoke.js      # crude autopilot flies the mission
 node tests/f16-and-duel.js       # F-16I performance and the air-combat mission
+node tests/systems.js            # cold start, switches, damage, radar modes, refuelling
 ```
 
 `index.html` and `sw.js` are generated. Edit the files in `src/` and rebuild.
@@ -79,6 +84,9 @@ node tests/f16-and-duel.js       # F-16I performance and the air-combat mission
 | C | Chaff and flares |
 | G / L / B | Gear / flaps / speedbrake and wheel brakes |
 | H / J | Autopilot (altitude and heading hold) / jettison air-to-ground stores |
+| Y / , . | Radar mode (search or close combat) / radar range down, up |
+| K | Air-refuelling door; the HUD then steers to the tanker |
+| X | Look at the switch panel; click a switch to work it |
 | Mouse drag | Look around the cockpit; the head recentres on release |
 | V / O / P / 0 | View / time acceleration / pause / mute |
 
