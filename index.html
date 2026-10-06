@@ -90,7 +90,13 @@ details[open] summary{margin-bottom:10px}
 #obj{inset-inline-start:16px;font-size:.85rem;color:var(--dim)}
 #toast{position:absolute;left:50%;bottom:140px;transform:translateX(-50%);z-index:4;max-width:calc(100% - 32px);background:rgba(8,12,14,.86);border:1px solid var(--amber);color:var(--amber);font-weight:700;padding:6px 14px;border-radius:2px;text-align:center;opacity:0;pointer-events:none;transition:opacity .25s}
 #toast[data-on="1"]{opacity:1}
-#nvgBtn{position:absolute;top:48px;left:50%;transform:translateX(-50%);z-index:4;background:rgba(8,12,14,.7);padding:4px 12px;font-size:.78rem}
+#chips{position:absolute;top:48px;left:50%;transform:translateX(-50%);z-index:4;display:flex;gap:6px}
+#chips[hidden]{display:none}
+#chips button{background:rgba(8,12,14,.6);padding:4px 12px;font-size:.78rem;white-space:nowrap}
+#chips button[data-on="1"]{border-color:var(--sand);color:var(--sand)}
+#touch[data-big="1"] .tb{grid-template-columns:repeat(2,66px)}
+#touch[data-big="1"] .tb button{font-size:.9rem}
+#app[data-fly="1"] #touch[data-on="1"][data-big="1"]{height:150px;grid-template-columns:140px auto 1fr auto 56px}
 #lookBack{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);z-index:4;background:rgba(8,12,14,.85);border-color:var(--sand);padding:7px 16px}
 #check{position:absolute;top:48px;inset-inline-start:16px;z-index:3;width:min(17rem,calc(100% - 32px));background:rgba(8,12,14,.86);border:1px solid var(--line);border-top:2px solid var(--sand);padding:8px 10px;display:flex;flex-direction:column;gap:6px;font-size:.86rem}
 #check[hidden]{display:none}
@@ -130,6 +136,9 @@ details[open] summary{margin-bottom:10px}
   #check{top:6px;inset-inline-start:auto;left:50%;transform:translateX(-50%);font-size:.78rem;gap:3px;padding:5px 8px}
   #check li button{padding:1px 8px}
   #lookBack{top:8px;bottom:auto}
+  #chips{top:6px;left:124px;transform:none;flex-direction:column;gap:4px}
+  #chips button{padding:3px 9px;font-size:.72rem}
+  #app[data-big="1"] #radio{bottom:164px;max-width:calc(100% - 24px)}
   #app[data-fly="1"] #obj{display:none}
   #radio{top:auto;bottom:8px;inset-inline:auto;left:50%;transform:translateX(-50%);width:max-content;max-width:calc(100% - 440px);font-size:.78rem;line-height:1.3;text-align:center;padding:3px 8px}
 }
@@ -150,7 +159,7 @@ details[open] summary{margin-bottom:10px}
   <div id="radio" aria-live="polite"></div>
   <div id="toast" role="status" aria-live="polite"></div>
   <button id="lookBack" hidden>חזרה למבט קדימה</button>
-  <button id="nvgBtn" hidden>משקפת לילה</button>
+  <div id="chips" hidden><button id="mapBtn">מפה</button><button id="padBtn">מבט למטרה</button><button id="nvgBtn" hidden>משקפת לילה</button></div>
   <div id="check" hidden>
     <div class="chead"><b>רשימת תיוג להתנעה</b><button id="autoStart">התנעה אוטומטית</button></div>
     <ol id="checkList"></ol>
@@ -254,6 +263,27 @@ details[open] summary{margin-bottom:10px}
       <button id="qHigh" data-opt="q" data-val="high">מלאה</button>
       <button id="qLow" data-opt="q" data-val="low">חסכונית</button>
     </div>
+    <div class="seg" role="group" aria-label="רגישות המוט">
+      <span>רגישות מוט</span>
+      <button data-opt="sens" data-val="low">עדינה</button>
+      <button data-opt="sens" data-val="normal">רגילה</button>
+      <button data-opt="sens" data-val="high">חדה</button>
+    </div>
+    <div class="seg" role="group" aria-label="כיוון העלרוד">
+      <span>ציר עלרוד</span>
+      <button data-opt="inv" data-val="off">רגיל</button>
+      <button data-opt="inv" data-val="on">הפוך</button>
+    </div>
+    <div class="seg" id="tiltRow" role="group" aria-label="היגוי בהטיית הטלפון" hidden>
+      <span>היגוי בהטיה</span>
+      <button data-opt="tilt" data-val="off">כבוי</button>
+      <button data-opt="tilt" data-val="on">פועל</button>
+    </div>
+    <div class="seg" id="uiRow" role="group" aria-label="גודל כפתורי המגע" hidden>
+      <span>כפתורי מגע</span>
+      <button data-opt="ui" data-val="normal">רגילים</button>
+      <button data-opt="ui" data-val="large">גדולים</button>
+    </div>
     <div class="seg">
       <span>קול הבקר</span>
       <button id="voiceTest">השמע בדיקה</button>
@@ -262,6 +292,10 @@ details[open] summary{margin-bottom:10px}
     <div>
       <h3>תצורת חימוש</h3>
       <dl id="loadout"></dl>
+    </div>
+    <div>
+      <h3>יומן טייס</h3>
+      <dl id="logbook"></dl>
     </div>
     <details>
       <summary>מדריך תצוגות: HUD, מכ"ם ומסך איומים</summary>
@@ -336,7 +370,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט.</p>
     </details>
-    <p class="note">גרסה 0.8 (1b10abf, נטען ב־<span id="loadMs">…</span> שניות): שני מטוסים ושתי משימות. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
+    <p class="note">גרסה 0.9 (b4d3e2b, נטען ב־<span id="loadMs">…</span> שניות): שני מטוסים ושתי משימות. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
   </section>
 
   <section id="pause" class="modal" hidden>
@@ -360,6 +394,8 @@ details[open] summary{margin-bottom:10px}
         <kbd>Y · , . · K</kbd><span>מצב מכ"ם · טווח · דלת תדלוק</span>
         <kbd>X</kbd><span>מבט אל לוח המתגים</span>
         <kbd>I</kbd><span>משקפת לילה (בטיסת לילה)</span>
+        <kbd>Tab</kbd><span>מפה טקטית</span>
+        <kbd>Z</kbd><span>מבט נעול על המטרה</span>
         <kbd>V · O · 0</kbd><span>מבט · האצת זמן · השתקה</span>
       </div>
       </details>
@@ -1330,10 +1366,13 @@ function newGame(start,preview){
 /* ================= input ================= */
 const keys={},stick={x:0,y:0,r:0},touch={on:false,x:0,y:0,gun:false,cm:false,brk:false};let lever=0,trigG=false,trigP=false,safeT=-9;const tap={gun:false,pickle:false,cm:false},ap={on:false,alt:0,hdg:0},look={yaw:0,pitch:0,g:0,drag:false,id:null,px:0,py:0,panel:false};let toastT=0,checkSig='';
 const WSEL=['AIM120','PYTHON','GUN','SPICE'];
+let mapOn=false,mapBg=null,padlock=false;
 function act(a){if(!W||state!=='fly')return;const p=W.player;
   if(a==='gear'||a==='flaps'||a==='arm'||a==='ardoor'||a==='rmode'||a==='rrng'||a==='rrngdn')W.sw(a);
   else if(a==='panel'){if(view===0)look.panel=!look.panel;}
   else if(a==='view')view^=1;
+  else if(a==='map'){mapOn=!mapOn;beep(800,0.03);}
+  else if(a==='padlock'){if(!padlock&&!(W.lock||W.irTgt)){toast('אין מטרה לעקוב אחריה. נעל מטרה קודם.');}else{padlock=!padlock;if(padlock){view=0;look.panel=false;}beep(1000,0.04);toast(padlock?'מבט נעול על המטרה':'מבט חופשי');}}
   else if(a==='nvg'){if(tod==='night'){setNVG(!nvg);beep(700,0.05);toast(nvg?'משקפת לילה פועלת':'משקפת לילה כבויה');}else toast('משקפת לילה מיועדת לטיסת לילה');}
   else if(a==='tgt'){W.cycleTarget();beep(1200,0.04);}
   else if(a==='unlock')W.unlock();
@@ -1352,13 +1391,13 @@ for(const ev of['pointerup','pointercancel'])glc.addEventListener(ev,e=>{if(e.po
     ray.setFromCamera(rayV,camera);const h=ray.intersectObjects(cockpit.userData.hits,false)[0];if(h){doSwitch(h.object.userData.sw);buzz(12);}return;}
   /* looking well down at the panel holds the view there; looking back up releases it */
   if(!look.panel&&look.pitch<-0.36)look.panel=true;else if(look.panel&&look.pitch>(touchOn?-0.55:-0.3))look.panel=false;});
-$('lookBack').onclick=()=>{look.panel=false;};$('nvgBtn').onclick=()=>act('nvg');
+$('lookBack').onclick=()=>{look.panel=false;};$('nvgBtn').onclick=()=>act('nvg');$('mapBtn').onclick=()=>act('map');$('padBtn').onclick=()=>act('padlock');
 addEventListener('keydown',e=>{
   if(state==='pause'&&(e.code==='Escape'||e.code==='KeyP')){resume();return;}
   if(state!=='fly')return;
   if(/^(Space|Arrow|Tab|Enter)/.test(e.code))e.preventDefault();
   keys[e.code]=true;if(e.repeat)return;if(e.code==='Space')tap.gun=true;if(e.code==='Enter'||e.code==='NumpadEnter')tap.pickle=true;if(e.code==='KeyC')tap.cm=true;
-  const m={KeyG:'gear',KeyL:'flaps',KeyV:'view',KeyT:'tgt',KeyU:'unlock',KeyO:'time',KeyM:'arm',Digit0:'mute',KeyN:'wp',KeyH:'ap',KeyJ:'jett',KeyK:'ardoor',KeyY:'rmode',Period:'rrng',Comma:'rrngdn',KeyX:'panel',KeyI:'nvg'}[e.code];
+  const m={KeyG:'gear',KeyL:'flaps',KeyV:'view',KeyT:'tgt',KeyU:'unlock',KeyO:'time',KeyM:'arm',Digit0:'mute',KeyN:'wp',KeyH:'ap',KeyJ:'jett',KeyK:'ardoor',KeyY:'rmode',Period:'rrng',Comma:'rrngdn',KeyX:'panel',KeyI:'nvg',Tab:'map',KeyZ:'padlock'}[e.code];
   if(m)act(m);else if(/^Digit[1-4]$/.test(e.code)){W.select(WSEL[+e.code[5]-1]);beep(900,0.04);}
   else if(e.code==='Escape'||e.code==='KeyP')pause();});
 addEventListener('keyup',e=>{keys[e.code]=false;});
@@ -1380,20 +1419,29 @@ function readInput(dt){const pad=readPad(dt);if(state!=='fly')return;
   if(tx||ty||tr)padUsed=false;else if(pad&&(pad.x||pad.y))padUsed=true;
   if(pad&&!look.drag&&(pad.lx||pad.ly)&&!W.player.onGround){look.yaw+=(pad.lx*2.3-look.yaw)*Math.min(1,dt*8);look.pitch+=(-pad.ly*1.0-look.pitch)*Math.min(1,dt*8);look.pad=true;}else look.pad=false;
   if(padUsed&&pad){stick.x=pad.x;stick.y=pad.y;stick.r=W.player.onGround?pad.lx:0;}
-  else{if(touch.on){stick.x=touch.x;stick.y=touch.y;}else{stick.x=ap(stick.x,tx);stick.y=ap(stick.y,ty);}stick.r=ap(stick.r,tr);}
+  else{if(opts.tilt==='on'&&tilt.ok&&!touch.held){stick.x=tilt.x;stick.y=tilt.y;}else if(touch.on){stick.x=touch.x;stick.y=touch.y;}else{stick.x=ap(stick.x,tx);stick.y=ap(stick.y,ty);}stick.r=ap(stick.r,tr);}
   const up=k.ShiftLeft||k.ShiftRight||k.Equal||k.KeyR,dn=k.Minus||k.KeyF;
   if(up)lever=Math.min(1.3,lever+0.55*dt);if(dn)lever=Math.max(0,lever-0.55*dt);
-  const c=W.player.ctl;c.roll=stick.x;c.pitch=stick.y;c.yaw=stick.r;c.throttle=lever;c.brake=!!k.KeyB||touch.brk||!!(pad&&pad.brk);
+  const c=W.player.ctl;c.roll=curve(stick.x);c.pitch=curve(stick.y)*(opts.inv==='on'?-1:1);c.yaw=stick.r;c.throttle=lever;c.brake=!!k.KeyB||touch.brk||!!(pad&&pad.brk);
   if(ap.on){if(Math.abs(stick.x)>0.25||Math.abs(stick.y)>0.25||W.player.onGround){ap.on=false;beep(600,0.06);}
     else R.apSteer(W.player,vnorm(v3(Math.sin(ap.hdg),clamp((ap.alt-W.player.pos.y)/1500,-0.2,0.2),-Math.cos(ap.hdg))),0.45);}
   trigG=!!k.Space||touch.gun||tap.gun||!!(pad&&pad.gun);trigP=!!k.Enter||!!k.NumpadEnter||tap.pickle;
   W.cmHeld=!!k.KeyC||touch.cm||tap.cm||!!(pad&&pad.cm);}
+/* tilt to fly: the phone is the stick. Roll it like a wheel, tip the top edge towards you to pull. */
+const tilt={ok:false,on:false,x:0,y:0,p0:null};
+function onTilt(e){if(e.beta==null||e.gamma==null)return;const b=e.beta*D2R,g=e.gamma*D2R,ux=-Math.cos(b)*Math.sin(g),uy=Math.sin(b),uz=Math.cos(b)*Math.cos(g);
+  const a=(((screen.orientation&&screen.orientation.angle)||window.orientation||0)+360)%360;let sx=ux,sy=uy;if(a===90){sx=-uy;sy=ux;}else if(a===270){sx=uy;sy=-ux;}else if(a===180){sx=-ux;sy=-uy;}
+  const roll=-Math.atan2(sx,Math.hypot(sy,uz)),pit=Math.atan2(uz,sy);if(tilt.p0==null)tilt.p0=pit;tilt.ok=true;
+  const dz=v=>Math.abs(v)<0.06?0:(v-Math.sign(v)*0.06)/0.94;tilt.x=dz(clamp(roll/(30*D2R),-1,1));tilt.y=dz(clamp((pit-tilt.p0)/(22*D2R),-1,1));}
+function tiltOn(ask){const add=()=>{if(!tilt.on){tilt.on=true;window.addEventListener('deviceorientation',onTilt);}};
+  try{const D=window.DeviceOrientationEvent;if(D&&typeof D.requestPermission==='function'){if(ask)D.requestPermission().then(r=>{if(r==='granted')add();else{opts.tilt='off';applyOpts();}}).catch(()=>{});}else add();}catch(e){}}
+const curve=v=>Math.sign(v)*Math.pow(Math.abs(v),{low:1.9,normal:1.35,high:1}[opts.sens]||1);
 /* touch controls */
 {const tz=$('touch'),coarse=matchMedia('(pointer:coarse)').matches;if(coarse)tz.dataset.on='1';
   const st=$('tStick'),kn=$('tKnob'),th=$('tThr'),tk=$('tThrK');
-  const mv=e=>{const r=st.getBoundingClientRect(),x=clamp((e.clientX-r.left)/r.width*2-1,-1,1),y=clamp((e.clientY-r.top)/r.height*2-1,-1,1);touch.on=true;touch.x=x;touch.y=y;kn.style.transform=`translate(${x*36}px,${y*36}px)`;};
+  const mv=e=>{const r=st.getBoundingClientRect(),x=clamp((e.clientX-r.left)/r.width*2-1,-1,1),y=clamp((e.clientY-r.top)/r.height*2-1,-1,1);touch.on=true;touch.held=true;touch.x=x;touch.y=y;kn.style.transform=`translate(${x*36}px,${y*36}px)`;};
   st.addEventListener('pointerdown',e=>{st.setPointerCapture(e.pointerId);mv(e);});st.addEventListener('pointermove',e=>{if(e.buttons||e.pointerType==='touch')mv(e);});
-  const end=()=>{touch.x=touch.y=0;kn.style.transform='';};st.addEventListener('pointerup',end);st.addEventListener('pointercancel',end);
+  const end=()=>{touch.held=false;touch.x=touch.y=0;kn.style.transform='';};st.addEventListener('pointerup',end);st.addEventListener('pointercancel',end);
   const tm=e=>{const r=th.getBoundingClientRect(),v=clamp(1-(e.clientY-r.top)/r.height,0,1);lever=v*1.3;};
   th.addEventListener('pointerdown',e=>{th.setPointerCapture(e.pointerId);tm(e);});th.addEventListener('pointermove',e=>{if(e.buttons||e.pointerType==='touch')tm(e);});
   setInterval(()=>{tk.style.bottom=(lever/1.3*100)+'%';},100);
@@ -1421,6 +1469,11 @@ function updAudio(dt){if(!Snd.ac||!W)return;const p=W.player,fly=state==='fly'&&
   const rpm=p.rpm.reduce((a,b)=>a+b,0)/p.nEng,spin=Math.max(rpm,W.sys.jfs*0.25);
   Snd.set(Snd.eng.g.gain,fly?(0.05+0.12*Math.min(p.eng,1)+(p.eng>1?0.22:0))*(view?1:0.7)*(Voice.busy?0.45:1)*Math.min(1,spin*1.2):0);Snd.set(Snd.eng.fl.frequency,(180+500*Math.min(p.eng,1)+(p.eng>1?-150:0))*(0.35+0.65*spin));
   Snd.set(Snd.wind.g.gain,fly?clamp(p.V/340,0,1.6)*0.07:0);
+  {const og=p.onGround,gp=p.gearPos,a=updAudio;if(fly&&a.og===false&&og){Snd.boom(clamp(0.25+(p.touchSink||0)*0.12,0.25,0.9));beep(2600,0.18,0.035,'sawtooth');buzz(60);shake=Math.max(shake,0.7);}
+    if(fly&&a.gp!=null&&Math.abs(gp-a.gp)>1e-4&&!a.gm){a.gm=true;beep(95,0.5,0.05,'sawtooth');}else if(a.gm&&(gp<=0.001||gp>=0.999)){a.gm=false;if(fly){Snd.boom(0.3);buzz(25);}}else if(a.gm&&fly&&(clock*2.2|0)!==a.gt){a.gt=clock*2.2|0;beep(95,0.45,0.05,'sawtooth');}
+    a.og=og;a.gp=gp;}
+  const buf=fly&&!p.onGround?clamp((p.alpha*R2D-16)/10,0,1)*clamp(p.V/120,0,1)+(p.brakePos>0.5?0.25:0)*clamp(p.V/250,0,1):0;
+  if(buf>0.02){Snd.set(Snd.wind.g.gain,clamp(p.V/340,0,1.6)*0.07+buf*0.16);Snd.set(Snd.wind.fl.frequency,1200-buf*650);}else Snd.set(Snd.wind.fl.frequency,1200);
   gunSnd=Math.max(0,gunSnd-dt);Snd.set(Snd.gun.g.gain,gunSnd>0?0.5:0,0.02);
   Snd.set(Snd.tone.gain,fly&&W.w.sel==='PYTHON'&&W.irTgt?0.035:0,0.05);
   if(!fly)return;rwrT-=dt;warnT-=dt;
@@ -1461,14 +1514,19 @@ $('checkList').addEventListener('pointerdown',e=>{const b=e.target.closest('butt
 $('autoStart').onclick=()=>{if(W){W.autoStart=!W.autoStart;checkSig='';}};
 function goImmersive(){if(touchOn&&!window.HFNative&&!document.fullscreenElement&&!matchMedia('(display-mode: fullscreen)').matches){try{const el=document.documentElement,pr=el.requestFullscreen&&el.requestFullscreen();if(pr&&pr.then)pr.then(()=>{try{const o=screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape');if(o&&o.catch)o.catch(()=>{});}catch(e){}}).catch(()=>{});}catch(e){}}
   try{if(navigator.wakeLock){const w=navigator.wakeLock.request('screen');if(w&&w.catch)w.catch(()=>{});}}catch(e){}}
-function start(mode){startedAt=performance.now();goImmersive();hush();Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();newGame(mode);view=0;state='fly';show('menu',false);show('pause',false);show('debrief',false);$('app').dataset.fly='1';}
+function start(mode){tilt.p0=null;mapOn=false;padlock=false;startedAt=performance.now();goImmersive();hush();Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();newGame(mode);view=0;state='fly';show('menu',false);show('pause',false);show('debrief',false);$('app').dataset.fly='1';}
 function pause(){if(state!=='fly')return;hush();state='pause';show('pause',true);$('resume').focus();}
-function resume(){state='fly';show('pause',false);last=performance.now();}
+function resume(){tilt.p0=null;state='fly';show('pause',false);last=performance.now();}
 function toMenu(){if(window.__hfPending){location.reload();return;}hush();state='menu';show('pause',false);show('debrief',false);show('menu',true);$('app').dataset.fly='';newGame('runway',true);}
 let lastMode='runway';
 $('startRwy').onclick=()=>start(lastMode='runway');$('startAir').onclick=()=>start(lastMode='air');$('startCold').onclick=()=>start(lastMode='cold');
 $('resume').onclick=resume;$('restart').onclick=()=>start(lastMode);$('quit').onclick=toMenu;$('again').onclick=()=>start(lastMode);$('back').onclick=toMenu;
-function debrief(){hush();state='debrief';const o=W.over,s=W.stats,p=W.player,mm=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
+/* pilot logbook, kept on this device */
+function readLog(){try{return Object.assign({n:0,win:0,mig:0,uav:0,tgt:0,t:0,land:0},JSON.parse(localStorage.getItem('haniaflight-log')||'{}'));}catch(e){return{n:0,win:0,mig:0,uav:0,tgt:0,t:0,land:0};}}
+function showLog(){const L=readLog(),el=$('logbook');if(!el)return;const h=Math.floor(L.t/3600),mi=Math.floor(L.t%3600/60),rank=L.win>=25?'מוביל מבנה':L.win>=10?'מוביל זוג':L.win>=3?'טייס מבצעי':L.n?'טייס צעיר':'חניך';
+  el.innerHTML=[['דרגה',rank],['גיחות',L.n],['משימות שהושלמו',L.win],['הפלות מטוסים',L.mig],['כטב"מים וטילי שיוט',L.uav],['מטרות קרקע',L.tgt],['נחיתות',L.land],['שעות טיסה',`${h}:${String(mi).padStart(2,'0')}`]].map(r=>`<div><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join('');}
+function writeLog(){const L=readLog(),s=W.stats;L.n++;if(W.over.win)L.win++;L.mig+=s.mig;if(W.missionId!=='train')L.uav+=s.uav;L.tgt+=s.tgt;L.t+=W.time;if(s.sink!=null&&W.player.alive)L.land++;try{localStorage.setItem('haniaflight-log',JSON.stringify(L));}catch(e){}showLog();}
+function debrief(){hush();state='debrief';writeLog();const o=W.over,s=W.stats,p=W.player,mm=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
   $('dTitle').textContent=o.title;$('dReason').textContent=o.reason||'';$('debrief').dataset.win=o.win?'1':'';
   const rows=W.missionId==='tanker'?[['דלק שהתקבל',`${Math.round(W.ar.taken).toLocaleString('en')} ק"ג`]]:W.missionId==='duel'?[['מיג-29 שהופלו',`${s.mig} מתוך 2`]]:W.missionId==='train'?[['מטרות אימון שהופלו',`${s.uav} מתוך 2`]]:W.missionId==='intercept'?[['איומים שהופלו',`${s.uav} מתוך ${W.nDrone}`],['חדרו',s.leak]]:[['כטב"מים שהופלו',`${s.uav} מתוך 4`+(s.leak?` (${s.leak} חדרו)`:'')],['מיג-29 שהופלו',`${s.mig} מתוך 2`],['מטרות אתר השיגור',`${s.tgt} מתוך 3`],['מכ"ם סוללת הנ"מ',s.sam?'הושמד':'לא הושמד']];
   rows.push(['מטוס',W.plane.name],['רמת קושי',{easy:'קל',normal:'רגיל',hard:'קשה'}[W.diff]],['חימוש ששוגר',s.shots],['נזק',W.dmg.length?W.dmg.map(d=>d.t).join(', '):'אין'],['דלק שנותר',`${Math.round(p.fuel).toLocaleString()} ק"ג`],['זמן משימה',mm(W.time)]);
@@ -1541,7 +1599,9 @@ function syncScene(dt){
   if(state==='menu'){const a=clock*0.12+0.9;camera.position.set(p.pos.x+Math.cos(a)*34,p.pos.y+7+Math.sin(clock*0.2)*2,p.pos.z+Math.sin(a)*34);camera.up.set(0,1,0);camera.lookAt(p.pos.x,p.pos.y+0.6,p.pos.z);}
   else if(!p.alive){camera.up.set(0,1,0);tv.set(p.pos.x,p.pos.y,p.pos.z);if(camera.position.distanceTo(tv)<60)camera.position.set(p.pos.x-90,p.pos.y+40,p.pos.z+60);camera.lookAt(tv);}
   else if(view===0){const ey=W.plane.eye,e=qrot(p.q,v3(ey[0],ey[1],ey[2])),bob=clamp((p.g-1)*0.006,-0.02,0.05),up=qrot(p.q,UP);
-    if(!look.drag&&!look.pad){const k=Math.exp(-5*Math.max(dt,0.001)),tp=look.panel?(touchOn?-0.8:-0.56):0;look.yaw*=k;look.pitch=tp+(look.pitch-tp)*k;}
+    const pt=padlock&&!look.panel?(W.lock||W.irTgt):null;if(padlock&&!pt&&!look.panel)padlock=false;
+    if(pt&&!look.drag){const d=qrotInv(p.q,vsub(pt.pos,p.pos)),ty=clamp(Math.atan2(d.x,-d.z),-2.5,2.5),tp2=clamp(Math.atan2(d.y,Math.hypot(d.x,d.z))-HEAD_PITCH,-0.6,1.35),k=Math.min(1,dt*6);look.yaw+=(ty-look.yaw)*k;look.pitch+=(tp2-look.pitch)*k;}
+    else if(!look.drag&&!look.pad){const k=Math.exp(-5*Math.max(dt,0.001)),tp=look.panel?(touchOn?-0.8:-0.56):0;look.yaw*=k;look.pitch=tp+(look.pitch-tp)*k;}
     look.g+=(clamp((p.g-1)*0.021,-0.07,0.16)-look.g)*Math.min(1,dt*3);
     camera.position.set(p.pos.x+e.x-up.x*bob,p.pos.y+e.y-up.y*bob,p.pos.z+e.z-up.z*bob);
     headE.set(HEAD_PITCH+look.pitch+look.g,-look.yaw,0,'YXZ');camera.quaternion.copy(pq).multiply(tq2.setFromEuler(headE));
@@ -1551,7 +1611,7 @@ function syncScene(dt){
     tv.set(0,1,0).applyQuaternion(camQ);camera.up.copy(tv);const f=qrot(p.q,FWD);camera.lookAt(p.pos.x+f.x*90+tv.x*11,p.pos.y+f.y*90+tv.y*11,p.pos.z+f.z*90+tv.z*11);}
   if(shake>0.004&&state==='fly'&&p.alive){const a=shake*(view===0?1:0.5);const t=clock,n1=Math.sin(t*31)+Math.sin(t*47.3+1)*0.6,n2=Math.sin(t*37.1+2)+Math.sin(t*53.9)*0.6,k=view===0?0.35:1;camera.position.x+=n1*a*0.016*k;camera.position.y+=n2*a*0.016*k;camera.rotateX(n2*a*0.003);camera.rotateZ(n1*a*0.004);}
   cockpit.visible=inPit;const cm=inPit?(look.panel?2:0):1;if(cm!==camMode){camMode=cm;layout();$('touch').dataset.panel=cm===2?'1':'';$('lookBack').hidden=cm!==2;}
-  {const nb=$('nvgBtn'),h=!(state==='fly'&&tod==='night');if(nb.hidden!==h)nb.hidden=h;if(state!=='fly'&&nvg)setNVG(false);}
+  {const nb=$('nvgBtn'),h=!(state==='fly'&&tod==='night');if(nb.hidden!==h)nb.hidden=h;const ch=$('chips'),hc=state!=='fly'||cm===2;if(ch.hidden!==hc)ch.hidden=hc;if(padlock!==($('padBtn').dataset.on==='1'))$('padBtn').dataset.on=padlock?'1':'';if(state!=='fly'&&nvg)setNVG(false);}
   if(inPit){const cs=cockpit.userData.sw;for(const id in cs){const v=swState(id),o=cs[id];o.lev.rotation.x=v?-0.45:0.45;o.lamp.material.color.setHex(v===1?0x39e06a:v===2?((clock*3|0)%2?0xffb040:0x4a3410):v===3?((clock*4|0)%2?0xff4030:0x501410):0x202422);}}
   sky.position.copy(camera.position);sunSp.position.copy(camera.position).addScaledVector(sunDir,280000);sunHalo.position.copy(sunSp.position);
 }
@@ -1588,6 +1648,27 @@ function font(s,b){ctx.font=`${b?'700 ':''}${Math.round(s*u)}px "Share Tech Mono
 function txt(s,x,y,al,sz,col){font(sz||15);ctx.textAlign=al||'left';ctx.fillStyle=col||HUDC;ctx.fillText(s,x,y);}
 function line(...a){ctx.beginPath();ctx.moveTo(a[0],a[1]);for(let i=2;i<a.length;i+=2)ctx.lineTo(a[i],a[i+1]);ctx.stroke();}
 const dirAE=(az,el)=>v3(Math.sin(az)*Math.cos(el),Math.sin(el),-Math.cos(az)*Math.cos(el));
+/* tactical map: north up, the whole theatre. Shows only what the pilot would know. */
+function drawMap(p,e){const{nx,nz,cell,x0,z0}=TER,WX=(nx-1)*cell,WZ=(nz-1)*cell;
+  if(!mapBg){mapBg=document.createElement('canvas');mapBg.width=312;mapBg.height=180;const x=mapBg.getContext('2d'),im=x.createImageData(312,180),d=im.data;
+    for(let j=0;j<180;j++)for(let i=0;i<312;i++){const h=terrainH(x0+i/311*WX,z0+j/179*WZ),hr=terrainH(x0+(i+1)/311*WX,z0+j/179*WZ),k=(j*312+i)*4,t=clamp(h/1500,0,1),sh=clamp((h-hr)/90,-1,1)*26;
+      if(h<2){d[k]=20;d[k+1]=46;d[k+2]=66;}else{d[k]=70+t*62+sh;d[k+1]=68+t*44+sh;d[k+2]=50+t*26+sh;}d[k+3]=255;}x.putImageData(im,0,0);}
+  const top=touchOn?8:46,bot=touchOn?(opts.ui==='large'?166:136):20,s=Math.min((vw-24)/WX,(vh-top-bot)/WZ),mw=WX*s,mh2=WZ*s,ox=(vw-mw)/2,oy=top+(vh-top-bot-mh2)/2,X=x=>ox+(x-x0)*s,Y=z=>oy+(z-z0)*s,su=u;u=clamp(vw/900,0.7,1.1);
+  ctx.save();ctx.shadowBlur=0;ctx.fillStyle='rgba(2,6,8,0.6)';ctx.fillRect(0,0,vw,vh);ctx.globalAlpha=0.93;ctx.imageSmoothingEnabled=true;ctx.drawImage(mapBg,ox,oy,mw,mh2);ctx.globalAlpha=1;
+  ctx.lineWidth=1.3;ctx.strokeStyle='rgba(235,230,214,0.6)';ctx.strokeRect(ox+0.5,oy+0.5,mw-1,mh2-1);ctx.beginPath();ctx.rect(ox,oy,mw,mh2);ctx.clip();
+  ctx.strokeStyle='rgba(235,230,214,0.12)';for(let gx=Math.ceil(x0/50000)*50000;gx<x0+WX;gx+=50000)line(X(gx),oy,X(gx),oy+mh2);for(let gz=Math.ceil(z0/50000)*50000;gz<z0+WZ;gz+=50000)line(ox,Y(gz),ox+mw,Y(gz));
+  const SND='#d2b47c';
+  if(W.missionId==='strike'||W.missionId==='intercept'){ctx.strokeStyle=AMB;ctx.setLineDash([5,5]);line(X(16000),oy,X(16000),oy+mh2);ctx.setLineDash([]);txt('DEFENCE LINE',X(16000)+5,oy+12,'left',10,AMB);}
+  if(W.sam.alive&&W.ground.length){const r=Math.min(W.d.samR,60000*W.sig)*s;ctx.strokeStyle=RED;ctx.fillStyle='rgba(255,92,79,0.13)';ctx.beginPath();ctx.arc(X(W.sam.pos.x),Y(W.sam.pos.z),r,0,7);ctx.fill();ctx.stroke();txt('SAM',X(W.sam.pos.x),Y(W.sam.pos.z)-r-8,'center',10,RED);}
+  for(const g of W.ground){if(!g.alive||g.kind==='launcher')continue;ctx.strokeStyle=g.kind==='radar'?RED:AMB;ctx.strokeRect(X(g.pos.x)-3,Y(g.pos.z)-3,6,6);}
+  ctx.strokeStyle=SND;ctx.setLineDash([7,5]);ctx.beginPath();ctx.moveTo(X(p.pos.x),Y(p.pos.z));for(let i=W.wp;i<W.wps.length;i++)ctx.lineTo(X(W.wps[i].x),Y(W.wps[i].z));ctx.stroke();ctx.setLineDash([]);
+  W.wps.forEach((q,i)=>{const cur=i===W.wp;ctx.strokeStyle=cur?HUDC:SND;ctx.lineWidth=cur?2:1.3;ctx.beginPath();ctx.arc(X(q.x),Y(q.z),5,0,7);ctx.stroke();txt(q.n,X(q.x),Y(q.z)-13,'center',11,cur?HUDC:SND);});ctx.lineWidth=1.3;
+  ctx.fillStyle=SND;ctx.fillRect(X(RWY.x1),Y(0)-1.5,Math.max(8,(RWY.x2-RWY.x1)*s),3);
+  for(const k of W.friends){if(!k.alive)continue;ctx.strokeStyle=HUDC;ctx.beginPath();ctx.arc(X(k.pos.x),Y(k.pos.z),5,0,7);ctx.stroke();txt('TANKER',X(k.pos.x),Y(k.pos.z)+14,'center',10);}
+  for(const c of W.contacts){if(c.fr)continue;ctx.fillStyle=RED;ctx.fillRect(X(c.e.pos.x)-4,Y(c.e.pos.z)-2,8,4);if(c.e===W.lock){ctx.strokeStyle=RED;ctx.beginPath();ctx.arc(X(c.e.pos.x),Y(c.e.pos.z),8,0,7);ctx.stroke();}}
+  ctx.translate(X(p.pos.x),Y(p.pos.z));ctx.rotate(e.hdg);ctx.fillStyle=HUDC;ctx.strokeStyle='#04140a';ctx.beginPath();ctx.moveTo(0,-11);ctx.lineTo(7,8);ctx.lineTo(0,4);ctx.lineTo(-7,8);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.restore();ctx.shadowBlur=0;const wp=W.wps[W.wp],dw=Math.hypot(wp.x-p.pos.x,wp.z-p.pos.z),bw=(Math.atan2(wp.x-p.pos.x,-(wp.z-p.pos.z))*R2D+360)%360;
+  txt(`MAP · N UP · GRID 50 KM`,ox+6,oy+mh2-10,'left',11,'#ebe6d6');txt(`${wp.n}  ${String(Math.round(bw)%360).padStart(3,'0')}° / ${(dw/NM).toFixed(0)} NM`,ox+mw-6,oy+mh2-10,'right',12,HUDC);u=su;}
 function drawHUD(){
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.direction='ltr';ctx.clearRect(0,0,vw,vh);if(state!=='fly'&&state!=='pause'||!W)return;
   const p=W.player,w=W.w,m=Math.min(vw,vh),cx=vw/2,cy=vh/2;u=clamp(m/700,touchOn?0.72:0.62,1.3);
@@ -1720,6 +1801,10 @@ function drawHUD(){
       txt('FUEL '+Math.round(p.fuel),vw-pad,ty2,'right',13,p.fuel<W.bingo?AMB:HUDC);txt(`120:${w.aim120} PY:${w.python} SP:${w.spice}`,vw-pad,ty2+17*u,'right',12);}
     else{const bw=Math.min(340*u,vw-2*(ms+pad)-16*u);if(bw>150*u)mfdEng(cx-bw/2,vh-pad-80*u,bw,80*u);}}
   if(touchOn&&(clock*4|0)!==drawHUD.a){drawHUD.a=clock*4|0;$('tbArm').dataset.on=W.arm?'1':'';}
+  /* sun glare: looking towards the sun washes the view out */
+  if(tod!=='night'&&!mapOn){const sp=projD(sunDir);tv.set(0,0,-1).applyQuaternion(camera.quaternion);const k=Math.pow(Math.max(0,tv.x*sunDir.x+tv.y*sunDir.y+tv.z*sunDir.z),6);
+    if(sp.ok&&k>0.02){const r=m*(0.5+k*0.9),g=ctx.createRadialGradient(sp.x,sp.y,0,sp.x,sp.y,r),c=tod==='dusk'?'255,190,120':'255,248,225';g.addColorStop(0,`rgba(${c},${0.55*k})`);g.addColorStop(0.25,`rgba(${c},${0.22*k})`);g.addColorStop(1,`rgba(${c},0)`);ctx.fillStyle=g;ctx.fillRect(0,0,vw,vh);}}
+  if(mapOn)drawMap(p,e);
   /* g vignette */
   if(gAcc>0.02){const g=ctx.createRadialGradient(cx,cy,m*(0.75-gAcc*0.62),cx,cy,m*(0.95-gAcc*0.4));g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,`rgba(0,0,0,${Math.min(1,gAcc*1.5)})`);ctx.fillStyle=g;ctx.fillRect(0,0,vw,vh);}
   /* objectives */
@@ -1727,9 +1812,10 @@ function drawHUD(){
 }
 const touchOn=matchMedia('(pointer:coarse)').matches,fsMode=matchMedia('(display-mode: fullscreen)').matches||!!window.HFNative;
 $('voiceTest').onclick=()=>{Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();if(!Voice.v)pickVoice();if(!say('בקר: פטיש אחת, שומע אותך חמש על חמש.'))pickVoice();};
-const opts={diff:'normal',tod:'day',q:touchOn?'low':'high',plane:'F15I',mission:'strike'};
+const opts={diff:'normal',tod:'day',q:touchOn?'low':'high',plane:'F15I',mission:'strike',sens:'normal',inv:'off',tilt:'off',ui:'normal'};
 try{const o=JSON.parse(localStorage.getItem('haniaflight-opts')||'{}');for(const k in opts)if(typeof o[k]==='string')opts[k]=o[k];}catch(e){}
 if(!R.PLANES[opts.plane])opts.plane='F15I';if(!['strike','intercept','duel','tanker','train'].includes(opts.mission))opts.mission='strike';if(!TOD[opts.tod])opts.tod='day';if(!R.DIFF[opts.diff])opts.diff='normal';if(opts.q!=='low')opts.q=opts.q==='high'?'high':'low';
+if(!['low','normal','high'].includes(opts.sens))opts.sens='normal';for(const k of['inv','tilt'])if(opts[k]!=='on')opts[k]='off';if(opts.ui!=='large')opts.ui='normal';
 function fillBrief(){const pl=R.PLANES[opts.plane];if(!pl.spice&&opts.mission==='strike')opts.mission='intercept';$('mStrike').disabled=!pl.spice;const m=opts.mission,air=m!=='strike'&&m!=='intercept';
   $('unit').textContent=pl.name+' · '+pl.unit;for(const[k,id]of[['strike','briefStrike'],['duel','briefDuel'],['tanker','briefTanker'],['intercept','briefIcpt'],['train','briefTrain']])$(id).hidden=m!==k;$('startRwy').hidden=$('startCold').hidden=air;
   $('startAir').classList.toggle('go',air);$('startAir').textContent=m==='duel'?'לקרב':m==='tanker'?'אל המתדלק':m==='train'?'להדרכה':'התחלה באוויר';
@@ -1737,9 +1823,9 @@ function fillBrief(){const pl=R.PLANES[opts.plane];if(!pl.spice&&opts.mission===
   if(m==='strike')rows.push(['פצצות דאייה מונחות',pl.spice+' × '+pl.bomb.name]);if(pl.internal)rows.push(['חתימת מכ"ם','נמוכה מאוד · חימוש פנימי']);rows.push(['תותח',(pl.internal?'GAU-22 · ':'M61A1 · ')+(pl.gun||510)],['דלק',(m==='tanker'?Math.round(R.TYPES[pl.type].fuelMax*0.3):air?pl.fuelAir:pl.fuelRwy).toLocaleString('en')+' kg']);
   $('loadout').innerHTML=rows.map(r=>`<div><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join('');}
 function applyOpts(){fillBrief();if(W&&state==='menu'&&W.plane.type!==opts.plane)newGame('runway',true);for(const b of document.querySelectorAll('[data-opt]'))b.setAttribute('aria-pressed',String(opts[b.dataset.opt]===b.dataset.val));
-  if(tod!==opts.tod||!applyOpts.done)setTOD(opts.tod);applyOpts.done=true;cloudSp.forEach((c,i)=>c.visible=opts.q==='high'||i%2===0);resize();
+  if(tod!==opts.tod||!applyOpts.done)setTOD(opts.tod);applyOpts.done=true;$('touch').dataset.big=opts.ui==='large'?'1':'';$('app').dataset.big=opts.ui==='large'&&touchOn?'1':'';$('tiltRow').hidden=!touchOn;$('uiRow').hidden=!touchOn;showLog();cloudSp.forEach((c,i)=>c.visible=opts.q==='high'||i%2===0);resize();
   try{localStorage.setItem('haniaflight-opts',JSON.stringify(opts));}catch(e){}}
-for(const b of document.querySelectorAll('[data-opt]'))b.onclick=()=>{opts[b.dataset.opt]=b.dataset.val;applyOpts();};
+for(const b of document.querySelectorAll('[data-opt]'))b.onclick=()=>{opts[b.dataset.opt]=b.dataset.val;if(b.dataset.opt==='tilt'&&b.dataset.val==='on')tiltOn(true);applyOpts();};if(opts.tilt==='on')tiltOn(false);
 /* Android back button, called by the app shell: pause a flight, resume from pause, otherwise let the app close */
 window.__hfBack=()=>{if(state==='fly'){pause();return true;}if(state==='pause'){resume();return true;}if(state==='debrief'){toMenu();return true;}return false;};
 /* on Android the native app opens faster than a browser-installed one, so offer that instead */
