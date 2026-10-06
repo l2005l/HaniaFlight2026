@@ -1,23 +1,33 @@
 #!/usr/bin/env python3
 """Build HaniaFlight into single-file pages.
 
-  index.html           full page, served by GitHub Pages
-  dist/artifact.html   body-only page for publishing as a Claude artifact
+  index.html           installable page served by GitHub Pages (local three.js, manifest, service worker)
+  sw.js                service worker, stamped with a hash of the build
+  dist/artifact.html   body-only page for publishing as a Claude artifact (three.js from a CDN)
 """
-import os
+import os, hashlib
 root = os.path.dirname(os.path.abspath(__file__))
 read = lambda p: open(os.path.join(root, p), encoding='utf8').read()
+def write(p, s):
+    os.makedirs(os.path.dirname(os.path.join(root, p)) or root, exist_ok=True)
+    open(os.path.join(root, p), 'w', encoding='utf8').write(s)
 head, core, game = read('src/head.html'), read('src/core.js'), read('src/game.js')
 assert '</script' not in core and '</script' not in game
-THREE = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'
-scripts = ('<script src="' + THREE + '"></script>\n<script>\nvar RAAM=(function(){\n' + core +
-           '\nreturn RAAM;})();\n</script>\n<script>\n' + game + '\n</script>\n')
+CDN = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'
+def scripts(three):
+    return ('<script src="' + three + '"></script>\n<script>\nvar RAAM=(function(){\n' + core +
+            '\nreturn RAAM;})();\n</script>\n<script>\n' + game + '\n</script>\n')
+APP = ('<link rel="manifest" href="manifest.webmanifest">\n<meta name="theme-color" content="#0c1114">\n'
+       '<meta name="mobile-web-app-capable" content="yes">\n<meta name="apple-mobile-web-app-capable" content="yes">\n'
+       '<link rel="apple-touch-icon" href="icons/icon-192.png">\n<link rel="icon" href="icons/icon-192.png">\n')
+SW = "<script>if('serviceWorker' in navigator)addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});</script>\n"
 i = head.index('<div id="app"')
 page = ('<!doctype html>\n<html lang="he">\n<head>\n<meta charset="utf-8">\n'
-        '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n'
+        '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">\n'
         '<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>\n'
-        + head[:i] + '</head>\n<body>\n' + head[i:] + scripts + '</body>\n</html>\n')
-os.makedirs(os.path.join(root, 'dist'), exist_ok=True)
-open(os.path.join(root, 'index.html'), 'w', encoding='utf8').write(page)
-open(os.path.join(root, 'dist/artifact.html'), 'w', encoding='utf8').write(head + scripts)
-print('index.html', len(page), 'bytes')
+        + APP + head[:i] + '</head>\n<body>\n' + head[i:] + scripts('vendor/three.min.js') + SW + '</body>\n</html>\n')
+ver = hashlib.sha1((page + read('vendor/three.min.js')).encode('utf8')).hexdigest()[:10]
+write('index.html', page)
+write('sw.js', read('src/sw.js').replace('__VERSION__', ver))
+write('dist/artifact.html', head + scripts(CDN))
+print('index.html', len(page), 'bytes, build', ver)
