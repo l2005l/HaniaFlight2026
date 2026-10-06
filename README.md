@@ -8,6 +8,14 @@ A browser flight simulator of Israeli fighter jets. Version 0.6: the F-15I Ra'am
 
 https://flight.hania360.com/
 
+## אפליקציית אנדרואיד / Android app
+
+קובץ ההתקנה: https://github.com/l2005l/HaniaFlight2026/releases/download/android-latest/HaniaFlight.apk
+
+זו מעטפת מקורית קטנה (`android/`) שמציגה את המשחק מ-flight.hania360.com במסך מלא. המשחק מתעדכן מהאתר, כך שאין צורך להתקין את האפליקציה מחדש בכל גרסה. היא נבנית ב-GitHub Actions (`.github/workflows/android.yml`) בכל שינוי בתיקיית `android/`.
+
+A thin native shell (`android/`) that shows the game from flight.hania360.com full screen; the game updates from the web. GitHub Actions builds the APK on every change under `android/`.
+
 ## התקנה כאפליקציה / Install as an app
 
 המשחק הוא PWA: אחרי פתיחה ראשונה הוא עובד גם בלי רשת.

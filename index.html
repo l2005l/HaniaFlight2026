@@ -261,7 +261,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט.</p>
     </details>
-    <p class="note">גרסה 0.6.2 (c4c57b4, נטען ב־<span id="loadMs">…</span> שניות): שני מטוסים ושתי משימות. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
+    <p class="note">גרסה 0.6.3 (8cb70a1, נטען ב־<span id="loadMs">…</span> שניות): שני מטוסים ושתי משימות. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
   </section>
 
   <section id="pause" class="modal" hidden>
@@ -1126,21 +1126,24 @@ function updAudio(dt){if(!Snd.ac||!W)return;const p=W.player,fly=state==='fly'&&
 /* ================= UI glue ================= */
 const radioQ=[];let radioT=0;
 /* spoken radio: the device's own Hebrew voice, when it has one */
-const Voice={v:null,busy:false,t:0,api:typeof speechSynthesis!=='undefined'&&typeof SpeechSynthesisUtterance!=='undefined'};
-function pickVoice(){let vs=[];try{if(Voice.api)vs=speechSynthesis.getVoices();}catch(e){}
+const NAT=window.HFNative||null;
+const Voice={v:null,busy:false,t:0,api:!!NAT||typeof speechSynthesis!=='undefined'&&typeof SpeechSynthesisUtterance!=='undefined'};
+window.__hfSpoke=()=>{if(Voice.busy){Voice.busy=false;squelch();}};
+function pickVoice(){let vs=[];try{if(NAT){if(NAT.hasVoice())vs=[{name:'Android',lang:'he-IL'}];}else if(Voice.api)vs=speechSynthesis.getVoices();}catch(e){}
   Voice.v=vs.find(v=>/^(he|iw)/i.test(v.lang))||null;
   $('voiceState').textContent=!Voice.api?'הדפדפן הזה לא תומך בהקראה.':Voice.v?'נמצא קול עברי: '+Voice.v.name:'לא נמצא קול עברי במכשיר הזה. הדיווחים יוצגו בכתב.';}
-if(Voice.api){pickVoice();try{speechSynthesis.addEventListener('voiceschanged',pickVoice);}catch(e){}}else pickVoice();
+if(NAT){pickVoice();setTimeout(pickVoice,2500);}else if(Voice.api){pickVoice();try{speechSynthesis.addEventListener('voiceschanged',pickVoice);}catch(e){}}else pickVoice();
 function squelch(){const ac=Snd.ac;if(!ac||muted)return;const b=ac.createBufferSource();b.buffer=Snd.noise;const f=ac.createBiquadFilter();f.type='bandpass';f.frequency.value=2600;const g=ac.createGain();g.gain.value=0.12;b.connect(f);f.connect(g);g.connect(Snd.master);b.start();b.stop(ac.currentTime+0.07);}
-function hush(){Voice.busy=false;try{if(Voice.api)speechSynthesis.cancel();}catch(e){}}
-function say(text){if(muted||!Voice.v)return false;
+function hush(){Voice.busy=false;try{if(NAT)NAT.stop();else if(Voice.api)speechSynthesis.cancel();}catch(e){}}
+function say(text){if(NAT&&!Voice.v)pickVoice();if(muted||!Voice.v)return false;
   const t=text.replace(/^[^:]{2,14}:\s*/,'').replace(/כטב"מי/g,'כטבמי').replace(/כטב"מים/g,'כטבמים').replace(/כטב"ם/g,'כטבם').replace(/נ"מ/g,'נון מם').replace(/מכ"ם/g,'מכם').replace(/ק"מ/g,'קילומטר').replace(/SPICE/g,'ספייס').replace(/מיג-29/g,'מיג עשרים ותשע').replace(/מסלול 09/g,'מסלול אפס תשע');
+  if(NAT){try{squelch();NAT.speak(t,/^מגדל/.test(text)?1.15:0.9,1.1);Voice.busy=true;Voice.t=clock;return true;}catch(e){Voice.busy=false;return false;}}
   try{const ut=new SpeechSynthesisUtterance(t);ut.voice=Voice.v;ut.lang=Voice.v.lang;ut.rate=1.1;ut.pitch=/^מגדל/.test(text)?1.15:0.9;
     ut.onend=ut.onerror=()=>{if(Voice.busy){Voice.busy=false;squelch();}};speechSynthesis.cancel();squelch();speechSynthesis.speak(ut);Voice.busy=true;Voice.t=clock;return true;}catch(e){Voice.busy=false;return false;}}
 function updRadio(dt){radioT-=dt;const el=$('radio'),talking=Voice.busy&&clock-Voice.t<25;if(!talking)Voice.busy=false;
   if(radioT<=0&&!talking){if(radioQ.length){const m=radioQ.shift();el.textContent=m;el.dataset.on='1';radioT=say(m)?3:6.5;if(!Voice.busy)beep(1400,0.04,0.03,'sine');}else el.dataset.on='';}}
 function show(id,on){$(id).hidden=!on;}
-function goImmersive(){if(touchOn&&!document.fullscreenElement&&!matchMedia('(display-mode: fullscreen)').matches){try{const el=document.documentElement,pr=el.requestFullscreen&&el.requestFullscreen();if(pr&&pr.then)pr.then(()=>{try{const o=screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape');if(o&&o.catch)o.catch(()=>{});}catch(e){}}).catch(()=>{});}catch(e){}}
+function goImmersive(){if(touchOn&&!window.HFNative&&!document.fullscreenElement&&!matchMedia('(display-mode: fullscreen)').matches){try{const el=document.documentElement,pr=el.requestFullscreen&&el.requestFullscreen();if(pr&&pr.then)pr.then(()=>{try{const o=screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape');if(o&&o.catch)o.catch(()=>{});}catch(e){}}).catch(()=>{});}catch(e){}}
   try{if(navigator.wakeLock){const w=navigator.wakeLock.request('screen');if(w&&w.catch)w.catch(()=>{});}}catch(e){}}
 function start(mode){startedAt=performance.now();goImmersive();hush();Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();newGame(mode);view=0;state='fly';show('menu',false);show('pause',false);show('debrief',false);$('app').dataset.fly='1';}
 function pause(){if(state!=='fly')return;hush();state='pause';show('pause',true);$('resume').focus();}
@@ -1382,7 +1385,7 @@ function drawHUD(){
   /* objectives */
   if((clock*2|0)!==drawHUD.t){drawHUD.t=clock*2|0;const s=W.stats;$('obj').textContent=W.missionId==='duel'?`מיגים ${s.mig}/2`:`כטב"מים ${s.uav}/4 · מטרות ${s.tgt}/3 · מיגים ${s.mig}/2`;}
 }
-const touchOn=matchMedia('(pointer:coarse)').matches,fsMode=matchMedia('(display-mode: fullscreen)').matches;
+const touchOn=matchMedia('(pointer:coarse)').matches,fsMode=matchMedia('(display-mode: fullscreen)').matches||!!window.HFNative;
 $('voiceTest').onclick=()=>{Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();if(!Voice.v)pickVoice();if(!say('בקר: פטיש אחת, שומע אותך חמש על חמש.'))pickVoice();};
 const opts={diff:'normal',tod:'day',q:touchOn?'low':'high',plane:'F15I',mission:'strike'};
 try{const o=JSON.parse(localStorage.getItem('haniaflight-opts')||'{}');for(const k in opts)if(typeof o[k]==='string')opts[k]=o[k];}catch(e){}
@@ -1397,6 +1400,8 @@ function applyOpts(){fillBrief();if(W&&state==='menu'&&W.plane.type!==opts.plane
   if(tod!==opts.tod||!applyOpts.done)setTOD(opts.tod);applyOpts.done=true;cloudSp.forEach((c,i)=>c.visible=opts.q==='high'||i%2===0);resize();
   try{localStorage.setItem('haniaflight-opts',JSON.stringify(opts));}catch(e){}}
 for(const b of document.querySelectorAll('[data-opt]'))b.onclick=()=>{opts[b.dataset.opt]=b.dataset.val;applyOpts();};
+/* Android back button, called by the app shell: pause a flight, resume from pause, otherwise let the app close */
+window.__hfBack=()=>{if(state==='fly'){pause();return true;}if(state==='pause'){resume();return true;}if(state==='debrief'){toMenu();return true;}return false;};
 let instEv=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();instEv=e;$('install').hidden=false;});
 $('install').onclick=()=>{if(instEv){instEv.prompt();instEv=null;$('install').hidden=true;}};
 await prog(0.96);
