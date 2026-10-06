@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="icon" href="icons/icon-192.png">
 <title>HaniaFlight</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Secular+One&family=Share+Tech+Mono&display=swap">
+<link rel="stylesheet" media="print" onload="this.media='all'" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Secular+One&family=Share+Tech+Mono&display=swap">
 <style>
 /* Layout: full-bleed flight view; a briefing sheet docked to the reading-start edge; HUD drawn over the scene. Single dark look by choice. */
 :root{
@@ -192,7 +192,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, RT ו־LT למנוע, A לירי, B לנורים, X לנעילה, Y לחימוש הבא, LB למעצור, RB למבט, חצים למעלה ולמטה לכן נסע ולמדפים.</p>
     </details>
-    <p class="note">גרסה 0.4.1: מטוס אחד ומשימה אחת. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
+    <p class="note">גרסה 0.4.2: מטוס אחד ומשימה אחת. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
   </section>
 
   <section id="pause" class="modal" hidden>
@@ -222,7 +222,8 @@ details[open] summary{margin-bottom:10px}
 </div>
 <script src="vendor/three.min.js"></script>
 <script>
-var RAAM=(function(){
+requestAnimationFrame(function(){setTimeout(function(){
+window.RAAM=(function(){
 'use strict';
 /* ===== RAAM core: math, atmosphere, terrain, flight model, weapons, AI, mission ===== */
 const G0=9.80665,D2R=Math.PI/180,R2D=180/Math.PI,KT=1.94384,FT=3.28084,NM=1852;
@@ -673,8 +674,6 @@ const RAAM={DIFF,G0,D2R,R2D,KT,FT,NM,clamp,lerp,sstep,v3,vadd,vsub,vmul,vdot,vcr
 if(typeof module!=='undefined')module.exports=RAAM;
 
 return RAAM;})();
-</script>
-<script>
 'use strict';
 (()=>{
 const R=RAAM,{D2R,R2D,KT,FT,NM,clamp,lerp,sstep,v3,vadd,vsub,vmul,vdot,vlen,vnorm,vdist,qrot,qrotInv,FWD,UP,terrainH,TER,SITES,RWY}=R;
@@ -1225,6 +1224,7 @@ $('startRwy').disabled=$('startAir').disabled=false;$('loading').hidden=true;
 window.__raam={get W(){return W;},start,keys,setTOD,get state(){return state;}};
 })();
 
+},30);});
 </script>
 <script>if('serviceWorker' in navigator)addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});</script>
 </body>

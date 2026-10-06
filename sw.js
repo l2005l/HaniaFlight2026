@@ -1,5 +1,5 @@
 /* HaniaFlight service worker: keeps the game playable offline once it has been opened. Generated into /sw.js by build.py. */
-const CACHE='haniaflight-215c1d80da';
+const CACHE='haniaflight-98be53124b';
 const SHELL=['./','index.html','vendor/three.min.js','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
@@ -7,9 +7,11 @@ const keep=(req,res)=>{if(res&&(res.ok||res.type==='opaque')){const cp=res.clone
 self.addEventListener('fetch',e=>{
   const r=e.request;if(r.method!=='GET')return;const u=new URL(r.url);
   if(u.origin===location.origin){
-    /* the page itself: newest version when online, cached copy when not */
-    if(r.mode==='navigate'){e.respondWith(fetch(r).then(x=>keep('index.html',x)).catch(()=>caches.match('index.html')));return;}
+    /* the page itself: open instantly from the cache and refresh it in the background, so a slow network never delays launch.
+       A new version therefore shows up on the launch after it was downloaded. */
+    if(r.mode==='navigate'){const fresh=fetch(r).then(x=>keep('index.html',x));
+      e.respondWith(caches.match('index.html').then(m=>{if(m){e.waitUntil(fresh.catch(()=>{}));return m;}return fresh;}));return;}
     e.respondWith(caches.match(r).then(m=>m||fetch(r).then(x=>keep(r,x))));return;}
   if(/fonts\.(googleapis|gstatic)\.com$/.test(u.hostname))
-    e.respondWith(caches.match(r).then(m=>m||fetch(r).then(x=>keep(r,x)).catch(()=>new Response('',{status:504}))));
+    e.respondWith(caches.match(r).then(m=>m||Promise.race([fetch(r).then(x=>keep(r,x)),new Promise(ok=>setTimeout(()=>ok(new Response('',{status:504})),2500))]).catch(()=>new Response('',{status:504}))));
 });

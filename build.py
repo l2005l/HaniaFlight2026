@@ -15,8 +15,10 @@ head, core, game = read('src/head.html'), read('src/core.js'), read('src/game.js
 assert '</script' not in core and '</script' not in game
 CDN = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'
 def scripts(three):
-    return ('<script src="' + three + '"></script>\n<script>\nvar RAAM=(function(){\n' + core +
-            '\nreturn RAAM;})();\n</script>\n<script>\n' + game + '\n</script>\n')
+    # The world build blocks for a moment, so it starts after the first paint: the briefing (and the app's
+    # splash screen) appears at once instead of waiting for it.
+    return ('<script src="' + three + '"></script>\n<script>\nrequestAnimationFrame(function(){setTimeout(function(){\n'
+            'window.RAAM=(function(){\n' + core + '\nreturn RAAM;})();\n' + game + '\n},30);});\n</script>\n')
 APP = ('<link rel="manifest" href="manifest.webmanifest">\n<meta name="theme-color" content="#0c1114">\n'
        '<meta name="mobile-web-app-capable" content="yes">\n<meta name="apple-mobile-web-app-capable" content="yes">\n'
        '<link rel="apple-touch-icon" href="icons/icon-192.png">\n<link rel="icon" href="icons/icon-192.png">\n')
