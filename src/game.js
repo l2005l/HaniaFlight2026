@@ -625,7 +625,9 @@ function applyOpts(){fillBrief();if(W&&state==='menu'&&W.plane.type!==opts.plane
 for(const b of document.querySelectorAll('[data-opt]'))b.onclick=()=>{opts[b.dataset.opt]=b.dataset.val;applyOpts();};
 /* Android back button, called by the app shell: pause a flight, resume from pause, otherwise let the app close */
 window.__hfBack=()=>{if(state==='fly'){pause();return true;}if(state==='pause'){resume();return true;}if(state==='debrief'){toMenu();return true;}return false;};
-let instEv=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();instEv=e;$('install').hidden=false;});
+/* on Android the native app opens faster than a browser-installed one, so offer that instead */
+const android=/Android/i.test(navigator.userAgent)&&!window.HFNative;$('apk').hidden=!android;
+let instEv=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();if(android)return;instEv=e;$('install').hidden=false;});
 $('install').onclick=()=>{if(instEv){instEv.prompt();instEv=null;$('install').hidden=true;}};
 await prog(0.96);
 applyOpts();newGame('runway',true);requestAnimationFrame(frame);

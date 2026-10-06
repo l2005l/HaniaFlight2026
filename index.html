@@ -46,6 +46,9 @@ dd{text-align:end;font-family:var(--mono);direction:ltr;color:var(--ink);font-va
 .acts{display:flex;gap:10px;flex-wrap:wrap}
 button{font:inherit;font-weight:700;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:3px;padding:11px 18px;cursor:pointer}
 button:hover{border-color:var(--sand)}
+a.btn{font-weight:700;color:var(--ink);border:1px solid var(--line);border-radius:3px;padding:11px 18px;text-decoration:none;text-align:center;flex:1 1 100%}
+a.btn:hover{border-color:var(--sand)}
+a.btn:focus-visible{outline:2px solid var(--hud);outline-offset:2px}
 button:focus-visible{outline:2px solid var(--hud);outline-offset:2px}
 button.go{background:var(--sand);color:var(--sand-ink);border-color:var(--sand);flex:1 1 12rem}
 button.go:hover{filter:brightness(1.08)}
@@ -181,6 +184,7 @@ details[open] summary{margin-bottom:10px}
       <button id="startRwy" class="go">המראה מהמסלול</button>
       <button id="startAir">התחלה באוויר</button>
       <button id="install" hidden>התקנה כאפליקציה</button>
+      <a id="apk" class="btn" href="https://github.com/l2005l/HaniaFlight2026/releases/download/android-latest/HaniaFlight.apk" hidden>הורדת האפליקציה לאנדרואיד</a>
     </div>
     <div class="seg" role="group" aria-label="רמת קושי">
       <span>רמת קושי</span>
@@ -261,7 +265,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט.</p>
     </details>
-    <p class="note">גרסה 0.6.3 (8cb70a1, נטען ב־<span id="loadMs">…</span> שניות): שני מטוסים ושתי משימות. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
+    <p class="note">גרסה 0.6.4 (5aa1089, נטען ב־<span id="loadMs">…</span> שניות): שני מטוסים ושתי משימות. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
   </section>
 
   <section id="pause" class="modal" hidden>
@@ -1402,7 +1406,9 @@ function applyOpts(){fillBrief();if(W&&state==='menu'&&W.plane.type!==opts.plane
 for(const b of document.querySelectorAll('[data-opt]'))b.onclick=()=>{opts[b.dataset.opt]=b.dataset.val;applyOpts();};
 /* Android back button, called by the app shell: pause a flight, resume from pause, otherwise let the app close */
 window.__hfBack=()=>{if(state==='fly'){pause();return true;}if(state==='pause'){resume();return true;}if(state==='debrief'){toMenu();return true;}return false;};
-let instEv=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();instEv=e;$('install').hidden=false;});
+/* on Android the native app opens faster than a browser-installed one, so offer that instead */
+const android=/Android/i.test(navigator.userAgent)&&!window.HFNative;$('apk').hidden=!android;
+let instEv=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();if(android)return;instEv=e;$('install').hidden=false;});
 $('install').onclick=()=>{if(instEv){instEv.prompt();instEv=null;$('install').hidden=true;}};
 await prog(0.96);
 applyOpts();newGame('runway',true);requestAnimationFrame(frame);
