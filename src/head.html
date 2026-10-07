@@ -91,6 +91,15 @@ details[open] summary{margin-bottom:10px}
 #dAch{display:flex;flex-direction:column;gap:4px}#dAch span{border:1px solid var(--sand);padding:5px 9px;font-size:.85rem}#dAch:empty{display:none}
 #replay button[data-on="1"]{border-color:var(--red);color:var(--red)}
 @media (max-width:700px){#replay{flex-wrap:wrap}#replay input{flex-basis:100%;order:-1}}
+#pilotBox{display:flex;gap:12px;align-items:center;border:1px solid var(--line);padding:10px}
+#pEmblem{width:64px;height:64px;flex:none}
+.pcol{display:flex;flex-direction:column;gap:6px;min-width:0;flex:1}.prow{display:flex;gap:6px;flex-wrap:wrap}
+#pRank{font-weight:700;color:var(--sand)}
+#pilotBox input{flex:1;min-width:7rem;background:rgba(8,12,14,.6);border:1px solid var(--line);color:inherit;padding:5px 8px;font:inherit;font-size:.85rem}
+#pEmb button{padding:3px 9px;font-size:.75rem}#pEmb button[aria-pressed="true"]{border-color:var(--sand);color:var(--sand)}
+#photoBar{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);z-index:6;display:flex;gap:8px;align-items:center;background:rgba(8,12,14,.8);border:1px solid var(--line);padding:6px 10px;font-size:.82rem}
+#photoBar[hidden]{display:none}#photoBar button{padding:5px 12px;font-size:.85rem}
+#app[data-photo="1"] #touch,#app[data-photo="1"] #chips,#app[data-photo="1"] #radio,#app[data-photo="1"] #obj,#app[data-photo="1"] #check{display:none!important}
 #chips{position:absolute;top:48px;left:50%;transform:translateX(-50%);z-index:4;display:flex;gap:6px}
 #chips[hidden]{display:none}
 #chips button{background:rgba(8,12,14,.6);padding:4px 12px;font-size:.78rem;white-space:nowrap}
@@ -185,6 +194,14 @@ details[open] summary{margin-bottom:10px}
       <h1 dir="ltr">HaniaFlight</h1>
       <div id="unit" class="eyebrow">F-15I רעם · טייסת 69 · הפטישים</div>
     </header>
+    <div id="pilotBox">
+      <canvas id="pEmblem" width="96" height="96" aria-hidden="true"></canvas>
+      <div class="pcol">
+        <div id="pRank"></div>
+        <div class="prow"><input id="pName" maxlength="18" placeholder="שם הטייס" aria-label="שם הטייס"><input id="pCall" maxlength="10" placeholder="אות קריאה, למשל ברק" aria-label="אות קריאה"></div>
+        <div class="prow" id="pEmb" role="group" aria-label="סמל הזנב"></div>
+      </div>
+    </div>
     <div class="seg" role="group" aria-label="משימה">
       <span>משימה</span>
       <button id="mStrike" data-opt="mission" data-val="strike">פטיש ברזל</button>
@@ -317,11 +334,20 @@ details[open] summary{margin-bottom:10px}
       <button id="todDusk" data-opt="tod" data-val="dusk">שקיעה</button>
       <button id="todNight" data-opt="tod" data-val="night">לילה</button>
     </div>
+    <div id="prepBox" class="brief">
+      <h2>הכנת המטוס</h2>
+      <div class="seg" role="group" aria-label="דלק פנימי"><span>דלק פנימי</span><button data-opt="fuelPct" data-val="60">60%</button><button data-opt="fuelPct" data-val="80">80%</button><button data-opt="fuelPct" data-val="100">מלא</button></div>
+      <div class="seg" role="group" aria-label="מכלים נתיקים"><span>מכלים נתיקים</span><button data-opt="tanks" data-val="0">בלי</button><button data-opt="tanks" data-val="1">1</button><button data-opt="tanks" data-val="2">2</button><button data-opt="tanks" data-val="3">3</button></div>
+      <div class="seg" role="group" aria-label="טילי אוויר־אוויר"><span>טילי אוויר־אוויר</span><button data-opt="aam" data-val="full">תצורה מלאה</button><button data-opt="aam" data-val="light">חצי, קל יותר</button></div>
+      <p id="towLine" class="note"></p>
+      <p class="note">מכל נתיק מוסיף דלק, משקל וגרר. משליכים אותו במקש J (לפני הפצצות). במשימות תדלוק והדרכה אין מכלים.</p>
+    </div>
     <div class="seg" role="group" aria-label="מזג אוויר">
       <span>מזג אוויר</span>
       <button data-opt="wx" data-val="clear">בהיר</button>
       <button data-opt="wx" data-val="wind">רוח צד</button>
       <button data-opt="wx" data-val="storm">מעונן וסוער</button>
+      <button data-opt="wx" data-val="fog">ערפל בוקר</button>
     </div>
     <div class="seg" role="group" aria-label="תקלות אקראיות">
       <span>תקלות אקראיות</span>
@@ -450,9 +476,10 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט.</p>
     </details>
-    <p class="note">גרסה 1.4 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות): שני מטוסים ושתי משימות. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
+    <p class="note">גרסה 1.5 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות): שני מטוסים ושתי משימות. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
   </section>
 
+  <div id="photoBar" hidden><span>גרור כדי לסובב</span><button id="phIn" aria-label="התקרב">+</button><button id="phOut" aria-label="התרחק">−</button><button id="phSave">שמור תמונה</button><button id="phBack" class="go">חזרה</button></div>
   <div id="replay" hidden>
     <button id="rpPlay">השהה</button><input id="rpSeek" type="range" min="0" max="1000" value="0" aria-label="מיקום בהקלטה"><span id="rpTime" dir="ltr">0:00</span>
     <button id="rpCam">מצלמה: סיבוב</button><button id="rpRec" hidden>הקלט קטע</button><button id="rpSpeed">×1</button><button id="rpIn" aria-label="התקרב">+</button><button id="rpOut" aria-label="התרחק">−</button><button id="rpExit">סיום</button>
@@ -460,7 +487,7 @@ details[open] summary{margin-bottom:10px}
   <section id="pause" class="modal" hidden>
     <div class="card">
       <h2>הטיסה מושהית</h2>
-      <div class="acts"><button id="resume" class="go">המשך</button><button id="restart">התחל מחדש</button><button id="ejectBtn">נטישה</button><button id="quit">לתדריך</button></div>
+      <div class="acts"><button id="resume" class="go">המשך</button><button id="restart">התחל מחדש</button><button id="photoBtn">מצב צילום</button><button id="ejectBtn">נטישה</button><button id="quit">לתדריך</button></div>
       <details>
         <summary>מדריך תצוגות</summary>
         <div id="guide2"></div>

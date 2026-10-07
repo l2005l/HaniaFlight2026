@@ -1,8 +1,8 @@
 # HaniaFlight
 
-סימולטור טיסה תלת־ממדי של מטוסי קרב ישראליים, שרץ בדפדפן. גרסה 1.4: ארבעה מטוסים (F-15I רעם, F-16I סופה, F-35I אדיר, F-15 בז), חמש משימות (תקיפה, הגנת שמיים, קרב אוויר, תדלוק, הדרכה) וטיסת לילה.
+סימולטור טיסה תלת־ממדי של מטוסי קרב ישראליים, שרץ בדפדפן. גרסה 1.5: ארבעה מטוסים (F-15I רעם, F-16I סופה, F-35I אדיר, F-15 בז), חמש משימות (תקיפה, הגנת שמיים, קרב אוויר, תדלוק, הדרכה) וטיסת לילה.
 
-A browser flight simulator of Israeli fighter jets. Version 1.4: four aircraft (F-15I Ra'am, F-16I Sufa, F-35I Adir, F-15 Baz), five missions (strike, air defence, air combat, refuelling, training) and night flying.
+A browser flight simulator of Israeli fighter jets. Version 1.5: four aircraft (F-15I Ra'am, F-16I Sufa, F-35I Adir, F-15 Baz), five missions (strike, air defence, air combat, refuelling, training) and night flying.
 
 ## לשחק / Play
 
