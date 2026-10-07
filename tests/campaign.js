@@ -24,3 +24,11 @@ R.buildTerrain();console.log('theatre',R.THEATRE.id,'target',R.SITES.tgt.x,R.SIT
   run(W,400,()=>{M.pump();p.fuel=7000;p.hp=p.hpMax;apSteer(p,v3(-1,0.02,0.2),0.5);if(!ord&&W.time>3){ord=true;W.wingCmd('cover');}if(W.mwarn)W.dispense(p);});
   console.log(' duel vs',W.foeName,'x',W.migs.length,'with number two on free hunt: enemy alive',W.migs.filter(m=>m.alive).length,'| wingman missiles left',W.wing.aim120,W.wing.python,'|',W.over&&W.over.title);console.log('  '+M.a.slice(0,8).join('\n  '));}
 {const W=new World({plane:'F15I',start:'air',mission:'duel',foe:'mig21'});console.log(' foe mig21:',W.migs.length,W.migs[0].type,'r27',W.migAI[0].r27,'| campaign strike without SAM:',new World({mission:'strike',noSam:true}).sams[0].alive);}
+// escort: left alone the strike pair is attacked; with the fighters removed it bombs the target
+for(const guard of [false,true]){const W=new World({plane:'F15C',start:'air',mission:'escort',wing:false});const p=W.player,M=msgs(W);
+  run(W,1500,()=>{M.pump();p.fuel=5000;p.hp=p.hpMax;apSteer(p,v3(guard?1:-1,(6000-p.pos.y)/3000,0),0.4);if(guard&&W.migsActive)for(const m of W.migs)if(m.alive&&Math.random()<0.002)W.killAir(m);});
+  console.log(' escort',guard?'(enemy fighters removed)':'(pair left alone)','->',W.over&&W.over.title,'|',W.over&&W.over.reason,'t',Math.round(W.time));if(!guard)console.log('  '+M.a.slice(0,6).join('\n  '));}
+// the enemy now also goes for number two, who can be shot down
+{const W=new World({plane:'F15I',start:'air',mission:'duel',foe:'su27',wing:true});const p=W.player;let tg=0;
+  run(W,300,()=>{p.fuel=7000;p.hp=p.hpMax;apSteer(p,v3(-1,0.02,0.4),0.5);W.over=null;if(W.migAI.some(a=>a.tgt===W.wing.ac))tg++;});
+  console.log(' wingman targeted by the enemy for',Math.round(tg/60),'s | hits taken',W.wing.ac.hits||0,'alive',W.wing.ac.alive);}

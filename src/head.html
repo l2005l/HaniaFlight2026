@@ -183,6 +183,7 @@ details[open] summary{margin-bottom:10px}
       <button id="mIcpt" data-opt="mission" data-val="intercept">הגנת שמיים</button>
       <button id="mSead" data-opt="mission" data-val="sead">דיכוי נ"מ</button>
       <button id="mConvoy" data-opt="mission" data-val="convoy">סיור חמוש</button>
+      <button id="mEscort" data-opt="mission" data-val="escort">ליווי</button>
       <button id="mDuel" data-opt="mission" data-val="duel">קרב אוויר</button>
       <button id="mTanker" data-opt="mission" data-val="tanker">תדלוק אווירי</button>
       <button id="mTrain" data-opt="mission" data-val="train">הדרכה</button>
@@ -234,6 +235,15 @@ details[open] summary{margin-bottom:10px}
         <li>המטרות נעות. פצצת דאייה מכוונת לנקודה קבועה ותחטיא; פצצת לייזר עוקבת אחרי המשאית כל עוד הפוד רואה אותה.</li>
         <li>התותח יעיל: גישה מאחור לאורך הציר, צלילה רדודה, אש מ-800 מטר.</li>
         <li>הסוללה מגיעה ל-16 ק"מ בערך. השמד אותה קודם או תקוף מהצד הרחוק.</li>
+      </ol>
+    </div>
+    <div id="briefEscort" class="brief" hidden>
+      <h2>ליווי מבנה תקיפה</h2>
+      <p>זוג מטוסי סופה חמושים בפצצות טס אל אתר השיגור. הם לא מתמרנים ולא נלחמים: התפקיד שלך לשמור עליהם. הסוללה שהגנה על האתר כבר שותקה, אבל שני זוגות מיירטים יעלו לעברם, קודם מיג-29 ואחר כך מיג-21, והם מכוונים קודם כול למבנה.</p>
+      <ol class="steps">
+        <li>הישאר לפני המבנה, לא לצדו. מיירט שעבר אותך כבר בטווח שיגור עליהם.</li>
+        <li>המשימה מצליחה אם לפחות מטוס תקיפה אחד שחרר והמטרות הושמדו.</li>
+        <li>מספר שתיים שלך יכול להיפגע עכשיו. שלח אותו לציד חופשי (8) כדי לפצל את האויב.</li>
       </ol>
     </div>
     <div id="briefTrain" class="brief" hidden>
@@ -418,7 +428,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט.</p>
     </details>
-    <p class="note">גרסה 1.1 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות): שני מטוסים ושתי משימות. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
+    <p class="note">גרסה 1.2 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות): שני מטוסים ושתי משימות. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
   </section>
 
   <div id="replay" hidden>
