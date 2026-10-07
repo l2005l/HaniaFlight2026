@@ -158,11 +158,11 @@ details[open] summary{margin-bottom:10px}
   <div id="radio" aria-live="polite"></div>
   <div id="toast" role="status" aria-live="polite"></div>
   <button id="lookBack" hidden>חזרה למבט קדימה</button>
-  <div id="chips" hidden><button id="mapBtn">מפה</button><button id="wingBtn" hidden>שתיים</button><button id="padBtn">מבט למטרה</button><button id="nvgBtn" hidden>משקפת לילה</button></div>
+  <div id="chips" hidden><button id="mapBtn">מפה</button><button id="ecmBtn">שיבוש</button><button id="wingBtn" hidden>שתיים</button><button id="padBtn">מבט למטרה</button><button id="nvgBtn" hidden>משקפת לילה</button></div>
   <div id="check" hidden>
     <div class="chead"><b>רשימת תיוג להתנעה</b><button id="autoStart">התנעה אוטומטית</button></div>
     <ol id="checkList"></ol>
-    <p id="checkDone" hidden>מוכן. המתן לסימון ראש הצוות, צא ישר מהדת"ק לאורך הקו הצהוב, פנה שמאלה בנתיב ההסעה ובסופו ימינה אל מסלול 09.</p>
+    <p id="checkDone" hidden>מוכן. המתן לסימון ראש הצוות, צא ישר מהדת"ק לאורך הקו הצהוב ופנה שמאלה בנתיב ההסעה. בסופו פנה ימינה ועצור אצל צוות החימוש להוצאת פינים, ואז המשך למסלול 09.</p>
   </div>
   <div id="touch">
     <div id="tStick"><div id="tKnob"></div></div>
@@ -200,6 +200,7 @@ details[open] summary{margin-bottom:10px}
       <span>זירה</span>
       <button data-opt="theatre" data-val="south">דרום · מדבר</button>
       <button data-opt="theatre" data-val="north">צפון · הרים</button>
+      <button data-opt="theatre" data-val="far">רחוק · מעבר לים</button>
     </div>
     <div class="seg" role="group" aria-label="מטוס">
       <span>מטוס</span>
@@ -255,8 +256,16 @@ details[open] summary{margin-bottom:10px}
       </ol>
     </div>
     <div id="briefTrain" class="brief" hidden>
-      <h2>טיסת הדרכה</h2>
-      <p>טיסה ראשונה עם מדריך ברדיו, בלי אויב. הוא נותן משימה אחת בכל פעם ומחכה שתבצע: טיפוס, פנייה לכיוון, נעילת מכ"ם, שיגור טיל, ירי בתותח ונצירת הנשק. כעשר דקות.</p>
+      <h2>הדרכה</h2>
+      <div class="seg" id="lessonRow" role="group" aria-label="שיעור">
+        <span>שיעור</span>
+        <button data-opt="lesson" data-val="basic">טיסה ראשונה</button>
+        <button data-opt="lesson" data-val="land">נחיתה</button>
+        <button data-opt="lesson" data-val="refuel">תדלוק</button>
+        <button data-opt="lesson" data-val="ground">תקיפת קרקע</button>
+        <button data-opt="lesson" data-val="evade">התחמקות מטיל</button>
+      </div>
+      <p id="lessonText"></p>
     </div>
     <div id="briefTanker" class="brief" hidden>
       <h2>תדלוק אווירי</h2>
@@ -441,7 +450,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט.</p>
     </details>
-    <p class="note">גרסה 1.3 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות): שני מטוסים ושתי משימות. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
+    <p class="note">גרסה 1.4 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות): שני מטוסים ושתי משימות. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
   </section>
 
   <div id="replay" hidden>
@@ -472,6 +481,7 @@ details[open] summary{margin-bottom:10px}
         <kbd>Tab</kbd><span>מפה טקטית</span>
         <kbd>Z</kbd><span>מבט נעול על המטרה</span>
         <kbd>Backspace ×2</kbd><span>נטישה</span>
+        <kbd>5</kbd><span>שיבוש אלקטרוני</span>
         <kbd>7 · 8 · 9</kbd><span>מספר שתיים: תקוף את המטרה שלי · ציד חופשי · חזור למבנה</span>
         <kbd>V · O · 0</kbd><span>מבט · האצת זמן · השתקה</span>
       </div>

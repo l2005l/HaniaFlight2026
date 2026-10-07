@@ -36,3 +36,16 @@ for(const keep of [true,false]){const W=new World({plane:'F15I',start:'air',miss
   W.over=null;console.log('eject',W.eject());run(W,12);console.log(' ->',W.over&&W.over.title,W.over&&W.over.reason);}
 // wind drift
 {const W=new World({plane:'F15I',start:'air',mission:'train',wx:'wind'});const p=W.player;run(W,20);const e=p.euler();console.log('wind: crab angle deg',((e.hdg-Math.atan2(p.vel.x,-p.vel.z))*R.R2D).toFixed(1),'(nose into the wind, track unchanged)');}
+// lessons: each one can be completed by a simple pilot
+{const mk=l=>new World({plane:'F16I',start:'air',mission:'train',lesson:l});
+ {const W=mk('land'),p=W.player;run(W,400,()=>{const e=p.euler();p.gear=true;p.flaps=true;const gs=Math.atan2(p.pos.y-R.SITES.base.h-2,Math.max(1,R.RWY.x1+250-p.pos.x));
+    if(!p.onGround){const want=p.agl>12?-3*R.D2R:-0.6*R.D2R,fp=Math.asin(R.clamp(p.vel.y/Math.max(p.V,1),-1,1)),aim=gs>3.3*R.D2R?-4.5*R.D2R:gs<2.7*R.D2R?-1.2*R.D2R:want;p.ctl.pitch=R.clamp((aim-fp)*6,-0.5,0.5);p.ctl.roll=R.clamp(-p.pos.z*0.004-e.roll*2,-0.4,0.4);p.ctl.throttle=p.agl<8?0:p.V>78?0.25:p.V>72?0.6:1;p.ctl.brake=p.V>84;}
+    else{p.ctl.throttle=0;p.ctl.pitch=0;p.ctl.brake=true;}});console.log('lesson land:',W.over&&W.over.title,'step',W.flags.step,p.crash||'');}
+ {const W=mk('ground'),p=W.player;run(W,400,()=>{if(W.flags.step===0)W.select('SPICE');W.arm=true;const g=W.gtgt||W.ground[0],r=vsub(g.pos,p.pos);apSteer(p,vnorm(v3(r.x,0,r.z)),0.5);const b=W.bombSol();W.trigger(false,!!(b&&b.ok&&W.flags.step===3),1/60);});console.log('lesson ground:',W.over&&W.over.title,'step',W.flags.step);}
+ {const W=mk('evade'),p=W.player;let cm=0;run(W,400,()=>{p.fuel=4000;const m=W.missiles.find(x=>x.alive&&x.target===p);if(m){const l=vnorm(vsub(p.pos,m.pos));apSteer(p,vnorm(v3(-l.z,-0.05,l.x)),0.8);cm-=1/60;if(cm<=0){cm=0.8;W.dispense(p);}}else apSteer(p,v3(1,0.02,0),0.4);});console.log('lesson evade:',W.over&&W.over.title,'step',W.flags.step,'of',W.trainN);}
+ {const W=mk('refuel');console.log('lesson refuel: tanker',!!W.tanker,'fuel',Math.round(W.player.fuel),'steps',(W.mission(),W.trainN));}}
+// return to the shelter after landing, pins at the arming point, pair take-off
+{const W=new World({plane:'F15I',start:'cold',mission:'strike',wing:true});const p=W.player,c=W.crew;console.log('pins in at cold start:',W.sys.pins,'| wingman waits on runway:',W.wing.ac.onGround);
+ p.pos=v3(R.ARM_PT.x,p.pos.y,R.ARM_PT.z);W.sys.chocks=false;c.phase='done';run(W,12,()=>{p.vel=v3();});console.log(' after 12 s stopped at the arming point: pins',W.sys.pins,c.arm);
+ W.flags.touch=true;W.flags.airborne=true;p.wasAir=true;p.pos=v3(R.PARK.x,p.pos.y,R.PARK.z-200);run(W,2,()=>{p.vel=v3(0,0,3);p.pos.z=R.PARK.z-200;});const a=c.phase;p.pos=v3(R.PARK.x,p.pos.y,R.PARK.z-5);run(W,8,()=>{p.vel=v3();});console.log(' recovery phases:',a,'->',c.phase,'chocks',W.sys.chocks,'|',W.over&&W.over.reason);}
+{const W=new World({plane:'F16I',start:'runway',mission:'intercept',wing:true});const p=W.player,w=W.wing.ac;run(W,90,()=>{const e=p.euler();p.ctl.throttle=1.3;p.ctl.pitch=p.V>82&&e.pitch<10*R.D2R?0.5:0;if(!p.onGround&&p.agl>30)p.gear=false;});console.log('pair take-off: leader alt',Math.round(p.pos.y),'wingman alive',w.alive,'alt',Math.round(w.pos.y),'dist',Math.round(vlen(vsub(w.pos,p.pos))));}
