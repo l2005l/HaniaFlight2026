@@ -30,7 +30,7 @@ function atmo(h){h=clamp(h,0,26000);let T,p;
 /* ---------- terrain ---------- */
 const TER={x0:-70000,z0:-90000,cell:600,nx:521,nz:301,h:null};
 const SITES={base:{x:0,z:0,r:4500},tgt:{x:126000,z:9000,r:2600},sam:{x:112000,z:-3000,r:1300}};
-const RWY={x1:-1350,x2:1350,half:30},PARK={x:-1300,z:205};
+const RWY={x1:-1350,x2:1350,half:30},PARK={x:-320,z:474};   /* inside a hardened shelter on the apron, facing north */
 /* two theatres share the code: the southern desert and a greener, steeper north with the target much closer */
 const THEATRE={id:'south',base:'חצרים',cap:[40000,0],ipOff:[-64000,-5000],migOff:[32000,9000],duelX:66000};
 function setTheatre(id){if(TER.h||id!=='north')return;Object.assign(THEATRE,{id:'north',base:'רמת דוד',cap:[34000,-4000],ipOff:[-50000,8000],migOff:[26000,-14000],duelX:60000});
@@ -401,7 +401,9 @@ class World{
       :{x:RWY.x1+110,y:SITES.base.h+TYPES[pl.type].gearH,z:0,hdg:Math.PI/2,speed:0,throttle:0,gear:true,flaps:true,onGround:true,fuel:pl.fuelRwy});
     /* aircraft systems. A cold start begins with everything off, parked short of the runway. */
     this.sys={batt:!cold,jfs:0,jfsOn:false,start:[false,false],cut:[false,false],ins:cold?0:1,insOn:!cold,radar:!cold,canopyOpen:cold,canopy:cold?1:0,pbrake:cold,lights:!cold,arDoor:false};
-    if(cold)this.player.rpm.fill(0);this.autoStart=false;this.autoT=0;this.dmg=[];this.dmgRadar=false;this.dmgRwr=false;
+    if(cold)this.player.rpm.fill(0);
+    /* ground crew for a start from the shelter: clears each engine, pulls the chocks, marshals the jet out and salutes */
+    this.crew=cold?{phase:'pre',t:0,warned:0}:null;this.sys.chocks=cold;this.autoStart=false;this.autoT=0;this.dmg=[];this.dmgRadar=false;this.dmgRwr=false;
     this.radar={mode:'RWS',rng:40};this.ar={state:'none',t:0,taken:0,rel:v3(),dist:1e9,range:1e9};
     this.tanker=duel||train?null:new Tanker(26000,-24000,6000);this.friends=this.tanker?[this.tanker]:[];
     if(air)this.player.vel=v3(250,0,0);
@@ -418,7 +420,7 @@ class World{
     this.nDrone=this.drones.length;
     /* enemy fighters: type and number depend on the mission */
     this.migs=[];this.migAI=[];const home=duel?v3(TH.duelX,6500,0):v3(tg.x+TH.migOff[0],7500,tg.z+TH.migOff[1]),
-      foe=duel?(o.foe==='su27'?'SU27':o.foe==='mig21'?'MIG21':'MIG29'):sead?'MIG21':'MIG29',nFoe=duel?(foe==='MIG21'?3:2):esc?4:strike||sead?2:0;
+      foe=duel?(o.foe==='su27'?'SU27':o.foe==='mig21'?'MIG21':'MIG29'):sead?'MIG21':'MIG29',nFoe=duel?(foe==='MIG21'?3:2):esc?(o.noMigs?2:4):strike?(o.noMigs?0:2):sead?2:0;
     this.foeName={SU27:'סוחוי-27',MIG21:'מיג-21',MIG29:'מיג-29'}[foe];
     for(let i=0;i<nFoe;i++){const ft=esc&&i>=2?'MIG21':foe;const m=new Aircraft(ft,duel?{side:1,x:home.x+i*2500,y:home.y+i*400,z:[-2600,2600,0][i],hdg:-Math.PI/2,speed:250,fuel:3000,storeCD:0.002}
         :{side:1,x:home.x+i*3000,y:home.y+i*300,z:home.z+9000*(i%2?-1:1),hdg:i%2?Math.PI/2:-Math.PI/2,speed:230,fuel:3000,storeCD:0.002});
@@ -519,7 +521,7 @@ class World{
       case 'eng0':case 'eng1':{const i=+id[3];if(i>=p.nEng)return no('אין מנוע כזה במטוס הזה.');
         if(p.rpm[i]>=1||s.start[i]){if(!p.onGround)return no('באוויר מכבים מנוע רק בידית האש.');s.start[i]=false;s.cut[i]=true;return ev(false);}
         if(p.engOK[i]===0)return no('המנוע מושבת.');if(s.jfs<1)return no('המתנע עוד לא מוכן.');if(p.fuel<=0)return no('אין דלק.');
-        s.cut[i]=false;s.start[i]=true;return ev(true);}
+        s.cut[i]=false;s.start[i]=true;if(this.crew&&this.crew.phase==='pre')this.msg(`ראש צוות: מנוע ${p.nEng===1?'':i===1?'ימין ':'שמאל '}נקי מאחור. רשאי להתניע.`.replace('  ',' '));return ev(true);}
       case 'ins':if(!this.power)return no('אין מתח.');if(s.ins>=1)return no('מערכת הניווט כבר מיושרת.');s.insOn=!s.insOn;return ev(s.insOn);
       case 'radar':if(this.dmgRadar)return no('המכ"ם תקול.');if(!s.radar&&!p.rpm.some(r=>r>=1))return no('המכ"ם דורש מנוע פועל.');s.radar=!s.radar;return ev(s.radar);
       case 'canopy':if(!s.canopyOpen&&p.V>25)return no('אי אפשר לפתוח חופה בתנועה.');s.canopyOpen=!s.canopyOpen;return ev(!s.canopyOpen);
@@ -542,7 +544,15 @@ class World{
     L.push({id:'radar',t:'מכ"ם',done:s.radar});
     L.push({id:'canopy',t:'סגירת חופה',done:!s.canopyOpen&&s.canopy<0.05,busy:!s.canopyOpen&&s.canopy>=0.05,pct:1-s.canopy});
     L.push({id:'pbrake',t:'שחרור בלם חניה',done:!s.pbrake});return L;}
-  systems(dt){const s=this.sys,p=this.player;if(!p.alive)return;
+  crewStep(dt){const c=this.crew,s=this.sys,p=this.player;if(!c||c.phase==='done')return;c.t+=dt;
+    const set=ph=>{c.phase=ph;c.t=0;};
+    if(s.chocks){p.vel=v3();p.pos.x=PARK.x;p.pos.z=PARK.z;
+      if(!s.pbrake&&p.ctl.throttle>0.12&&this.time-c.warned>8){c.warned=this.time;this.msg('ראש צוות: עצור! הסדים עדיין במקום. המתן לסימון.');}}
+    if(c.phase==='pre'){const L=this.checklist();if(L.filter(x=>x.id!=='pbrake').every(x=>x.done)){set('chocks');this.msg('ראש צוות: מנועים יציבים. מוציאים סדים ופיני ביטחון.');}}
+    else if(c.phase==='chocks'&&c.t>7){s.chocks=false;set('marshal');this.msg('ראש צוות: סדים ופינים בחוץ, המטוס נקי. שחרר בלם חניה וסע אחרי המכווין.');}
+    else if(c.phase==='marshal'&&p.pos.z<PARK.z-40){set('salute');this.msg('ראש צוות: טיסה טובה ונחיתה בטוחה. המשך ישר לנתיב ההסעה ופנה שמאלה.');}
+    else if(c.phase==='salute'&&c.t>9)set('done');}
+  systems(dt){const s=this.sys,p=this.player;if(!p.alive)return;this.crewStep(dt);
     s.jfs=s.jfsOn&&this.power?Math.min(1,s.jfs+dt/4):Math.max(0,s.jfs-dt/2);
     for(let i=0;i<p.nEng;i++){
       if(s.start[i]&&(s.jfs>=1||p.rpm[i]>0.6)){p.rpm[i]=Math.min(1,p.rpm[i]+dt/12);if(p.rpm[i]>=1){s.start[i]=false;this.events.push({type:'sw',id:'eng'+i,on:true,done:true});}}
@@ -743,7 +753,7 @@ class World{
       for(const e of tg){if(!e.alive)continue;const r=vsub(e.pos,b.pos);if(Math.abs(r.x)+Math.abs(r.y)+Math.abs(r.z)>120)continue;
         const sv=vsub(np,b.pos),tt=clamp(vdot(r,sv)/vdot(sv,sv),0,1);
         if(vdist(vadd(b.pos,vmul(sv,tt)),e.pos)<(e.type==='UAV'?5:8)){b.t=9;this.events.push({type:'spark',pos:e.pos});
-          if(e===p)this.hurt('gun');else{e.hp-=e.type==='UAV'?1:10;if(e.hp<=0){this.events.push({type:'boom',pos:e.pos,size:1});this.killAir(e);}}}}
+          if(e===p)this.hurt('gun');else{e.hp-=e.type==='UAV'?1:10;if(e.hp<=0){this.stats.gunKill=(this.stats.gunKill||0)+1;this.events.push({type:'boom',pos:e.pos,size:1});this.killAir(e);}}}}
       if(b.owner===p&&b.t<9)for(const g of this.ground){if(!g.alive||g.kind!=='truck')continue;const r=vsub(g.pos,b.pos);if(Math.abs(r.x)+Math.abs(r.y)+Math.abs(r.z)>140)continue;
         const sv=vsub(np,b.pos),tt=clamp(vdot(r,sv)/vdot(sv,sv),0,1);if(vdist(vadd(b.pos,vmul(sv,tt)),vadd(g.pos,v3(0,1.5,0)))<7){b.t=9;this.events.push({type:'spark',pos:g.pos});if(--g.hp<=0){this.events.push({type:'boom',pos:g.pos,size:1.5,ground:true});this.killGround(g);}}}
       b.pos=np;if(b.t<9&&np.y<terrainH(np.x,np.z))b.t=9;}

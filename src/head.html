@@ -83,6 +83,14 @@ details[open] summary{margin-bottom:10px}
 #replay input{flex:1;min-width:60px;accent-color:var(--sand)}
 #replay button{padding:5px 12px;font-size:.85rem;white-space:nowrap}
 #replay span{font-family:var(--mono);font-size:.8rem;color:var(--dim)}
+#bMap{width:100%;height:230px;border:1px solid var(--line);background:#06101a;display:block}
+.card.wide{width:min(46rem,100%)}
+#achList{display:grid;grid-template-columns:repeat(auto-fill,minmax(9.5rem,1fr));gap:6px}
+.ach{border:1px solid var(--line);padding:6px 8px;display:flex;flex-direction:column;gap:2px;opacity:.38;font-size:.8rem}
+.ach.on{opacity:1;border-color:var(--sand)}.ach.on b{color:var(--sand)}.ach span{color:var(--dim);font-size:.72rem}
+#dAch{display:flex;flex-direction:column;gap:4px}#dAch span{border:1px solid var(--sand);padding:5px 9px;font-size:.85rem}#dAch:empty{display:none}
+#replay button[data-on="1"]{border-color:var(--red);color:var(--red)}
+@media (max-width:700px){#replay{flex-wrap:wrap}#replay input{flex-basis:100%;order:-1}}
 #chips{position:absolute;top:48px;left:50%;transform:translateX(-50%);z-index:4;display:flex;gap:6px}
 #chips[hidden]{display:none}
 #chips button{background:rgba(8,12,14,.6);padding:4px 12px;font-size:.78rem;white-space:nowrap}
@@ -154,7 +162,7 @@ details[open] summary{margin-bottom:10px}
   <div id="check" hidden>
     <div class="chead"><b>רשימת תיוג להתנעה</b><button id="autoStart">התנעה אוטומטית</button></div>
     <ol id="checkList"></ol>
-    <p id="checkDone" hidden>מוכן. הוסף מעט מצערת, סע ישר למסלול ופנה ימינה לכיוון 090.</p>
+    <p id="checkDone" hidden>מוכן. המתן לסימון ראש הצוות, צא ישר מהדת"ק לאורך הקו הצהוב, פנה שמאלה בנתיב ההסעה ובסופו ימינה אל מסלול 09.</p>
   </div>
   <div id="touch">
     <div id="tStick"><div id="tKnob"></div></div>
@@ -267,7 +275,7 @@ details[open] summary{margin-bottom:10px}
     <p id="loadErr" class="err" hidden>לא ניתן להפעיל את מנוע התלת־ממד. נדרש דפדפן עם WebGL וחיבור לרשת.</p>
     <div class="acts">
       <button id="startRwy" class="go">המראה מהמסלול</button>
-      <button id="startCold">התנעה מהעמדה</button>
+      <button id="startCold">התנעה מהדת"ק</button>
       <button id="startAir">התחלה באוויר</button>
       <button id="install" hidden>התקנה כאפליקציה</button>
       <a id="apk" class="btn" href="https://github.com/l2005l/HaniaFlight2026/releases/download/android-latest/HaniaFlight.apk" hidden>הורדת האפליקציה לאנדרואיד</a>
@@ -286,7 +294,7 @@ details[open] summary{margin-bottom:10px}
     <div id="campBox" class="brief">
       <h2>מערכה</h2>
       <p><b id="campStage"></b> <span id="campText"></span></p>
-      <div class="acts"><button id="campGo" class="go">טוס את שלב המערכה</button><button id="campReset">התחל את המערכה מחדש</button></div>
+      <div class="acts"><button id="campGo" class="go">תדריך לשלב המערכה</button><button id="campReset">התחל את המערכה מחדש</button></div>
     </div>
     <div class="seg" role="group" aria-label="רמת קושי">
       <span>רמת קושי</span>
@@ -351,9 +359,14 @@ details[open] summary{margin-bottom:10px}
       <h3>תצורת חימוש</h3>
       <dl id="loadout"></dl>
     </div>
+    <p id="bestLine" class="note"></p>
     <div>
       <h3>יומן טייס</h3>
       <dl id="logbook"></dl>
+    </div>
+    <div>
+      <h3>הישגים <span id="achCount" class="note"></span></h3>
+      <div id="achList"></div>
     </div>
     <details>
       <summary>מדריך תצוגות: HUD, מכ"ם ומסך איומים</summary>
@@ -388,7 +401,7 @@ details[open] summary{margin-bottom:10px}
         </ul></div>
         <div><h4>לוח המתגים והתנעה</h4><ul>
           <li>מתחת למסכים יש שתי שורות מתגים אמיתיים. מסתכלים אליהם ב־<b>X</b>, או בגרירת המבט למטה, ולוחצים על מתג כדי להפעיל אותו. נורית ירוקה פירושה פועל, כתומה מהבהבת פירושה בתהליך, אדומה פירושה אזהרה.</li>
-          <li>ב"התנעה מהעמדה" המטוס כבוי. הסדר: מצבר, מתנע עזר, מנוע ימין, מנוע שמאל, יישור מערכת הניווט, מכ"ם, סגירת חופה, שחרור בלם חניה. רשימת התיוג שעל המסך מסמנת את השלב הבא, וכל שורה בה היא גם כפתור. אפשר גם "התנעה אוטומטית".</li>
+          <li>ב"התנעה מהדת"ק" המטוס כבוי בתוך הדת"ק, וצוות קרקע מלווה אותך: ראש הצוות מאשר כל מנוע, המכונאים מוציאים סדים, והמכווין מסמן לצאת. הסדר: מצבר, מתנע עזר, מנוע ימין, מנוע שמאל, יישור מערכת הניווט, מכ"ם, סגירת חופה, שחרור בלם חניה. רשימת התיוג שעל המסך מסמנת את השלב הבא, וכל שורה בה היא גם כפתור. אפשר גם "התנעה אוטומטית".</li>
           <li>עד שיש מתח, ה־HUD והמסכים כבויים. עד שמערכת הניווט מיושרת, אין הכוונה לנקודות הציון, ואסור לזוז בזמן היישור.</li>
         </ul></div>
         <div><h4>נזק</h4><ul>
@@ -428,12 +441,12 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט.</p>
     </details>
-    <p class="note">גרסה 1.2 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות): שני מטוסים ושתי משימות. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
+    <p class="note">גרסה 1.3 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות): שני מטוסים ושתי משימות. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
   </section>
 
   <div id="replay" hidden>
     <button id="rpPlay">השהה</button><input id="rpSeek" type="range" min="0" max="1000" value="0" aria-label="מיקום בהקלטה"><span id="rpTime" dir="ltr">0:00</span>
-    <button id="rpSpeed">×1</button><button id="rpIn" aria-label="התקרב">+</button><button id="rpOut" aria-label="התרחק">−</button><button id="rpExit">סיום</button>
+    <button id="rpCam">מצלמה: סיבוב</button><button id="rpRec" hidden>הקלט קטע</button><button id="rpSpeed">×1</button><button id="rpIn" aria-label="התקרב">+</button><button id="rpOut" aria-label="התרחק">−</button><button id="rpExit">סיום</button>
   </div>
   <section id="pause" class="modal" hidden>
     <div class="card">
@@ -470,10 +483,19 @@ details[open] summary{margin-bottom:10px}
 /* lets a start button work while the world is still loading: the tap is remembered and the flight starts when ready */
 (function(){var q=null;window.__hfQueue=function(){return q;};['startRwy','startAir','startCold'].forEach(function(id){document.getElementById(id).addEventListener('click',function(){if(!(window.__raam&&window.__raam.ready)){q=id;document.getElementById('loadText').textContent='טוען את הזירה. הטיסה תתחיל מיד…';}});});})();
 </script>
+  <section id="brief" class="modal" hidden>
+    <div class="card wide">
+      <div><div class="eyebrow" id="bStage"></div><h2 id="bTitle"></h2><div class="note" id="bPlane"></div></div>
+      <p id="bText"></p>
+      <canvas id="bMap" dir="ltr" aria-label="מפת המשימה"></canvas>
+      <ol class="steps" id="bGoals"></ol>
+      <div class="acts"><button id="bGo" class="go">המראה מהמסלול</button><button id="bCold">התנעה מהדת"ק</button><button id="bBack">חזרה</button></div>
+    </div>
+  </section>
   <section id="debrief" class="modal" hidden>
     <div class="card">
       <div><div class="eyebrow">תחקיר</div><h2 id="dTitle"></h2></div>
-      <p id="dReason"></p><p id="dCamp" class="note"></p>
+      <p id="dReason"></p><p id="dCamp" class="note"></p><button id="campSkip" hidden>המשך במערכה בלי השלב הזה</button><div id="dAch"></div>
       <dl id="dStats"></dl>
       <div class="acts"><button id="again" class="go">טיסה נוספת</button><button id="watch">צפייה חוזרת</button><button id="back">לתדריך</button></div>
     </div>
