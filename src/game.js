@@ -704,6 +704,8 @@ function readInput(dt){const pad=readXR(dt)||readPad(dt);if(state!=='fly')return
   if(pad&&!look.drag&&(pad.lx||pad.ly)&&!W.player.onGround){look.yaw+=(pad.lx*2.3-look.yaw)*Math.min(1,dt*8);look.pitch+=(-pad.ly*1.0-look.pitch)*Math.min(1,dt*8);look.pad=true;}else look.pad=false;
   if(padUsed&&pad){stick.x=pad.x;stick.y=pad.y;stick.r=W.player.onGround?pad.lx:0;}
   else{if(opts.tilt==='on'&&tilt.ok&&!touch.held){stick.x=tilt.x;stick.y=tilt.y;}else if(touch.on){stick.x=touch.x;stick.y=touch.y;}else{stick.x=ap(stick.x,tx);stick.y=ap(stick.y,ty);}stick.r=ap(stick.r,tr);}
+  /* on the ground, left and right on the stick (touch, tilt or arrow keys) steer the nose wheel when no rudder is given */
+  if(W.player.onGround&&!tr&&!(padUsed&&pad))stick.r=stick.x;
   const up=k.ShiftLeft||k.ShiftRight||k.Equal||k.KeyR,dn=k.Minus||k.KeyF;
   if(up)lever=Math.min(1.3,lever+0.55*dt);if(dn)lever=Math.max(0,lever-0.55*dt);
   if(W.ejected){stick.x=stick.y=stick.r=0;return;}
