@@ -7,6 +7,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
+import android.view.InputDevice;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
@@ -17,6 +20,7 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.window.OnBackInvokedDispatcher;
 
 import java.util.Locale;
 
@@ -32,6 +36,11 @@ public class MainActivity extends Activity {
     private WebView web;
     private TextToSpeech tts;
     private volatile boolean voiceReady;
+
+    /* game controller state, passed to the page as a standard pad (WebView has no Gamepad API) */
+    private final float[] pad = new float[6];
+    private int padButtons;
+    private long padSent;
 
     @Override
     protected void onCreate(Bundle state) {
@@ -92,6 +101,10 @@ public class MainActivity extends Activity {
             }
         });
 
+        // Android 13+ delivers Back through a callback (and, for apps targeting Android 16, no longer calls onBackPressed)
+        if (Build.VERSION.SDK_INT >= 33)
+            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, this::handleBack);
+
         if (state == null) web.loadUrl(URL);
         else web.restoreState(state);
         immersive();
@@ -123,9 +136,79 @@ public class MainActivity extends Activity {
         if (focused) immersive();
     }
 
+    private static boolean fromPad(int source) {
+        return (source & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK
+                || (source & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD;
+    }
+
+    /** Standard-pad button index for an Android key code, or -1. */
+    private static int padIndex(int code) {
+        switch (code) {
+            case KeyEvent.KEYCODE_BUTTON_A: return 0;
+            case KeyEvent.KEYCODE_BUTTON_B: return 1;
+            case KeyEvent.KEYCODE_BUTTON_X: return 2;
+            case KeyEvent.KEYCODE_BUTTON_Y: return 3;
+            case KeyEvent.KEYCODE_BUTTON_L1: return 4;
+            case KeyEvent.KEYCODE_BUTTON_R1: return 5;
+            case KeyEvent.KEYCODE_BUTTON_SELECT: return 8;
+            case KeyEvent.KEYCODE_BUTTON_START: return 9;
+            case KeyEvent.KEYCODE_BUTTON_THUMBL: return 10;
+            case KeyEvent.KEYCODE_BUTTON_THUMBR: return 11;
+            case KeyEvent.KEYCODE_DPAD_UP: return 12;
+            case KeyEvent.KEYCODE_DPAD_DOWN: return 13;
+            case KeyEvent.KEYCODE_DPAD_LEFT: return 14;
+            case KeyEvent.KEYCODE_DPAD_RIGHT: return 15;
+            default: return -1;
+        }
+    }
+
+    private void sendPad(boolean force) {
+        long now = System.currentTimeMillis();
+        if (!force && now - padSent < 12) return;
+        padSent = now;
+        String js = String.format(Locale.US, "window.__hfPad&&window.__hfPad(%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%d)",
+                pad[0], pad[1], pad[2], pad[3], pad[4], pad[5], padButtons);
+        web.evaluateJavascript(js, null);
+    }
+
+    @Override
+    public boolean dispatchGenericMotionEvent(MotionEvent e) {
+        if (fromPad(e.getSource()) && e.getAction() == MotionEvent.ACTION_MOVE) {
+            pad[0] = e.getAxisValue(MotionEvent.AXIS_X);
+            pad[1] = e.getAxisValue(MotionEvent.AXIS_Y);
+            pad[2] = e.getAxisValue(MotionEvent.AXIS_Z);
+            pad[3] = e.getAxisValue(MotionEvent.AXIS_RZ);
+            pad[4] = Math.max(e.getAxisValue(MotionEvent.AXIS_LTRIGGER), e.getAxisValue(MotionEvent.AXIS_BRAKE));
+            pad[5] = Math.max(e.getAxisValue(MotionEvent.AXIS_RTRIGGER), e.getAxisValue(MotionEvent.AXIS_GAS));
+            float hx = e.getAxisValue(MotionEvent.AXIS_HAT_X), hy = e.getAxisValue(MotionEvent.AXIS_HAT_Y);
+            int hat = (hy < -0.5f ? 1 << 12 : 0) | (hy > 0.5f ? 1 << 13 : 0) | (hx < -0.5f ? 1 << 14 : 0) | (hx > 0.5f ? 1 << 15 : 0);
+            int before = padButtons;
+            padButtons = (padButtons & ~(0xF << 12)) | hat;
+            sendPad(before != padButtons);
+            return true;
+        }
+        return super.dispatchGenericMotionEvent(e);
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent e) {
+        int i = padIndex(e.getKeyCode());
+        if (i >= 0 && fromPad(e.getSource())) {
+            if (e.getAction() == KeyEvent.ACTION_DOWN) padButtons |= 1 << i;
+            else if (e.getAction() == KeyEvent.ACTION_UP) padButtons &= ~(1 << i);
+            sendPad(true);
+            return true;
+        }
+        return super.dispatchKeyEvent(e);
+    }
+
     /** Back pauses a flight (the page handles it); from the briefing it leaves the app. */
     @Override
     public void onBackPressed() {
+        handleBack();
+    }
+
+    private void handleBack() {
         web.evaluateJavascript("!!(window.__hfBack&&window.__hfBack())", handled -> {
             if (!"true".equals(handled)) moveTaskToBack(true);
         });

@@ -5,13 +5,31 @@ def buildNumber = (System.getenv('GITHUB_RUN_NUMBER') ?: '1') as int
 
 android {
     namespace 'com.hania360.flight'
-    compileSdk 34
+    compileSdk 36
     defaultConfig {
         applicationId 'com.hania360.flight'
         minSdk 24
-        targetSdk 34
+        targetSdk 36
         versionCode buildNumber
         versionName "1.${buildNumber}"
+    }
+    // Release builds for Google Play are signed with the upload key from the repository's secrets (see store/README.md).
+    signingConfigs {
+        release {
+            def ks = System.getenv('UPLOAD_KEYSTORE')
+            if (ks) {
+                storeFile file(ks)
+                storePassword System.getenv('UPLOAD_STORE_PASSWORD')
+                keyAlias System.getenv('UPLOAD_KEY_ALIAS')
+                keyPassword System.getenv('UPLOAD_KEY_PASSWORD')
+            }
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (System.getenv('UPLOAD_KEYSTORE')) signingConfig signingConfigs.release
+        }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17

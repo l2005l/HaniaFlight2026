@@ -21,7 +21,7 @@ jobs:
           java-version: '17'
       - uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.9'
+          gradle-version: '8.13'
       # Reuse one signing key between builds, so a newer APK can install over an older one.
       - uses: actions/cache@v4
         with:
@@ -31,6 +31,27 @@ jobs:
         run: gradle -p android assembleDebug --no-daemon
       - name: Rename APK
         run: cp android/app/build/outputs/apk/debug/app-debug.apk HaniaFlight.apk
+      # Google Play bundle, signed with the upload key when the four UPLOAD_* secrets are set (store/README.md)
+      - name: Build Play bundle
+        env:
+          KEY_B64: ${{ secrets.UPLOAD_KEYSTORE_B64 }}
+          UPLOAD_STORE_PASSWORD: ${{ secrets.UPLOAD_STORE_PASSWORD }}
+          UPLOAD_KEY_ALIAS: ${{ secrets.UPLOAD_KEY_ALIAS }}
+          UPLOAD_KEY_PASSWORD: ${{ secrets.UPLOAD_KEY_PASSWORD }}
+        run: |
+          if [ -n "$KEY_B64" ]; then
+            echo "$KEY_B64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+            export UPLOAD_KEYSTORE="$RUNNER_TEMP/upload.jks"
+            gradle -p android bundleRelease --no-daemon
+            cp android/app/build/outputs/bundle/release/app-release.aab HaniaFlight.aab
+          else
+            echo "No upload key in the repository secrets; skipping the Play bundle."
+          fi
+      - uses: actions/upload-artifact@v4
+        if: hashFiles('HaniaFlight.aab') != ''
+        with:
+          name: HaniaFlight-play-bundle
+          path: HaniaFlight.aab
       - uses: actions/upload-artifact@v4
         with:
           name: HaniaFlight-apk

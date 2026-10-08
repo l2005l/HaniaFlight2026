@@ -1,5 +1,5 @@
 /* HaniaFlight service worker: keeps the game playable offline once it has been opened. Generated into /sw.js by build.py. */
-const CACHE='haniaflight-7ae2336';
+const CACHE='haniaflight-4adf79d';
 const SHELL=['./','index.html','vendor/three.min.js','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png'];
 /* fetch each file fresh (never from the HTTP cache) and report progress to the open page */
 const tell=m=>self.clients.matchAll({includeUncontrolled:true,type:'window'}).then(cs=>cs.forEach(c=>c.postMessage(m)));
@@ -13,6 +13,7 @@ self.addEventListener('fetch',e=>{
   if(u.origin===location.origin){
     /* the page itself: open instantly from the cache and refresh it in the background, so a slow network never delays launch.
        A new version therefore shows up on the launch after it was downloaded. */
+    if(r.mode==='navigate'&&!/\/(index\.html)?$/.test(u.pathname))return;
     if(r.mode==='navigate'){const fresh=fetch(r).then(x=>keep('index.html',x));
       e.respondWith(caches.match('index.html').then(m=>{if(m){e.waitUntil(fresh.catch(()=>{}));return m;}return fresh;}));return;}
     e.respondWith(caches.match(r).then(m=>m||fetch(r).then(x=>keep(r,x))));return;}

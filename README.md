@@ -1,8 +1,8 @@
 # HaniaFlight
 
-סימולטור טיסה תלת־ממדי של מטוסי קרב ישראליים, שרץ בדפדפן. גרסה 1.5: ארבעה מטוסים (F-15I רעם, F-16I סופה, F-35I אדיר, F-15 בז), חמש משימות (תקיפה, הגנת שמיים, קרב אוויר, תדלוק, הדרכה) וטיסת לילה.
+סימולטור טיסה תלת־ממדי של מטוסי קרב ישראליים, שרץ בדפדפן. גרסה 1.6: ארבעה מטוסים (F-15I רעם, F-16I סופה, F-35I אדיר, F-15 בז), אחת־עשרה משימות, שתי מערכות, אתגר יומי וטיסת לילה עם תאורת שדה.
 
-A browser flight simulator of Israeli fighter jets. Version 1.5: four aircraft (F-15I Ra'am, F-16I Sufa, F-35I Adir, F-15 Baz), five missions (strike, air defence, air combat, refuelling, training) and night flying.
+A browser flight simulator of Israeli fighter jets. Version 1.6: four aircraft (F-15I Ra'am, F-16I Sufa, F-35I Adir, F-15 Baz), eleven missions, two campaigns, a daily challenge and night flying with airfield lighting.
 
 ## לשחק / Play
 
@@ -14,7 +14,9 @@ https://flight.hania360.com/
 
 זו מעטפת מקורית קטנה (`android/`) שמציגה את המשחק מ-flight.hania360.com במסך מלא. המשחק מתעדכן מהאתר, כך שאין צורך להתקין את האפליקציה מחדש בכל גרסה. היא נבנית ב-GitHub Actions (`.github/workflows/android.yml`) בכל שינוי בתיקיית `android/`.
 
-A thin native shell (`android/`) that shows the game from flight.hania360.com full screen; the game updates from the web. GitHub Actions builds the APK on every change under `android/`.
+A thin native shell (`android/`) that shows the game from flight.hania360.com full screen; the game updates from the web. GitHub Actions builds the APK on every change under `android/`, and a signed Play bundle when the upload key is in the repository secrets. Publishing to Google Play: `store/README.md`.
+
+העלאה ל-Google Play: ההוראות, הטקסטים והגרפיקה בתיקייה `store/`.
 
 ## התקנה כאפליקציה / Install as an app
 
@@ -53,6 +55,11 @@ The game is a PWA: open the link, then use the in-game install button or the bro
 - מכ"ם עם מצבי חיפוש וקרב צמוד, טווח ידני וזיהוי עמית־טורף
 - תדלוק אווירי ממתדלק בזרוע, כמשימה נפרדת וגם בתוך משימת התקיפה
 - שלוש רמות קושי, מצב גרפיקה חסכוני, מקלדת, מגע ושלט משחק
+- 1.6, טיסה: כבייה והתנעה באוויר, כשל בלמים וכבל בלימה (וו במקש 6), פגיעת ציפור, מגבלת G עם מכלים ומהירות הרמת אף לפי המשקל, נחיתה זוגית עם מספר שתיים
+- 1.6, אויב: סוללה נסתרת שמדליקה מכ"ם רק מקרוב, מיג שמחכה נמוך מאחורי ההרים, זוג שמנסה פיתיון, מיגים שחוזרים הביתה בבינגו, משגר שבורח מהעמדה, ספינת טילים בזירה הרחוקה
+- 1.6, לילה: אורות מסלול, תאורת גישה עם הבזק רץ, PAPI, מסלולי הסעה כחולים, יישובים ופנסי רחוב, פנס נחיתה ואורות ניווט
+- 1.6, תוכן: משימות חילוץ (ליווי מסוק), צילום מודיעין בפוד ויירוט כטב"ם חמקן; מערכה שנייה מעבר לים עם צי מטוסים ומלאי חימוש; אתגר יומי עם ניקוד
+- 1.6, אפליקציה: מצב חיסכון סוללה, שלט משחק גם באפליקציית האנדרואיד, יעד Android 16 וחבילה ל-Google Play
 
 ## מבנה / Layout
 
@@ -99,6 +106,7 @@ node tests/systems.js            # cold start, switches, damage, radar modes, re
 | H / J | Autopilot (altitude and heading hold) / jettison air-to-ground stores |
 | Y / , . | Radar mode (search or close combat) / radar range down, up |
 | K | Air-refuelling door; the HUD then steers to the tanker |
+| 6 · ; | Arresting hook · restart a flamed-out engine in the air (above 215 kt) |
 | X | Look at the switch panel; click a switch to work it |
 | Mouse drag | Look around the cockpit; the head recentres on release |
 | V / O / P / 0 | View / time acceleration / pause / mute |

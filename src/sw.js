@@ -13,6 +13,7 @@ self.addEventListener('fetch',e=>{
   if(u.origin===location.origin){
     /* the page itself: open instantly from the cache and refresh it in the background, so a slow network never delays launch.
        A new version therefore shows up on the launch after it was downloaded. */
+    if(r.mode==='navigate'&&!/\/(index\.html)?$/.test(u.pathname))return;
     if(r.mode==='navigate'){const fresh=fetch(r).then(x=>keep('index.html',x));
       e.respondWith(caches.match('index.html').then(m=>{if(m){e.waitUntil(fresh.catch(()=>{}));return m;}return fresh;}));return;}
     e.respondWith(caches.match(r).then(m=>m||fetch(r).then(x=>keep(r,x))));return;}

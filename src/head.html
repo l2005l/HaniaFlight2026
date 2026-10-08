@@ -104,6 +104,7 @@ details[open] summary{margin-bottom:10px}
 #chips[hidden]{display:none}
 #chips button{background:rgba(8,12,14,.6);padding:4px 12px;font-size:.78rem;white-space:nowrap}
 #chips button[data-on="1"]{border-color:var(--sand);color:var(--sand)}
+#chips button.warn{border-color:#ff5c4f;color:#ffd0c8;animation:blinkw 1s steps(2) infinite}@keyframes blinkw{50%{background:rgba(120,20,10,.7)}}
 #touch[data-big="1"] .tb{grid-template-columns:repeat(2,66px)}
 #touch[data-big="1"] .tb button{font-size:.9rem}
 #app[data-fly="1"] #touch[data-on="1"][data-big="1"]{height:150px;grid-template-columns:140px auto 1fr auto 56px}
@@ -167,7 +168,7 @@ details[open] summary{margin-bottom:10px}
   <div id="radio" aria-live="polite"></div>
   <div id="toast" role="status" aria-live="polite"></div>
   <button id="lookBack" hidden>חזרה למבט קדימה</button>
-  <div id="chips" hidden><button id="mapBtn">מפה</button><button id="ecmBtn">שיבוש</button><button id="wingBtn" hidden>שתיים</button><button id="padBtn">מבט למטרה</button><button id="nvgBtn" hidden>משקפת לילה</button></div>
+  <div id="chips" hidden><button id="mapBtn">מפה</button><button id="ecmBtn">שיבוש</button><button id="wingBtn" hidden>שתיים</button><button id="padBtn">מבט למטרה</button><button id="nvgBtn" hidden>משקפת לילה</button><button id="hookBtn" hidden>וו בלימה</button><button id="relightBtn" class="warn" hidden>התנעה באוויר</button></div>
   <div id="check" hidden>
     <div class="chead"><b>רשימת תיוג להתנעה</b><button id="autoStart">התנעה אוטומטית</button></div>
     <ol id="checkList"></ol>
@@ -209,6 +210,9 @@ details[open] summary{margin-bottom:10px}
       <button id="mSead" data-opt="mission" data-val="sead">דיכוי נ"מ</button>
       <button id="mConvoy" data-opt="mission" data-val="convoy">סיור חמוש</button>
       <button id="mEscort" data-opt="mission" data-val="escort">ליווי</button>
+      <button id="mCsar" data-opt="mission" data-val="csar">חילוץ</button>
+      <button id="mRecon" data-opt="mission" data-val="recon">צילום</button>
+      <button id="mStealth" data-opt="mission" data-val="stealth">כטב"ם חמקן</button>
       <button id="mDuel" data-opt="mission" data-val="duel">קרב אוויר</button>
       <button id="mTanker" data-opt="mission" data-val="tanker">תדלוק אווירי</button>
       <button id="mTrain" data-opt="mission" data-val="train">הדרכה</button>
@@ -272,6 +276,33 @@ details[open] summary{margin-bottom:10px}
         <li>מספר שתיים שלך יכול להיפגע עכשיו. שלח אותו לציד חופשי (8) כדי לפצל את האויב.</li>
       </ol>
     </div>
+    <div id="briefCsar" class="brief" hidden>
+      <h2>חילוץ</h2>
+      <p>טייס נטש מזרחה, ומסוק חילוץ כבר בדרך אליו, נמוך ואיטי. כשהמסוק מתקרב, זוג מיג-21 ממריא כדי להפיל אותו. ליד הטייס מחכה סוללה קצרת טווח שלא משדרת עד שמתקרבים.</p>
+      <ol class="steps">
+        <li>הישאר בין המסוק לבין האויב. המיגים הולכים קודם כול על המסוק, והנורים שלו חלשים.</li>
+        <li>האיסוף לוקח שתי דקות. בזמן הזה המסוק תלוי במקום ואין לו איך לברוח.</li>
+        <li>המשימה מצליחה כשהמסוק חוצה בחזרה את קו הגבול עם הטייס.</li>
+      </ol>
+    </div>
+    <div id="briefRecon" class="brief" hidden>
+      <h2>צילום מודיעין</h2>
+      <p>שלושה אתרים לצלם בפוד, בלי חימוש לקרקע. סוללת SA-6 שומרת על האתר האמצעי, ואחרי הצילום הראשון יעלה זוג מיג-29.</p>
+      <ol class="steps">
+        <li>בחר 4, נעל על האתר (T) והחזק אותו בתמונת הפוד שלוש שניות. בתצוגה מופיע <b>PHOTO</b> עם אחוזים.</li>
+        <li>הפוד רואה עד 46 ק"מ, אבל לא מתחת לבטן ולא מאחורי הרים. מקרוב ומלמעלה התמונה נשמרת הכי מהר.</li>
+        <li>המשימה מצליחה כשהתמונות מגיעות הביתה, בטווח 25 ק"מ מהבסיס.</li>
+      </ol>
+    </div>
+    <div id="briefStealth" class="brief" hidden>
+      <h2>כטב"ם חמקן</h2>
+      <p>כטב"ם בעל חתימת מכ"ם זעירה טס מערבה צמוד לקרקע, ואיתו שלושה כטב"מי הטעיה גבוהים יותר. המכ"ם רואה את החמקן רק מכ-20 ק"מ, ורק כשהרים לא מסתירים אותו. הבקר ייתן לך כיוון, מרחק וגובה כל חצי דקה.</p>
+      <ol class="steps">
+        <li>אל תבזבז את כל הטילים על ההטעיות. המשימה תלויה רק בחמקן.</li>
+        <li>רד נמוך כדי שהמכ"ם יראה אותו על רקע השמיים, או התקרב לטווח תותח.</li>
+        <li>אם הוא עובר את קו ההגנה, המשימה נכשלת.</li>
+      </ol>
+    </div>
     <div id="briefTrain" class="brief" hidden>
       <h2>הדרכה</h2>
       <div class="seg" id="lessonRow" role="group" aria-label="שיעור">
@@ -322,6 +353,19 @@ details[open] summary{margin-bottom:10px}
       <p><b id="campStage"></b> <span id="campText"></span></p>
       <div class="acts"><button id="campGo" class="go">תדריך לשלב המערכה</button><button id="campReset">התחל את המערכה מחדש</button></div>
     </div>
+    <div id="campBox2" class="brief">
+      <h2>מערכה שנייה: מעבר לים</h2>
+      <p><b id="campStage2"></b> <span id="campText2"></span></p>
+      <p class="note" id="campFleet"></p>
+      <p class="note">חמישה שלבים בזירה הרחוקה. צי של ארבעה מטוסים ומלאי חימוש משותף: מטוס שאבד לא חוזר, מטוס פגוע נכנס לתיקון, וכל טיל ששוגר יורד מהמלאי.</p>
+      <div class="acts"><button id="campGo2" class="go">תדריך לשלב</button><button id="campReset2">התחל מחדש</button></div>
+    </div>
+    <div id="dailyBox" class="brief">
+      <h2>אתגר יומי</h2>
+      <p id="dailyText"></p>
+      <p class="note" id="dailyBest"></p>
+      <div class="acts"><button id="dailyGo" class="go">לאתגר של היום</button></div>
+    </div>
     <div class="seg" role="group" aria-label="רמת קושי">
       <span>רמת קושי</span>
       <button id="dEasy" data-opt="diff" data-val="easy">קל</button>
@@ -363,6 +407,7 @@ details[open] summary{margin-bottom:10px}
       <span>גרפיקה</span>
       <button id="qHigh" data-opt="q" data-val="high">מלאה</button>
       <button id="qLow" data-opt="q" data-val="low">חסכונית</button>
+      <button id="qEco" data-opt="q" data-val="eco">חיסכון סוללה</button>
     </div>
     <div class="seg" role="group" aria-label="רגישות המוט">
       <span>רגישות מוט</span>
@@ -470,13 +515,14 @@ details[open] summary{margin-bottom:10px}
         <kbd>H · J</kbd><span>טייס אוטומטי (שומר גובה וכיוון) · השלכת חימוש קרקע</span>
         <kbd>Y · , .</kbd><span>מצב מכ"ם (חיפוש או קרב צמוד) · טווח המכ"ם קטן וגדול</span>
         <kbd>K</kbd><span>דלת תדלוק. כשהיא פתוחה ה־HUD מכוון אל המתדלק.</span>
+        <kbd>6 · ;</kbd><span>וו בלימה (נתפס בכבל 300 מטר לפני סוף המסלול) · התנעת מנוע באוויר אחרי כבייה, מעל 215 קשר</span>
         <kbd>X</kbd><span>מבט אל לוח המתגים. לוחצים על מתג כדי להפעיל אותו.</span>
         <kbd>גרירת עכבר</kbd><span>הזזת הראש בקוקפיט. הראש חוזר למרכז כשמשחררים.</span>
         <kbd>V · O · P · 0</kbd><span>מבט · האצת זמן · השהיה · השתקה</span>
       </div>
-      <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט.</p>
+      <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט. לחיצה על המוט השמאלי: וו בלימה, על הימני: מבט למטרה. Start מתחיל טיסה מהתפריט. באפליקציית האנדרואיד השלט עובד דרך האפליקציה עצמה.</p>
     </details>
-    <p class="note">גרסה 1.5 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות): שני מטוסים ושתי משימות. מודל הטיסה פיזיקלי, המערכות מפושטות. המפה דחוסה כדי שהמשימה תימשך כ־20 דקות.</p>
+    <p class="note">גרסה 1.6 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
   </section>
 
   <div id="photoBar" hidden><span>גרור כדי לסובב</span><button id="phIn" aria-label="התקרב">+</button><button id="phOut" aria-label="התרחק">−</button><button id="phSave">שמור תמונה</button><button id="phBack" class="go">חזרה</button></div>
@@ -522,7 +568,7 @@ details[open] summary{margin-bottom:10px}
 </script>
   <section id="brief" class="modal" hidden>
     <div class="card wide">
-      <div><div class="eyebrow" id="bStage"></div><h2 id="bTitle"></h2><div class="note" id="bPlane"></div></div>
+      <div><div class="eyebrow" id="bStage"></div><h2 id="bTitle"></h2><div class="note" id="bPlane"></div><div class="note" id="bFleet" hidden></div></div>
       <p id="bText"></p>
       <canvas id="bMap" dir="ltr" aria-label="מפת המשימה"></canvas>
       <ol class="steps" id="bGoals"></ol>

@@ -26,7 +26,7 @@ for(const k of ['F15I','F35I']){const W=new World({plane:k,start:'air',mission:'
     else{W.arm=false;p.ctl.throttle=0.6;apSteer(p,v3(0,0,-1),0.5);}});
   console.log('train:',W.over&&W.over.title,'step',W.flags.step,'\n '+seen.join('\n '));}
 // laser-guided bombs: shorter reach, and the bomb misses if the laser is lost
-for(const keep of [true,false]){const W=new World({plane:'F15I',start:'air',mission:'strike',bomb:'lgb'});const p=W.player;W.migs.forEach(m=>m.alive=false);W.sam.radar.alive=false;W.select('SPICE');let rel=null;const g0=W.gtgt;
+for(const keep of [true,false]){const W=new World({plane:'F15I',start:'air',mission:'strike',bomb:'lgb'});const p=W.player;W.migs.forEach(m=>m.alive=false);W.sams.forEach(q=>q.radar.alive=false);W.select('SPICE');let rel=null;const g0=W.gtgt;
   run(W,900,()=>{const g=W.gtgt||g0,r=vsub(g.pos,p.pos),d=vnorm(v3(r.x,0,r.z));p.fuel=6000;
     if(rel==null){apSteer(p,v3(d.x,(7000-p.pos.y)/4000,d.z),0.6);p.ctl.throttle=1;const b=W.bombSol();if(b&&b.ok&&b.hd<b.rmax*0.8){W.arm=true;W.trigger(false,true,1/60);rel=W.time;}}
     else{if(keep)apSteer(p,v3(d.x,0.05,d.z),0.3);else apSteer(p,v3(-d.x,0.3,-d.z),0.9);if(!W.bombs.length&&W.time-rel>3)W.over={};}});
