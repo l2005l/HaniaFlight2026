@@ -37,11 +37,24 @@ const THEATRE={id:'south',base:'חצרים',cap:[40000,0],ipOff:[-64000,-5000],m
 /* the real map of Israel: SRTM heights (data/israel-dem.bin, built by tools/terrain/make_israel.py) on a 700 m grid,
    X east and Z south of Ramat David. The sea is west of 35.3E; east of it, ground below sea level is the Jordan rift. */
 const ISR={lat0:32.6653,lon0:35.1797,cell:700,nx:336,nz:665,dem:null};ISR.kx=111320*Math.cos(ISR.lat0*D2R);ISR.kz=110574;ISR.x0=(34.15-ISR.lon0)*ISR.kx;ISR.z0=-(33.65-ISR.lat0)*ISR.kz;ISR.seaX=(35.3-ISR.lon0)*ISR.kx;
-ISR.xy=(lat,lon)=>({x:(lon-ISR.lon0)*ISR.kx,z:-(lat-ISR.lat0)*ISR.kz});
-function setTheatre(id,dem){if(TER.h)return;
-  if(id==='israel'&&dem&&dem.length===ISR.nx*ISR.nz){ISR.dem=dem;Object.assign(TER,{x0:ISR.x0,z0:ISR.z0,cell:ISR.cell,nx:ISR.nx,nz:ISR.nz});
+ISR.bx=0;ISR.bz=0;ISR.seaX0=ISR.seaX;
+/* the map is centred on the home base chosen for the sortie: game X/Z are metres east/south of it */
+ISR.xy=(lat,lon)=>({x:(lon-ISR.lon0)*ISR.kx-ISR.bx,z:-(lat-ISR.lat0)*ISR.kz-ISR.bz});
+ISR.ll=(x,z)=>({lat:ISR.lat0-(z+ISR.bz)/ISR.kz,lon:ISR.lon0+(x+ISR.bx)/ISR.kx});
+/* the Air Force bases, with the rough heading of their main runway (the home base always uses the game's east-west runway) */
+ISR.BASES=[['ramatdavid','רמת דוד',32.6653,35.1797,90],['hatzor','חצור',31.7625,34.7272,110],['telnof','תל נוף',31.8394,34.8219,150],['palmachim','פלמחים',31.8975,34.6908,0],
+  ['hatzerim','חצרים',31.2334,34.6620,80],['nevatim','נבטים',31.2083,35.0123,80],['ramon','רמון',30.7761,34.6667,30],['ovda','עובדה',29.9403,34.9358,20]];
+ISR.alt=[];
+function setTheatre(id,dem,baseId){if(TER.h)return;
+  if(id==='israel'&&dem&&dem.length===ISR.nx*ISR.nz){ISR.dem=dem;const B=ISR.BASES.find(b=>b[0]===baseId)||ISR.BASES[0];ISR.home=B;
+    ISR.bx=(B[3]-ISR.lon0)*ISR.kx;ISR.bz=-(B[2]-ISR.lat0)*ISR.kz;ISR.seaX=ISR.seaX0-ISR.bx;Object.assign(TER,{x0:ISR.x0-ISR.bx,z0:ISR.z0-ISR.bz,cell:ISR.cell,nx:ISR.nx,nz:ISR.nz});
+    /* every other base is a real airfield too: flat ground, a runway and somewhere to land */
+    for(const b of ISR.BASES){if(b===B)continue;const q=ISR.xy(b[2],b[3]);ISR.alt.push({id:b[0],name:b[1],x:q.x,z:q.z,hdg:b[4]*D2R,r:2600});SITES['ab_'+b[0]]={x:q.x,z:q.z,r:2600};}
     /* home is Ramat David; the enemy sites are north-east, beyond the Golan */
-    const T=ISR.xy(32.98,36.33),S=ISR.xy(32.86,36.13);Object.assign(THEATRE,{id:'israel',base:'רמת דוד',cap:[42000,-6000],ipOff:[-48000,10000],migOff:[18000,-14000],duelX:62000,tanker:[-42000,22000]});
+    const T=ISR.xy(32.98,36.33),S=ISR.xy(32.86,36.13),sea=ISR.xy(B[2],34.35);
+    /* routes are drawn from wherever home is: a patrol point a third of the way to the target, the tanker off the coast (or, from the southern bases, over the Negev on the way) */
+    Object.assign(THEATRE,{id:'israel',base:B[1],cap:[Math.round(T.x*0.36),Math.round(T.z*0.36)],ipOff:[-48000,10000],migOff:[18000,-14000],duelX:62000,tanker:B[2]>31.6?[Math.round(Math.max(sea.x,-140000)),Math.round(sea.z)]:[Math.round(T.x*0.4-T.z*0.4*0.25/Math.hypot(T.x,T.z)*1e5*0.25),Math.round(T.z*0.4)]});
+    const F=ISR.xy(clamp(B[2],31.7,32.9),34.4);ISR.fleet={x:Math.round(F.x),z:Math.round(F.z)};
     Object.assign(SITES.tgt,{x:Math.round(T.x),z:Math.round(T.z)});Object.assign(SITES.sam,{x:Math.round(S.x),z:Math.round(S.z)});
     for(const[n,s1,s2,w1,w2,h]of[['כנרת',32.70,32.91,35.51,35.66,-212],['ים המלח',31.33,31.79,35.37,35.61,-416]]){const a=ISR.xy(s2,w1),b=ISR.xy(s1,w2);LAKES.push({n,x1:a.x,z1:a.z,x2:b.x,z2:b.z,h});}return;}
   /* the far theatre: a long leg over open sea to a distant coast, out of reach without the tanker */
@@ -54,7 +67,7 @@ function vnoise(x,z){const i=Math.floor(x),j=Math.floor(z),fx=x-i,fz=z-j,u=fx*fx
   return lerp(lerp(hash2(i,j),hash2(i+1,j),u),lerp(hash2(i,j+1),hash2(i+1,j+1),u),w);}
 function fbm(x,z){let a=1,f=1,s=0,t=0;for(let o=0;o<5;o++){s+=a*vnoise(x*f,z*f);t+=a;a*=0.5;f*=2.03;}return s/t;}
 function rawH(x,z){
-  if(THEATRE.id==='israel'){const{nx,nz,cell,x0,z0}=ISR,d=ISR.dem;let fx=clamp((x-x0)/cell,0,nx-1.001),fz=clamp((z-z0)/cell,0,nz-1.001);const i=fx|0,j=fz|0;fx-=i;fz-=j;const k=j*nx+i;
+  if(THEATRE.id==='israel'){const{nx,nz,cell,x0,z0}=TER,d=ISR.dem;let fx=clamp((x-x0)/cell,0,nx-1.001),fz=clamp((z-z0)/cell,0,nz-1.001);const i=fx|0,j=fz|0;fx-=i;fz-=j;const k=j*nx+i;
     const v=lerp(lerp(d[k],d[k+1],fx),lerp(d[k+nx],d[k+nx+1],fx),fz);if(x<ISR.seaX)return v<0?Math.max(v,-60):v;
     /* the lakes: a flat bed just under the water, so the surface reads as one sheet */
     for(const L of LAKES)if(x>L.x1&&x<L.x2&&z>L.z1&&z<L.z2&&v<L.h+5)return L.h-4;return v;}
@@ -177,7 +190,7 @@ class Aircraft{
     /* ground contact */
     const gh=terrainH(this.pos.x,this.pos.z),ch=this.gearPos>0.9?t.gearH:1.0;this.agl=this.pos.y-gh;
     if(this.agl<=ch){
-      if(!this.onGround){const sink=-this.vel.y,e=this.euler(),nearBase=Math.hypot(this.pos.x-SITES.base.x,this.pos.z-SITES.base.z)<SITES.base.r;
+      if(!this.onGround){const sink=-this.vel.y,e=this.euler(),nearBase=Math.hypot(this.pos.x-SITES.base.x,this.pos.z-SITES.base.z)<SITES.base.r||ISR.alt.some(b=>Math.hypot(this.pos.x-b.x,this.pos.z-b.z)<b.r);
         if(!nearBase)this.die('התרסקות בקרקע');
         else if(this.gearPos<0.9)this.die('נגיעה בקרקע עם כן נסע מקופל');
         else if(sink>6.5)this.die('נחיתה קשה מדי — שיעור שקיעה גבוה');
@@ -526,7 +539,7 @@ class World{
     this.load0={aam:this.w.aim120+this.w.python,bomb:this.w.spice};
     const tg=SITES.tgt,sm=SITES.sam;
     const CP=this.csarP={x:Math.min(68000,tg.x*0.55),z:Math.round(tg.z*0.5)+14000},RS=[{x:sm.x+2500,z:sm.z+3000},{x:Math.round(tg.x+TH.ipOff[0]*0.45),z:Math.round(tg.z+TH.ipOff[1]*0.45)-7000},{x:tg.x,z:tg.z}];
-    const SH=this.fleet={south:{x:-62000,z:-8000},north:{x:-52000,z:-6000},far:{x:120000,z:-5000},israel:{x:-62000,z:8000}}[TH.id]||{x:-62000,z:-8000};
+    const SH=this.fleet={south:{x:-62000,z:-8000},north:{x:-52000,z:-6000},far:{x:120000,z:-5000},israel:ISR.fleet||{x:-62000,z:8000}}[TH.id]||{x:-62000,z:-8000};
     this.wps=naval?[{n:'FLEET',x:SH.x,z:SH.z,alt:5000},{n:'BASE',x:0,z:0,alt:1000}]:csar?[{n:'PILOT',x:CP.x,z:CP.z,alt:3000},{n:'BASE',x:0,z:0,alt:1000}]:recon?[...RS.map((q,i)=>({n:'PH'+(i+1),x:q.x,z:q.z,alt:7000})),{n:'BASE',x:0,z:0,alt:1000}]:stl?[{n:'CAP',x:38000,z:0,alt:2500},{n:'BASE',x:0,z:0,alt:1000}]:esc?[{n:'TGT',x:tg.x,z:tg.z,alt:7600},{n:'BASE',x:0,z:0,alt:1000}]:sead?[{n:'CAP',x:TH.cap[0],z:TH.cap[1],alt:7000},{n:'SAM',x:sm.x-40000,z:sm.z,alt:8000},{n:'BASE',x:0,z:0,alt:1000}]:conv?[{n:'ROAD',x:46000,z:-6000,alt:3000},{n:'BASE',x:0,z:0,alt:1000}]:train?[{n:'TRAIN',x:40000,z:0,alt:6500},{n:'BASE',x:0,z:0,alt:1000}]:icpt?[{n:'CAP',x:45000,z:0,alt:3000},{n:'BASE',x:0,z:0,alt:1000}]:tank?[{n:'TANKER',x:this.tanker.pos.x,z:this.tanker.pos.z,alt:6000},{n:'BASE',x:0,z:0,alt:1000}]:duel?[{n:'MERGE',x:TH.duelX-4000,z:0,alt:6500},{n:'BASE',x:0,z:0,alt:1000}]
       :[{n:'CAP',x:TH.cap[0],z:TH.cap[1],alt:6000},{n:'IP',x:tg.x+TH.ipOff[0],z:tg.z+TH.ipOff[1],alt:9000},{n:'TGT',x:SITES.tgt.x,z:SITES.tgt.z,alt:9000},{n:'BASE',x:0,z:0,alt:1000}];this.wp=0;
     this.drones=[];if(strike)for(let i=0;i<4;i++)this.drones.push(new Drone(64000+i*2500,1500,-9000+i*6000,i));

@@ -1,5 +1,5 @@
 /* HaniaFlight service worker: keeps the game playable offline once it has been opened. Generated into /sw.js by build.py. */
-const CACHE='haniaflight-50b4451';
+const CACHE='haniaflight-7072578';
 const SHELL=['./','index.html','vendor/three.min.js','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png'];
 /* fetch each file fresh (never from the HTTP cache) and report progress to the open page */
 const tell=m=>self.clients.matchAll({includeUncontrolled:true,type:'window'}).then(cs=>cs.forEach(c=>c.postMessage(m)));
