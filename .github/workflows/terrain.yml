@@ -1,0 +1,29 @@
+name: Israel terrain
+
+# Builds data/israel-dem.bin from public SRTM elevation tiles and commits it.
+on:
+  push:
+    branches: [main]
+    paths: ['tools/terrain/**', '.github/workflows/terrain.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install numpy
+      - run: python tools/terrain/make_israel.py
+      - name: Commit the height map
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/israel-dem.bin
+          git diff --cached --quiet || git commit -m "Update Israel height map from SRTM"
+          git push
