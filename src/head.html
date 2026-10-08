@@ -168,7 +168,7 @@ details[open] summary{margin-bottom:10px}
   <div id="radio" aria-live="polite"></div>
   <div id="toast" role="status" aria-live="polite"></div>
   <button id="lookBack" hidden>חזרה למבט קדימה</button>
-  <div id="chips" hidden><button id="mapBtn">מפה</button><button id="ecmBtn">שיבוש</button><button id="wingBtn" hidden>שתיים</button><button id="padBtn">מבט למטרה</button><button id="nvgBtn" hidden>משקפת לילה</button><button id="micBtn" hidden>פקודה קולית</button><button id="joinBtn" hidden>התקרבות אוטומטית</button><button id="hookBtn" hidden>וו בלימה</button><button id="relightBtn" class="warn" hidden>התנעה באוויר</button></div>
+  <div id="chips" hidden><button id="mapBtn">מפה</button><button id="ecmBtn">שיבוש</button><button id="wingBtn" hidden>שתיים</button><button id="padBtn">מבט למטרה</button><button id="nvgBtn" hidden>משקפת לילה</button><button id="micBtn" hidden>פקודה קולית</button><button id="wcamBtn" hidden>מצלמת החימוש</button><button id="joinBtn" hidden>התקרבות אוטומטית</button><button id="hookBtn" hidden>וו בלימה</button><button id="relightBtn" class="warn" hidden>התנעה באוויר</button></div>
   <div id="check" hidden>
     <div class="chead"><b>רשימת תיוג להתנעה</b><button id="autoStart">התנעה אוטומטית</button></div>
     <ol id="checkList"></ol>
@@ -554,6 +554,7 @@ details[open] summary{margin-bottom:10px}
         <kbd>K</kbd><span>דלת תדלוק. כשהיא פתוחה ה־HUD מכוון אל המתדלק.</span>
         <kbd>[</kbd><span>פקודה קולית: לחץ ואמור, למשל "שתיים תקוף", "כן נסע", "נעל", "נורים", "מגדל, בקשה לנחיתה". צריך להפעיל בתפריט.</span>
         <kbd>\</kbd><span>התקרבות אוטומטית למתדלק, עד 40 מטר מאחורי הזרוע. הזזת המוט מבטלת.</span>
+        <kbd>/</kbd><span>מצלמת החימוש: מעביר את חלון הפוד למצלמה של פצצת SPICE או של טיל שיוט שבאוויר, ובחזרה. ל-JDAM ולפצצת לייזר אין מצלמה. בחלון הפוד מופיע TOF, הזמן עד הפגיעה, ואחרי פגיעה הפוד נשאר על המטרה 8 שניות כדי לראות את הפיצוץ.</span>
         <kbd>6 · ;</kbd><span>וו בלימה (נתפס בכבל 300 מטר לפני סוף המסלול) · התנעת מנוע באוויר אחרי כבייה, מעל 215 קשר</span>
         <kbd>X</kbd><span>מבט אל לוח המתגים. לוחצים על מתג כדי להפעיל אותו.</span>
         <kbd>גרירת עכבר</kbd><span>הזזת הראש בקוקפיט. הראש חוזר למרכז כשמשחררים.</span>
@@ -561,7 +562,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט. לחיצה על המוט השמאלי: וו בלימה, על הימני: מבט למטרה. Start מתחיל טיסה מהתפריט. באפליקציית האנדרואיד השלט עובד דרך האפליקציה עצמה.</p>
     </details>
-    <p class="note">גרסה 1.8 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
+    <p class="note">גרסה 1.8.1 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
   </section>
 
   <div id="photoBar" hidden><span>גרור כדי לסובב</span><button id="phIn" aria-label="התקרב">+</button><button id="phOut" aria-label="התרחק">−</button><button id="phSave">שמור תמונה</button><button id="phBack" class="go">חזרה</button></div>
