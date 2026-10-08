@@ -11,7 +11,7 @@ const rnd=(()=>{let a=1234567;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a
 /* loading is split into slices with a pause between them, so the page paints, the bar moves and taps register */
 const tick=()=>new Promise(r=>setTimeout(r,0)),loadBar=document.querySelector('#loading .bar i');
 const prog=p=>{if(loadBar){loadBar.style.animation='none';loadBar.style.width=Math.round(p*100)+'%';}return tick();};
-let theatre0='south',demFail=false;try{const o=JSON.parse(localStorage.getItem('haniaflight-opts')||'{}');if(o.theatre==='north'||o.theatre==='far'){theatre0=o.theatre;R.setTheatre(o.theatre);}
+let theatre0='south',demFail=false,q0='high';try{const o=JSON.parse(localStorage.getItem('haniaflight-opts')||'{}');q0=o.q||(matchMedia('(pointer:coarse)').matches?'low':'high');if(o.theatre==='north'||o.theatre==='far'){theatre0=o.theatre;R.setTheatre(o.theatre);}
   /* the real map: real heights, downloaded once (the service worker keeps it for offline play) */
   else if(o.theatre==='israel'){try{const lt=document.getElementById('loadText');if(lt)lt.textContent='טוען את מפת ישראל…';const r=await fetch('data/israel-dem.bin');if(!r.ok)throw new Error(r.status);R.setTheatre('israel',new Int16Array(await r.arrayBuffer()),o.isrBase);theatre0='israel';}catch(e){demFail=true;}}}catch(e){}
 for(const p of R.terrainSteps())await prog(p*0.55);
@@ -21,10 +21,14 @@ const scene=new T.Scene(),HAZE=0xc3d2d6;scene.fog=new T.FogExp2(HAZE,1.25e-5);sc
 const camera=new T.PerspectiveCamera(62,1,0.8,500000);
 const sunDir=new T.Vector3(-0.45,0.62,0.5).normalize();
 const hemi=new T.HemisphereLight(0xdfeaf5,0x8a7a5c,0.78);scene.add(hemi);
-const sun=new T.DirectionalLight(0xfff2d8,0.85);sun.position.copy(sunDir);scene.add(sun);
+const sun=new T.DirectionalLight(0xfff2d8,0.85);sun.position.copy(sunDir);scene.add(sun);scene.add(sun.target);
+/* a sharp shadow map that follows the player's jet: the jet shades itself, and the runway under it */
+if(renderer){renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;}
+{const c=sun.shadow.camera;c.left=c.bottom=-17;c.right=c.top=17;c.near=1;c.far=420;sun.shadow.mapSize.set(2048,2048);sun.shadow.bias=-0.0004;sun.shadow.normalBias=0.03;}
 const lam=(c,o)=>new T.MeshLambertMaterial(Object.assign({color:c},o||{}));
 const part=(g,m,x,y,z,par)=>{const me=new T.Mesh(g,m);me.position.set(x||0,y||0,z||0);par.add(me);return me;};
 function canvasTex(w,h,draw){const c=document.createElement('canvas');c.width=w;c.height=h;draw(c.getContext('2d'),w,h);const t=new T.CanvasTexture(c);return t;}
+/*@HD@*/
 /* night lights: soft glowing points that keep a minimum size on screen, fade in fog, and can flash in sequence */
 const glowMats=[],nightGlow=[];
 function glowPts(pos,col,o={}){const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('col',new T.Float32BufferAttribute(col,3));g.setAttribute('seq',new T.Float32BufferAttribute(o.seq||new Array(pos.length/3).fill(-1),1));
@@ -72,7 +76,7 @@ function setTOD(k){tod=k;const c=TOD[k],pos=sky.geometry.attributes.position,col
   sun.color.set(c.sunCol);sun.intensity=c.sunI;sun.position.copy(sunDir);hemi.color.set(c.sky);hemi.groundColor.set(c.gnd);hemi.intensity=c.hemiI;
   for(const m of cloudMats)m.color.set(c.cloud);sunSp.material.color.set(c.glow);sunHalo.material.color.set(c.glow);sunHalo.material.opacity=c.halo;if(seaMat)seaMat.color.set(c.sea);
   wxB.fog=c.fog;wxB.sunI=c.sunI;wxB.hemiI=c.hemiI;wxB.col.copy(scene.fog.color);updWx.on=true;
-  for(const d of duskOnly)d.visible=k!=='day';for(const g of nightGlow)g.visible=k!=='day';for(const m of glowMats)m.uniforms.vis.value=k==='night'?1:k==='dusk'?0.6:0.9;for(const n of navSprites)n.userData.on=k!=='day';landLight.visible=k!=='day'&&opts.q!=='eco';for(const d of nightOnly)d.visible=k==='night';sunSp.scale.setScalar(k==='night'?26000:80000);if(k!=='night')setNVG(false);
+  updEnv(c);for(const m of NIGHTMATS)m.emissiveIntensity=k==='night'?0.95:k==='dusk'?0.35:0;for(const d of duskOnly)d.visible=k!=='day';for(const g of nightGlow)g.visible=k!=='day';for(const m of glowMats)m.uniforms.vis.value=k==='night'?1:k==='dusk'?0.6:0.9;for(const n of navSprites)n.userData.on=k!=='day';landLight.visible=k!=='day'&&opts.q!=='eco';for(const d of nightOnly)d.visible=k==='night';sunSp.scale.setScalar(k==='night'?26000:80000);if(k!=='night')setNVG(false);
 }
 await prog(0.58);
 /* ---------- Israel: bases, place names and landmarks ---------- */
@@ -81,12 +85,20 @@ const PLACES=[['תל אביב',32.08,34.78,1],['ירושלים',31.778,35.215,1]
   ['פתח תקווה',32.09,34.88,1],['רחובות',31.89,34.81,1],['מודיעין',31.90,35.01,1],['כרמיאל',32.92,35.30,1],['דימונה',31.07,35.03,1],['ערד',31.26,35.21,1],['מצפה רמון',30.61,34.80,1],['בית שאן',32.50,35.50,1],
   ['הרצליה',32.165,34.84,1],['כפר סבא',32.18,34.91,1],['קריית גת',31.61,34.76,1],['שדרות',31.52,34.60,1],['יקנעם',32.66,35.11,1],
   ['הכנרת',32.82,35.59,2],['ים המלח',31.55,35.48,2],['החרמון',33.416,35.857,2],['מצדה',31.3156,35.3536,2],['מכתש רמון',30.60,34.86,2],['הר מירון',32.99,35.41,2],['הכרמל',32.73,35.05,2],['נתב"ג',32.0055,34.8854,2],['מגדלי עזריאלי',32.0745,34.7917,3],['העיר העתיקה',31.7767,35.2340,3],['הגנים הבהאיים',32.8144,34.9877,3],['ארובות חדרה',32.4706,34.8836,3]];
+const CITIES=[[32.08,34.80,4.5],[31.78,35.21,3.5],[32.80,35.00,3],[31.25,34.79,2.5],[31.80,34.65,2],[32.32,34.86,2],[31.96,34.80,2.5],[32.09,34.88,2],[31.89,34.81,1.6],[32.18,34.91,1.6],[31.67,34.57,1.6],[32.44,34.92,1.4],
+    [31.90,35.01,1.4],[32.61,35.29,1.2],[32.70,35.30,1.6],[32.79,35.53,1],[29.56,34.95,1.3],[32.92,35.30,1.1],[33.21,35.57,0.8],[31.07,35.03,0.8],[31.26,35.21,0.8],[32.96,35.50,0.9],[33.01,35.10,1],[32.50,35.50,0.7],
+    [32.66,35.11,0.8],[31.61,34.76,1],[31.52,34.60,0.6],[31.31,34.62,0.6],[30.61,34.80,0.5],[30.99,34.93,0.5],[32.17,34.84,1.2],[31.50,34.46,2.5],[31.53,35.10,1.6],[32.22,35.26,1.6],[31.90,35.20,1.3],[32.46,35.30,0.9],
+    [31.95,35.93,4],[32.55,35.85,2.2],[32.07,36.09,2.2],[29.53,35.01,1.2],[32.62,36.10,1.2],[31.18,35.70,0.7],[32.92,35.07,1.2]];
 const placeLabels=[];
 function labelSprite(text,kind){const cv=document.createElement('canvas'),x=cv.getContext('2d'),f=kind===1?'700 44px Assistant,Arial,sans-serif':'600 38px Assistant,Arial,sans-serif';x.font=f;const w=Math.ceil(x.measureText(text).width)+28;cv.width=w;cv.height=64;
   x.font=f;x.direction='rtl';x.textAlign='center';x.textBaseline='middle';x.lineWidth=7;x.strokeStyle='rgba(10,14,16,0.85)';x.strokeText(text,w/2,33);x.fillStyle=kind===1?'#f6f0de':kind===2?'#bfe6ff':'#ffd98a';x.fillText(text,w/2,33);
   const sp=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(cv),depthTest:false,depthWrite:false,transparent:true,sizeAttenuation:false,fog:false}));const h=kind===1?0.034:0.028;sp.scale.set(h*w/64,h,1);sp.renderOrder=30;return sp;}
 function buildIsrael(rt,shel,conc,tar){const I=R.ISR,P=(la,lo)=>I.xy(la,lo),glass=lam(0x8fa3b2),stone=lam(0xd9cba8),gold=new T.MeshPhongMaterial({color:0xd8a930,specular:0xfff0b0,shininess:60}),white=lam(0xe8e6e0),red=lam(0xb83a2c);
   const at=(q,y)=>terrainH(q.x,q.z)+(y||0),box=(w,h,d,m,q,ry,y)=>{const b=part(new T.BoxGeometry(w,h,d),m,q.x,at(q,y)+h/2,q.z,scene);if(ry)b.rotation.y=ry;return b;},cyl=(r,h,m,q,y,seg)=>part(new T.CylinderGeometry(r,r,h,seg||16),m,q.x,at(q,y)+h/2,q.z,scene);
+  const M0={steel:lam(0x9a9ea2),gold:new T.MeshPhongMaterial({color:0xe0b23a,specular:0xfff2c0,shininess:80})};
+  /* a tower with real floors and windows: its texture repeats by size, and its windows light up at night */
+  const tower=(kind,r,h,mt,q,ry)=>{const g=kind==='cyl'?new T.CylinderGeometry(r,r,h,24):kind==='tri'?new T.CylinderGeometry(r,r,h,3):new T.BoxGeometry(r,h,r*0.8),uv=g.attributes.uv,per=kind==='box'?r:2*Math.PI*r;
+    for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)*per/12,uv.getY(i)*h/14);const m=part(g,mt.m,q.x,at(q,h/2),q.z,scene);if(ry)m.rotation.y=ry;m.castShadow=false;return m;};
   const LP=[],LC=[];
   /* airfields: a runway on its real heading, a parallel taxiway, shelters, a tower and edge lights */
   for(const b of I.alt){const h=SITES['ab_'+b.id].h,G=new T.Group();G.position.set(b.x,h,b.z);G.rotation.y=Math.PI/2-b.hdg;scene.add(G);
@@ -96,36 +108,78 @@ function buildIsrael(rt,shel,conc,tar){const I=R.ISR,P=(la,lo)=>I.xy(la,lo),glas
     part(new T.BoxGeometry(8,24,8),conc,500,12,330,G);part(new T.BoxGeometry(13,5,13),lam(0x394a52),500,26.5,330,G);
     const ca=Math.cos(Math.PI/2-b.hdg),sa=Math.sin(Math.PI/2-b.hdg),wp=(lx,lz)=>[b.x+lx*ca+lz*sa,h+0.9,b.z-lx*sa+lz*ca];for(let lx=-1300;lx<=1300;lx+=65)for(const lz of[-23,23]){LP.push(...wp(lx,lz));LC.push(1,0.95,0.82);}
     const L=labelSprite('בסיס '+b.name,3);L.position.set(b.x,h+500,b.z);L.userData.r=40000;scene.add(L);placeLabels.push(L);}
-  /* Tel Aviv: the coastal towers and the three Azrieli towers (round, triangular, square) */
-  {const az=P(32.0745,34.7917);cyl(25,187,glass,{x:az.x-70,z:az.z});cyl(29,169,glass,{x:az.x,z:az.z+60},0,3);box(48,154,48,glass,{x:az.x+70,z:az.z});
-    for(let i=0;i<34;i++){const q=P(32.035+rnd()*0.09,34.768+rnd()*0.03);if(R.isWater(q.x,q.z))continue;box(30+rnd()*25,60+rnd()*170,30+rnd()*25,rnd()<0.5?glass:lam(0xc9ccd0),q,rnd()*3);}}
-  /* Jerusalem: the Old City walls and the golden dome */
-  {const c=P(31.7767,35.2330),hw=450;for(const[dx,dz,w,d]of[[0,-hw,2*hw,6],[0,hw,2*hw,6],[-hw,0,6,2*hw],[hw,0,6,2*hw]])box(w,13,d,stone,{x:c.x+dx,z:c.z+dz},0.05);
-    const d=P(31.7780,35.2354);cyl(27,11,lam(0x4a7fa8),d,0,8);const dm=part(new T.SphereGeometry(11,18,10,0,Math.PI*2,0,Math.PI/2),gold,d.x,at(d,11),d.z,scene);dm.scale.y=1.25;
-    for(let i=0;i<60;i++){const q={x:c.x+(rnd()-0.5)*800,z:c.z+(rnd()-0.5)*800};if(Math.hypot(q.x-d.x,q.z-d.z)<90)continue;box(14+rnd()*14,6+rnd()*8,14+rnd()*14,stone,q,rnd()*3);}}
-  /* Haifa: the Baha'i shrine with its terraces down the Carmel, the Sail tower and the port cranes */
-  {const sh=P(32.8144,34.9877);box(30,10,30,stone,sh);const dm=part(new T.SphereGeometry(9,16,10,0,Math.PI*2,0,Math.PI/2),gold,sh.x,at(sh,10),sh.z,scene);dm.scale.y=1.4;
-    for(let i=1;i<=9;i++){const q={x:sh.x+i*22,z:sh.z-i*48};box(60-i*2,3,40,lam(0x4f7a3a),q);}
-    box(30,137,30,glass,P(32.7915,34.9900));for(let i=0;i<7;i++){const q=P(32.818+i*0.0018,35.005+i*0.002);box(8,55,8,lam(0xc24c2a),q);box(70,6,6,lam(0xc24c2a),q,0.6,55);}}
-  /* Ben Gurion airport: two crossing runways and the terminal */
-  {const c=P(32.0055,34.8854);for(const[hd,l]of[[80,3100],[120,3000]]){const g=new T.Group();g.position.set(c.x,at(c)+0.1,c.z);g.rotation.y=Math.PI/2-hd*D2R;scene.add(g);const r=part(new T.PlaneGeometry(l,50),new T.MeshPhongMaterial({map:rt,shininess:6,specular:0x161616}),0,0.4,0,g);r.rotation.x=-Math.PI/2;}
-    box(620,22,160,white,{x:c.x+900,z:c.z+900},0.3);cyl(6,70,conc,{x:c.x+600,z:c.z+600});}
-  /* power station chimneys, red and white: Hadera and Ashkelon */
-  for(const[la,lo,n]of[[32.4706,34.8836,4],[31.6267,34.5258,2]]){const c=P(la,lo);for(let i=0;i<n;i++){const q={x:c.x+i*45,z:c.z};for(let k=0;k<5;k++)part(new T.CylinderGeometry(5.5-k*0.4,6-k*0.4,50,12),k%2?white:red,q.x,at(q,k*50+25),q.z,scene);}box(160,40,80,lam(0x9a9890),{x:c.x+60,z:c.z+120});}
+  /* Tel Aviv: the three Azrieli towers (round, triangular, square) in glass, and towers along the coast */
+  {const az=P(32.0745,34.7917),gm=towerMat(0x8ea4b4),gm2=towerMat(0xa9b4bc),wm=towerMat(0xd8d4c8,true);
+    tower('cyl',26,187,gm,{x:az.x-75,z:az.z-10});tower('tri',30,169,gm,{x:az.x+5,z:az.z+55});tower('box',50,154,gm,{x:az.x+80,z:az.z-5});
+    for(const[dx,h]of[[-75,187],[80,154]]){const q={x:az.x+dx,z:az.z};part(new T.CylinderGeometry(0.6,0.9,26,6),M0.steel,q.x,at(q,h+13),q.z,scene);}
+    part(new T.CylinderGeometry(70,70,14,24),wm.m,az.x,at(az,7),az.z+20,scene);
+    for(let i=0;i<46;i++){const q=P(32.035+rnd()*0.095,34.764+rnd()*0.034);if(R.isWater(q.x,q.z)||Math.hypot(q.x-az.x,q.z-az.z)<160)continue;const h=50+rnd()*rnd()*190;tower(rnd()<0.25?'cyl':'box',22+rnd()*20,h,rnd()<0.55?gm:rnd()<0.5?gm2:wm,q,rnd()*3);}}
+  /* Jerusalem: the Old City walls with battlements, gates and the citadel, the Temple Mount plaza and the golden dome */
+  {const c=P(31.7767,35.2330),hw=470,wallM=lam(0xdccfae),plazaM=lam(0xb3aa92),rot=0.06,ca=Math.cos(rot),sa=Math.sin(rot),W2=(dx,dz)=>({x:c.x+dx*ca-dz*sa,z:c.z+dx*sa+dz*ca});
+    for(const[dx,dz,w,d]of[[0,-hw,2*hw,7],[0,hw,2*hw,7],[-hw,0,7,2*hw],[hw,0,7,2*hw]])box(w,13,d,wallM,W2(dx,dz),-rot);
+    const mer=new T.InstancedMesh(new T.BoxGeometry(1.6,2.2,7.4),wallM,1200),o3=new T.Object3D();let n=0;
+    for(const[x1,z1,x2,z2]of[[-hw,-hw,hw,-hw],[hw,-hw,hw,hw],[hw,hw,-hw,hw],[-hw,hw,-hw,-hw]]){const L=Math.hypot(x2-x1,z2-z1),k=Math.floor(L/3.2);for(let i=0;i<k&&n<1200;i++){const t=(i+0.5)/k,q=W2(lerp(x1,x2,t),lerp(z1,z2,t));o3.position.set(q.x,at(q,14.1),q.z);o3.rotation.y=-rot+(x1===x2?Math.PI/2:0);o3.updateMatrix();mer.setMatrixAt(n++,o3.matrix);}}
+    mer.count=n;scene.add(mer);
+    for(const[dx,dz,h]of[[-hw,-120,22],[-60,-hw,20],[hw,60,18],[-hw,180,30]])box(26,h,20,wallM,W2(dx,dz),-rot);
+    const cit=W2(-hw+50,-60);box(40,24,40,wallM,cit,-rot);cyl(7,40,wallM,{x:cit.x+12,z:cit.z-10});
+    const pl=W2(250,40);box(300,4,470,plazaM,pl,-rot);
+    const d=P(31.7780,35.2354),tile=domeTiles(),oct=part(new T.CylinderGeometry(27,27,11,8),new T.MeshLambertMaterial({map:tile}),d.x,at(d,4+5.5),d.z,scene);oct.rotation.y=Math.PI/8;
+    part(new T.CylinderGeometry(12,12,7,24),new T.MeshLambertMaterial({map:tile}),d.x,at(d,4+14.5),d.z,scene);const dm=part(new T.SphereGeometry(11.5,28,14,0,Math.PI*2,0,Math.PI/2),M0.gold,d.x,at(d,4+18),d.z,scene);dm.scale.y=1.3;
+    part(new T.CylinderGeometry(0.5,0.5,5,6),M0.gold,d.x,at(d,4+33),d.z,scene);
+    const aq=W2(240,240);box(80,12,40,wallM,aq,-rot);const ad=part(new T.SphereGeometry(8,18,10,0,Math.PI*2,0,Math.PI/2),lam(0x5d6468),aq.x,at(aq,16),aq.z-12,scene);ad.scale.y=1.2;
+    for(let i=0;i<90;i++){const q=W2((rnd()-0.5)*880,(rnd()-0.5)*880);if(Math.hypot(q.x-pl.x,q.z-pl.z)<260)continue;box(12+rnd()*16,6+rnd()*9,12+rnd()*16,stone,q,rnd()*3);if(rnd()<0.08){const dd=part(new T.SphereGeometry(4,10,6,0,Math.PI*2,0,Math.PI/2),lam(0x8c8f90),q.x,at(q,12),q.z,scene);}}}
+  /* Haifa: the Baha'i shrine on its terraces down the Carmel, the Sail tower, and the port with its gantry cranes */
+  {const sh=P(32.8144,34.9877),wm=lam(0xf0ece2);box(32,9,32,wm,sh);for(let i=0;i<12;i++){const a=i/12*Math.PI*2;part(new T.CylinderGeometry(0.9,0.9,9,8),wm,sh.x+Math.cos(a)*19,at(sh,4.5),sh.z+Math.sin(a)*19,scene);}
+    part(new T.CylinderGeometry(9,9,9,16),wm,sh.x,at(sh,13.5),sh.z,scene);const dm=part(new T.SphereGeometry(9,24,12,0,Math.PI*2,0,Math.PI/2),M0.gold,sh.x,at(sh,18),sh.z,scene);dm.scale.y=1.45;
+    const ter=terraceTex();for(let i=-9;i<=9;i++){if(!i)continue;const q={x:sh.x+i*13,z:sh.z-i*24},t=part(new T.BoxGeometry(70-Math.abs(i)*1.5,2,26),new T.MeshLambertMaterial({map:ter}),q.x,at(q,1),q.z,scene);t.rotation.y=0.5;}
+    const sail=new T.Shape();sail.moveTo(0,0);sail.lineTo(30,0);sail.quadraticCurveTo(28,90,0,137);sail.lineTo(0,0);const sg=new T.ExtrudeGeometry(sail,{depth:24,bevelEnabled:false});const st=P(32.7915,34.9900);
+    const sm=part(sg,towerMat(0x8fb0c4).m,st.x-12,at(st),st.z-12,scene);sm.rotation.y=0.7;
+    for(let i=0;i<6;i++){const q=P(32.8185+i*0.0016,35.0055+i*0.0019),cr=new T.Group();cr.position.set(q.x,at(q),q.z);cr.rotation.y=0.85;scene.add(cr);const cm=lam(0xc24c2a);
+      for(const[x,z]of[[-9,-12],[9,-12],[-9,12],[9,12]])part(new T.BoxGeometry(1.4,40,1.4),cm,x,20,z,cr);part(new T.BoxGeometry(22,3,3),cm,0,40,-12,cr);part(new T.BoxGeometry(22,3,3),cm,0,40,12,cr);part(new T.BoxGeometry(3,3,70),cm,0,44,-8,cr);part(new T.BoxGeometry(5,4,4),lam(0xd8d4c8),0,42,-4,cr);}
+    for(let i=0;i<40;i++){const q=P(32.817+rnd()*0.012,35.003+rnd()*0.014);if(!R.isWater(q.x,q.z))box(12,2.6*(1+(rnd()*3|0)),2.5,lam([0x3a6d9a,0xb84030,0x4c7a3a,0xd8c060][i%4]),q,0.85);}}
+  /* Ben Gurion airport: crossing runways, the terminal and concourse, airliners at the gates */
+  {const c=P(32.0055,34.8854);for(const[hd,l]of[[80,3100],[120,3000],[30,2700]]){const g=new T.Group();g.position.set(c.x+(hd===30?-900:0),at(c)+0.1,c.z+(hd===30?400:0));g.rotation.y=Math.PI/2-hd*D2R;scene.add(g);const r=part(new T.PlaneGeometry(l,50),new T.MeshPhongMaterial({map:rt,shininess:6,specular:0x161616}),0,0.4,0,g);r.rotation.x=-Math.PI/2;r.receiveShadow=true;}
+    const tm={x:c.x+1100,z:c.z+900},tg=new T.Group();tg.position.set(tm.x,at(tm),tm.z);tg.rotation.y=0.3;scene.add(tg);part(new T.BoxGeometry(420,20,120),white,0,10,0,tg);part(new T.BoxGeometry(60,14,520),white,0,7,-310,tg);
+    part(new T.CylinderGeometry(6,8,72,10),conc,-260,36,40,tg);part(new T.CylinderGeometry(14,10,10,10),lam(0x394a52),-260,76,40,tg);
+    for(let i=0;i<6;i++){const a=buildAirliner();a.position.set(i%2?52:-52,0,-130-(i>>1)*120);a.rotation.y=i%2?-Math.PI/2:Math.PI/2;tg.add(a);}}
+  /* power station chimneys, red and white with platforms: Hadera and Ashkelon */
+  for(const[la,lo,n]of[[32.4706,34.8836,4],[31.6267,34.5258,2]]){const c=P(la,lo);for(let i=0;i<n;i++){const q={x:c.x+i*45,z:c.z};for(let k=0;k<5;k++){part(new T.CylinderGeometry(5.5-k*0.4,6-k*0.4,50,14),k%2?white:red,q.x,at(q,k*50+25),q.z,scene);part(new T.CylinderGeometry(7.2-k*0.4,7.2-k*0.4,0.8,14),M0.steel,q.x,at(q,k*50+49),q.z,scene);}}
+    box(170,42,85,lam(0x9a9890),{x:c.x+60,z:c.z+120});box(60,30,60,lam(0x8b8a84),{x:c.x-40,z:c.z+130});}
   /* Eilat: the hotel row on the north beach */
   for(let i=0;i<14;i++){const q=P(29.5545+rnd()*0.003,34.951+i*0.0011);if(!R.isWater(q.x,q.z))box(40,30+rnd()*35,22,white,q,0.4);}
   if(LP.length)glowPts(LP,LC,{k:9000,mn:3,mx:12});
   for(const[n,la,lo,k]of PLACES){const q=P(la,lo),L=labelSprite(n,k);L.position.set(q.x,Math.max(terrainH(q.x,q.z),0)+(k===1?900:k===2?700:450),q.z);L.userData.r=k===1?38000:k===2?40000:16000;scene.add(L);placeLabels.push(L);}}
+const NIGHTMATS=[];
+function houseTex(lit){return canvasTex(128,128,(x,w)=>{x.fillStyle=lit?'#000':'#f4f2ec';x.fillRect(0,0,w,w);for(let r=0;r<3;r++)for(let c=0;c<3;c++){const on=!lit||rnd()<0.4;x.fillStyle=lit?(on?'#ffcf90':'#000'):'#5b6a74';x.fillRect(c*42+12,r*42+12,18,16);}if(!lit){x.fillStyle='#d8d2c4';x.fillRect(0,0,w,5);}});}
+function facadeTex(lit){return canvasTex(256,256,(x,w)=>{x.fillStyle=lit?'#000':'#fff';x.fillRect(0,0,w,w);for(let r=0;r<4;r++)for(let c=0;c<4;c++){const on=lit?rnd()<0.45:true;x.fillStyle=lit?(on?`rgba(255,${200+rnd()*40|0},${130+rnd()*60|0},1)`:'#000'):`rgba(${40+rnd()*30|0},${60+rnd()*30|0},${80+rnd()*30|0},0.85)`;x.fillRect(c*64+6,r*64+10,52,40);}
+  if(!lit){x.fillStyle='rgba(255,255,255,0.5)';for(let r=0;r<4;r++)x.fillRect(0,r*64+56,w,4);}});}
+const FACADE={};function towerMat(col,stone){const map=FACADE.m||(FACADE.m=facadeTex(false)),em=FACADE.e||(FACADE.e=facadeTex(true));[map,em].forEach(t=>{t.wrapS=t.wrapT=T.RepeatWrapping;});
+  const m=stdMat({color:col,map,emissiveMap:em,emissive:0xffe0b0,emissiveIntensity:0,roughness:stone?0.8:0.18,metalness:stone?0.05:0.55,envMapIntensity:stone?0.3:1.1});NIGHTMATS.push(m);return{m};}
+function domeTiles(){return canvasTex(256,128,(x,w,h)=>{x.fillStyle='#2f6fa8';x.fillRect(0,0,w,h);x.fillStyle='#e9e4d6';x.fillRect(0,h*0.72,w,h*0.28);
+  for(let i=0;i<8;i++){x.fillStyle='#1d4e7d';x.beginPath();x.arc(i*32+16,h*0.45,11,Math.PI,0);x.lineTo(i*32+27,h*0.72);x.lineTo(i*32+5,h*0.72);x.closePath();x.fill();}
+  x.strokeStyle='rgba(255,255,255,0.35)';for(let i=0;i<40;i++){x.beginPath();x.arc(rnd()*w,rnd()*h*0.4,3,0,7);x.stroke();}x.fillStyle='#d8c070';x.fillRect(0,h*0.08,w,4);});}
+function terraceTex(){return canvasTex(128,64,(x,w,h)=>{x.fillStyle='#4f8a3c';x.fillRect(0,0,w,h);x.fillStyle='#e6e0cc';x.fillRect(w/2-7,0,14,h);x.fillStyle='#c0443a';x.fillRect(0,0,w,4);x.fillRect(0,h-4,w,4);
+  x.fillStyle='#2f5d2a';for(let i=0;i<14;i++){x.beginPath();x.arc(8+(i%7)*16+(i>6?w/2+4:0)*0,h/2+((i/7|0)-0.5)*20,4,0,7);x.fill();}});}
+/* an airliner in plain white with a blue cheatline, for the airport */
+function buildAirliner(){const G=new T.Group(),w=lam(0xf2f2ee),b=lam(0x2f5aa0),g=lam(0x9aa0a6);let c=new T.CylinderGeometry(2,2,38,14);c.rotateX(Math.PI/2);part(c,w,0,4.5,0,G);
+  c=new T.SphereGeometry(2,14,10);part(c,w,0,4.5,-19,G).scale.z=1.8;c=new T.ConeGeometry(2,8,14);c.rotateX(Math.PI/2);part(c,w,0,5.2,23,G);
+  part(new T.BoxGeometry(0.1,0.5,40),b,2.02,5,0,G);part(new T.BoxGeometry(0.1,0.5,40),b,-2.02,5,0,G);
+  for(const s of[-1,1]){part(shapeGeo([[1.5,-3],[17,6],[17,8],[1.5,5]].map(p=>[p[0]*s,p[1]]),0.4,false),g,0,3.2,0,G);let e=new T.CylinderGeometry(1.1,1.1,4,12);e.rotateX(Math.PI/2);part(e,w,s*6.5,2.2,-1,G);
+    part(shapeGeo([[0.8,20],[6.5,25],[6.5,26.5],[0.8,25]].map(p=>[p[0]*s,p[1]]),0.25,false),w,0,6,0,G);}
+  part(shapeGeo([[19,1.5],[25,1.5],[27,9],[24,9]],0.35,true),b,0.17,4.5,0,G);for(const[x,z]of[[0,-15],[-3,2],[3,2]])part(new T.CylinderGeometry(0.5,0.5,0.5,10),lam(0x161616),x,0.5,z,G).rotation.z=Math.PI/2;return G;}
 /* the nearest named place below, for the line on the HUD */
 function placeBelow(p){if(theatre0!=='israel')return null;let best=null,bd=1e9;for(const[n,la,lo,k]of PLACES){const q=R.ISR.xy(la,lo),d=Math.hypot(q.x-p.pos.x,q.z-p.pos.z),r=k===1?5000:k===2?7000:2500;if(d<r&&d<bd){bd=d;best=n;}}
   for(const b of R.ISR.alt)if(Math.hypot(b.x-p.pos.x,b.z-p.pos.z)<4000)best='בסיס '+b.name;return best;}
 /* ground colour on the real map: green in the wetter north and on the coastal plain, desert in the Negev and the Judean desert,
    dark basalt on the Golan, red granite around Eilat */
-function isrCol(x,z,hh,patch){const I=R.ISR,LL=I.ll(x,z),lat=LL.lat,lon=LL.lon;
+let CITYXY=null;
+function isrCol(x,z,hh,patch){const I=R.ISR,LL=I.ll(x,z),lat=LL.lat,lon=LL.lon;if(!CITYXY)CITYXY=CITIES.map(([la,lo,r])=>{const q=I.xy(la,lo);return[q.x,q.z,r*1000];});
   let wet=sstep(lat,30.95,32.1)*(1-0.85*sstep(lon,35.22,35.4)*(1-sstep(lat,32.3,32.55)))*(1-0.7*sstep(lon,36.05,36.45)*(1-sstep(lat,33.15,33.45)));wet*=0.55+0.45*patch;
   const sand=[0.82,0.72,0.53],loess=[0.74,0.63,0.47],green=[0.42,0.5,0.3],farm=[0.5,0.55,0.33],basalt=[0.4,0.38,0.34],granite=[0.66,0.5,0.4];
   let c=lerp3(lerp3(sand,loess,sstep(lat,30.8,31.4)),lerp3(green,farm,patch),wet*sstep(hh,-200,40));
-  if(lat>32.7&&lon>35.62&&lon<36.0)c=lerp3(c,basalt,0.45*sstep(hh,150,500));if(lat<29.9)c=lerp3(c,granite,sstep(hh,150,600)*0.7);return c;}
+  if(lat>32.7&&lon>35.62&&lon<36.0)c=lerp3(c,basalt,0.45*sstep(hh,150,500));if(lat<29.9)c=lerp3(c,granite,sstep(hh,150,600)*0.7);
+  /* built-up areas read as town from the air */
+  let u=0;for(const[cx,cz,r]of CITYXY){const d=Math.hypot(x-cx,z-cz);if(d<r*1.3)u=Math.max(u,1-sstep(d,r*0.55,r*1.3));}if(u>0)c=lerp3(c,[0.6,0.58,0.53],u*0.75);return c;}
 const lerp3=(a,b,t)=>[lerp(a[0],b[0],t),lerp(a[1],b[1],t),lerp(a[2],b[2],t)];
 /* terrain */
 {const{nx,nz,cell,x0,z0,h}=TER,P=new Float32Array(nx*nz*3),C=new Float32Array(nx*nz*3),U=new Float32Array(nx*nz*2);
@@ -148,7 +202,7 @@ const lerp3=(a,b,t)=>[lerp(a[0],b[0],t),lerp(a[1],b[1],t),lerp(a[2],b[2],t)];
   det.wrapS=det.wrapT=T.RepeatWrapping;det.anisotropy=renderer.capabilities.getMaxAnisotropy();
   const tmat=new T.MeshLambertMaterial({vertexColors:true,map:det});
   tmat.onBeforeCompile=s=>{s.fragmentShader=s.fragmentShader.replace('#include <map_fragment>',`vec2 u2=mat2(0.8,-0.6,0.6,0.8)*vUv;float dd=texture2D(map,vUv*9.0).g*texture2D(map,vUv).g*texture2D(map,u2*0.11+vec2(0.31,0.17)).g;diffuseColor.rgb*=dd*1.5;`);};
-  const tm=new T.Mesh(g,tmat);tm.frustumCulled=false;scene.add(tm);
+  const tm=new T.Mesh(g,tmat);tm.frustumCulled=false;tm.receiveShadow=true;scene.add(tm);
   seaMat=new T.MeshPhongMaterial({color:0x2d6d8c,specular:0x8a96a0,shininess:80});
   /* in Israel the sea stops west of the Jordan rift, which lies below sea level; the two lakes get their own water */
   if(theatre0==='israel'){const xs=R.ISR.seaX,xw=x0-300000,sea=new T.Mesh(new T.PlaneGeometry(xs-xw,900000),seaMat);sea.rotation.x=-Math.PI/2;sea.position.set((xs+xw)/2,0,z0+nz*cell/2);scene.add(sea);
@@ -164,7 +218,7 @@ const BY=SITES.base.h;
     x.fillStyle='#d9d9d2';x.font='bold 26px sans-serif';x.textAlign='center';x.textBaseline='middle';
     x.save();x.translate(78,32);x.rotate(Math.PI/2);x.fillText('09',0,0);x.restore();x.save();x.translate(w-78,32);x.rotate(-Math.PI/2);x.fillText('27',0,0);x.restore();});
   rt.anisotropy=renderer.capabilities.getMaxAnisotropy();
-  const flat=(w,d,m,x,z,y)=>{const p=part(new T.PlaneGeometry(w,d),m,x,BY+(y||0.3),z,scene);p.rotation.x=-Math.PI/2;return p;};
+  const flat=(w,d,m,x,z,y)=>{const p=part(new T.PlaneGeometry(w,d),m,x,BY+(y||0.3),z,scene);p.rotation.x=-Math.PI/2;p.receiveShadow=true;return p;};
   flat(2700,60,new T.MeshPhongMaterial({map:rt,shininess:6,specular:0x161616}),0,0,0.35);
   const tar=new T.MeshPhongMaterial({color:0x3b3d3d,shininess:4,specular:0x101010});flat(2700,24,tar,0,230);flat(24,230,tar,-1300,115);flat(24,230,tar,1300,115);flat(24,230,tar,0,115);flat(700,260,lam(0x4a4b49),-200,380);
   const shel=lam(0xb39e78),conc=lam(0xa9a595);
@@ -182,15 +236,12 @@ const BY=SITES.base.h;
   for(let i=0;i<10;i++)part(new T.BoxGeometry(30+rnd()*40,6+rnd()*8,20+rnd()*20),conc,350+rnd()*500,BY+4,340+rnd()*260,scene);
   /* towns */
   /* on the real map: the cities and towns where they really are, sized roughly by population */
-  const CITIES=[[32.08,34.80,4.5],[31.78,35.21,3.5],[32.80,35.00,3],[31.25,34.79,2.5],[31.80,34.65,2],[32.32,34.86,2],[31.96,34.80,2.5],[32.09,34.88,2],[31.89,34.81,1.6],[32.18,34.91,1.6],[31.67,34.57,1.6],[32.44,34.92,1.4],
-    [31.90,35.01,1.4],[32.61,35.29,1.2],[32.70,35.30,1.6],[32.79,35.53,1],[29.56,34.95,1.3],[32.92,35.30,1.1],[33.21,35.57,0.8],[31.07,35.03,0.8],[31.26,35.21,0.8],[32.96,35.50,0.9],[33.01,35.10,1],[32.50,35.50,0.7],
-    [32.66,35.11,0.8],[31.61,34.76,1],[31.52,34.60,0.6],[31.31,34.62,0.6],[30.61,34.80,0.5],[30.99,34.93,0.5],[32.17,34.84,1.2],[31.50,34.46,2.5],[31.53,35.10,1.6],[32.22,35.26,1.6],[31.90,35.20,1.3],[32.46,35.30,0.9],
-    [31.95,35.93,4],[32.55,35.85,2.2],[32.07,36.09,2.2],[29.53,35.01,1.2],[32.62,36.10,1.2],[31.18,35.70,0.7],[32.92,35.07,1.2]];
-  const isr=theatre0==='israel',tl=[],N=isr?4600:1700,im=new T.InstancedMesh(new T.BoxGeometry(1,1,1),new T.MeshLambertMaterial({color:0xffffff}),N),d=new T.Object3D(),c=new T.Color();let n=0;
+
+  const isr=theatre0==='israel',tl=[],N=isr?(q0==='eco'?4000:q0==='low'?8000:12000):1700,houseMat=new T.MeshLambertMaterial({color:0xffffff,map:houseTex(false),emissiveMap:houseTex(true),emissive:0xffd9a0,emissiveIntensity:0}),im=new T.InstancedMesh(new T.BoxGeometry(1,1,1),houseMat,N);NIGHTMATS.push(houseMat),d=new T.Object3D(),c=new T.Color();let n=0;
   const towns=[],TL=isr?CITIES.map(([la,lo,r])=>{const q=R.ISR.xy(la,lo);return[q.x,q.z,r];}):Array.from({length:17},()=>[-9000+rnd()*52000,-60000+rnd()*120000,1]);
-  for(const[cx,cz,rk]of TL){if(Math.hypot(cx,cz)<5000)continue;if(!R.isWater(cx,cz))towns.push([cx,cz]);
-    for(let i=0,nb=Math.round(100*rk);i<nb&&n<N;i++){const a=rnd()*7,r=Math.sqrt(rnd())*1000*rk,x=cx+Math.cos(a)*r,z=cz+Math.sin(a)*r,y=terrainH(x,z);if(R.isWater(x,z)||(!isr&&y<3))continue;
-      const hh=(4+rnd()*10)*(isr&&rk>2&&r<1200*rk*0.4?1+rnd()*3:1);tl.push(x,y+hh,z);d.position.set(x,y+hh/2,z);d.scale.set(9+rnd()*16,hh,9+rnd()*16);d.rotation.y=rnd()*3;d.updateMatrix();im.setMatrixAt(n,d.matrix);
+  for(const[cx,cz,rk]of TL){if(Math.hypot(cx,cz)<5000)continue;if(!R.isWater(cx,cz))towns.push([cx,cz,rk]);
+    for(let i=0,nb=Math.round(isr?120*rk*rk+60:100*rk);i<nb&&n<N;i++){const a=rnd()*7,r=Math.pow(rnd(),isr?0.7:0.5)*1000*rk,x=cx+Math.cos(a)*r,z=cz+Math.sin(a)*r,y=terrainH(x,z);if(R.isWater(x,z)||(!isr&&y<3))continue;
+      const hh=(4+rnd()*10)*(isr&&rk>2&&r<1200*rk*0.4?1+rnd()*3:1);tl.push(x,y+hh,z);d.position.set(x,y+hh/2,z);{const big=isr&&rk>1.5&&r<rk*600?1.8:1;d.scale.set((9+rnd()*16)*big,hh,(9+rnd()*16)*big);}d.rotation.y=rnd()*3;d.updateMatrix();im.setMatrixAt(n,d.matrix);
       c.setHSL(0.1,0.18,0.72+rnd()*0.2);im.setColorAt(n,c);n++;}}
   im.count=n;im.frustumCulled=false;scene.add(im);
   /* roads between the base and the towns, and farmed plots around them; both follow the terrain triangles exactly */
@@ -201,9 +252,9 @@ const BY=SITES.base.h;
       for(let i=0;i<=nseg;i++){const t=i/nseg,bend=Math.min(260,L*0.05)*Math.sin(t*Math.PI)*Math.sin(t*L/1700+x1),x=lerp(x1,x2,t)+nxn/w*2*bend,z=lerp(z1,z2,t)+nzn/w*2*bend;
         const l=[x-nxn,mh(x-nxn,z-nzn)+0.9,z-nzn],r=[x+nxn,mh(x+nxn,z+nzn)+0.9,z+nzn];if(pa&&(theatre0==='israel'?!R.isWater(l[0],l[2])&&!R.isWater(r[0],r[2]):l[1]>3&&r[1]>3))quad([pa[0],pa[1],l,r],col);pa=[l,r];}};
     const nodes=[[700,640]],asph=[0.2,0.2,0.2],dirt=[0.52,0.46,0.36];
-    for(const[cx,cz]of towns){let best=nodes[0],bd=1e12;for(const q of nodes){const d=Math.hypot(q[0]-cx,q[1]-cz);if(d<bd){bd=d;best=q;}}road(best[0],best[1],cx,cz,11,asph);nodes.push([cx,cz]);
+    for(const[cx,cz,rk]of towns){let best=nodes[0],bd=1e12;for(const q of nodes){const d=Math.hypot(q[0]-cx,q[1]-cz);if(d<bd){bd=d;best=q;}}road(best[0],best[1],cx,cz,11,asph);nodes.push([cx,cz]);
       for(let i=0;i<3;i++){const a=rnd()*7;road(cx,cz,cx+Math.cos(a)*1700,cz+Math.sin(a)*1700,6,dirt);}
-      for(let i=0;i<26;i++){const a=rnd()*7,r=1100+rnd()*2600,fx=cx+Math.cos(a)*r,fz=cz+Math.sin(a)*r,w=160+rnd()*300,dd=160+rnd()*300,rot=rnd()*3,ca=Math.cos(rot),sa=Math.sin(rot),g=rnd(),col=g<0.5?[0.3+rnd()*0.1,0.42+rnd()*0.12,0.2]:g<0.8?[0.55,0.47,0.3]:[0.66,0.6,0.36];if(theatre0==='israel'?R.isWater(fx,fz):mh(fx,fz)<4)continue;
+      for(let i=0;i<26;i++){const a=rnd()*7,r=Math.max(1100,(rk||1)*1000+300)+rnd()*2600,fx=cx+Math.cos(a)*r,fz=cz+Math.sin(a)*r,w=160+rnd()*300,dd=160+rnd()*300,rot=rnd()*3,ca=Math.cos(rot),sa=Math.sin(rot),g=rnd(),col=g<0.5?[0.3+rnd()*0.1,0.42+rnd()*0.12,0.2]:g<0.8?[0.55,0.47,0.3]:[0.66,0.6,0.36];if(theatre0==='israel'?R.isWater(fx,fz):mh(fx,fz)<4)continue;
         const pt=(u,v)=>{const x=fx+(u*w*ca-v*dd*sa),z=fz+(u*w*sa+v*dd*ca);return[x,mh(x,z)+0.6,z];},N=4;
         for(let iu=0;iu<N;iu++)for(let iv=0;iv<N;iv++)quad([pt(iu/N-0.5,iv/N-0.5),pt((iu+1)/N-0.5,iv/N-0.5),pt(iu/N-0.5,(iv+1)/N-0.5),pt((iu+1)/N-0.5,(iv+1)/N-0.5)],col);}}
     const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(V,3));g.setAttribute('color',new T.Float32BufferAttribute(C2,3));g.computeVertexNormals();
@@ -253,7 +304,7 @@ const RANKS=[[0,'סגן'],[3,'סרן'],[10,'רב־סרן'],[25,'סגן־אלוף
 /* shared detail work: an all-moving tail plane on its own pivot, pitot, strobe, burner glow, drop tanks and the pilot's emblem */
 function stabPart(G,pts,th,mat,y,pz,side){const g=flatGeo(pts,th);g.translate(0,0,-pz);const h=new T.Group();h.position.set(0,y,pz);h.add(new T.Mesh(g,mat));G.add(h);(G.userData.stabs=G.userData.stabs||[]).push({h,side});return h;}
 function dressJet(G,o){const ud=G.userData,dark=lam(0x1a1b1c);
-  const pt=new T.CylinderGeometry(0.02,0.035,1.3,6);pt.rotateX(Math.PI/2);part(pt,lam(0xb0b4b6),0,0,o.nose-0.6,G);
+  if(!o.noPitot){const pt=new T.CylinderGeometry(0.02,0.035,1.3,6);pt.rotateX(Math.PI/2);part(pt,lam(0xb0b4b6),0,0,o.nose-0.6,G);}
   ud.strobe=part(new T.SphereGeometry(0.1,8,6),new T.MeshBasicMaterial({color:0xfff4e0,fog:false}),0,o.spine,o.spineZ,G);
   for(const[x,z,r]of o.noz){const d=part(new T.CircleGeometry(r*0.92,14),dark,x,o.nozY||0,z-0.55,G);d.rotation.y=Math.PI;
     const gl=part(new T.CircleGeometry(r*0.8,14),new T.MeshBasicMaterial({color:0xffb060,fog:false,transparent:true,opacity:0.9}),x,o.nozY||0,z-0.4,G);gl.visible=false;ud.ab.push(gl);}
@@ -505,7 +556,7 @@ function buildF35(){const G=new T.Group(),body=lam(0x6d747b),dk=lam(0x555b61),da
   return G;}
 function buildCruise(){const G=new T.Group(),m=lam(0x8d9296);let g=new T.CylinderGeometry(0.3,0.3,5.2,8);g.rotateX(Math.PI/2);part(g,m,0,0,0,G);g=new T.ConeGeometry(0.3,0.9,8);g.rotateX(-Math.PI/2);part(g,m,0,0,-3.05,G);
   part(new T.BoxGeometry(3.0,0.06,0.6),m,0,0.1,0.2,G);part(new T.BoxGeometry(1.2,0.05,0.4),m,0,0,2.3,G);part(new T.BoxGeometry(0.05,0.6,0.4),m,0,0.3,2.3,G);G.userData.gear=new T.Group();return G;}
-const mkPlayer=t=>t==='F16I'?buildF16():t==='F35I'?buildF35():t==='F15C'?buildJet({camo:'gray',nose:0x767d84,player:true}):buildJet({camo:'il',nose:0x86857c,cft:true,two:true,player:true});
+const mkPlayer=t=>t==='F16I'?buildF16HD():t==='F35I'?buildF35HD():t==='F15C'?buildF15HD({camo:'gray',player:true,no:'688'}):buildF15HD({camo:'il',cft:true,two:true,player:true});
 const mkDrone=d=>d.type==='CM'?buildCruise():buildDrone();
 /* ground crew: a crew chief who signals with wands, and two mechanics who pull the chocks */
 function buildPerson(vest,wands){const G=new T.Group(),skin=lam(0xc9a27e),suit=lam(0x3f4a3a),ud=G.userData;
@@ -575,7 +626,7 @@ function newGame(start,preview){
   W=new R.World({start,diff:opts.diff,plane:opts.plane,mission:preview?'strike':opts.mission,wx:opts.wx,bomb:opts.bomb,fail:!preview&&opts.fail==='on',foe:opts.foe,lesson:opts.lesson,fuelPct:+opts.fuelPct,tanks:+opts.tanks,aam:opts.aam,call:readPilot().call,wing:!preview&&opts.wing==='on',...(preview?{}:campOpts())});
   if(cockpit.userData.kind!==W.plane.type){scene.remove(cockpit);cockpit=buildCockpit(W.plane.type);scene.add(cockpit);layout();}chute.visible=false;rec.length=0;recObj=[...W.air,...W.friends];recEv=[];recT=0;while(dyn.children.length)dyn.remove(dyn.children[0]);meshOf=new Map();emitters.length=0;for(const q of P)q.on=false;
   pMesh=mkPlayer(W.plane.type);dyn.add(pMesh);
-  for(const m of W.migs){const g=buildJet({camo:'mig',nose:0x5b6166,scale:m.type==='Su-27'?1.05:m.type==='MiG-21'?0.62:0.88});g.userData.gear.visible=false;dyn.add(g);meshOf.set(m,g);}
+  for(const m of W.migs){const g=m.type==='MiG-21'?buildJet({camo:'mig',nose:0x5b6166,scale:0.62}):buildF15HD({camo:'mig',scale:m.type==='Su-27'?1.05:0.88});g.userData.gear.visible=false;dyn.add(g);meshOf.set(m,g);}
   for(const d of W.drones){const g=mkDrone(d);dyn.add(g);meshOf.set(d,g);}
   for(const g of W.ground){const m=buildGround(g);dyn.add(m);meshOf.set(g,m);}
   for(const k of W.friends){const m=k.type==='TANKER'?buildTanker():k.type==='HELO'?buildHelo():mkPlayer(k.model||W.plane.type);if(k.type!=='TANKER'&&k.type!=='HELO'){m.userData.gear.visible=false;m.userData.wing=true;}dyn.add(m);meshOf.set(k,m);}
@@ -1037,7 +1088,8 @@ function syncScene(dt){
     e.t-=dt;if(e.t<=0){e.t=e.rate;if(e.smoke&&e.until-clock>35)spawn(vadd(e.pos,rv(9)),v3(rnd()*2,7+rnd()*5,rnd()*2),0.9,20,7,[1,0.62,0.22],0.85);if(e.smoke)spawn(vadd(e.pos,rv(8)),v3(4+rnd()*3,14+rnd()*8,rnd()*3),14,18,130,[0.16,0.15,0.14],0.6);
       else{spawn(e.pos,rv(6),4,6,34,[0.2,0.19,0.18],0.6);spawn(e.pos,rv(4),0.5,9,5,[1,0.6,0.2],0.9);}}}
   /* exhaust heat smoke at mil+ and shadow */
-  shadow.visible=p.alive&&p.agl<500&&!(state==='fly'&&view===0);if(shadow.visible){const off=Math.min(p.agl/Math.max(sunDir.y,0.08),2500),sx=p.pos.x-sunDir.x*off,sz=p.pos.z-sunDir.z*off;shadow.position.set(sx,terrainH(sx,sz)+0.5,sz);const k=1+p.agl/160;shadow.scale.set(k,k,k);shadow.material.opacity=0.36/k;shadow.rotation.z=-p.euler().hdg;}
+  const sh=opts.q==='high'&&p.alive&&!xr.on;sun.castShadow=sh;if(sh){sun.target.position.set(p.pos.x,p.pos.y,p.pos.z);sun.position.set(p.pos.x+sunDir.x*200,p.pos.y+sunDir.y*200,p.pos.z+sunDir.z*200);}
+  shadow.visible=p.alive&&p.agl<500&&!(state==='fly'&&view===0)&&!(sh&&p.agl<12);if(shadow.visible){const off=Math.min(p.agl/Math.max(sunDir.y,0.08),2500),sx=p.pos.x-sunDir.x*off,sz=p.pos.z-sunDir.z*off;shadow.position.set(sx,terrainH(sx,sz)+0.5,sz);const k=1+p.agl/160;shadow.scale.set(k,k,k);shadow.material.opacity=0.36/k;shadow.rotation.z=-p.euler().hdg;}
   for(const r of rings){const d=r.userData;if(d.t<1.5){d.t+=dt;const k=d.t/1.5;r.scale.setScalar(25+k*95*d.s);r.material.opacity=(1-k)*0.5;}else r.material.opacity=0;}
   if(dt>0&&state==='fly'&&p.alive&&W.dmg.length&&rnd()<0.6){const tl=vadd(p.pos,qrot(p.q,v3((rnd()-0.5)*2,0.3,9)));spawn(tl,rv(3),2.2,4,22,[0.2,0.19,0.18],0.45);if(p.fire.some(Boolean))spawn(tl,rv(2),0.35,7,3,[1,0.6,0.2],0.9);}
   if(dt>0&&state==='fly'&&p.alive){const vap=p.g>5.5&&p.V>110?clamp((p.g-5.5)/3,0,1):0;
@@ -1134,20 +1186,27 @@ const dirAE=(az,el)=>v3(Math.sin(az)*Math.cos(el),Math.sin(el),-Math.cos(az)*Mat
 /* tactical map: north up, the whole theatre. Shows only what the pilot would know. */
 let mapBox=false;
 function drawMap(p,e){const{nx,nz,cell,x0,z0}=TER,WX=(nx-1)*cell,WZ=(nz-1)*cell;
-  if(!mapBg){const BW=WX>=WZ?312:220,BH=WX>=WZ?180:440;mapBg=document.createElement('canvas');mapBg.width=BW;mapBg.height=BH;const x=mapBg.getContext('2d'),im=x.createImageData(BW,BH),d=im.data;
+  if(!mapBg){const BW=WX>=WZ?312:400,BH=WX>=WZ?180:800;mapBg=document.createElement('canvas');mapBg.width=BW;mapBg.height=BH;const x=mapBg.getContext('2d'),im=x.createImageData(BW,BH),d=im.data;
     for(let j=0;j<BH;j++)for(let i=0;i<BW;i++){const px=x0+i/(BW-1)*WX,pz=z0+j/(BH-1)*WZ,h=terrainH(px,pz),hr=terrainH(x0+(i+1)/(BW-1)*WX,pz),k=(j*BW+i)*4,t=clamp(h/1500,0,1),sh=clamp((h-hr)/90,-1,1)*26;
       if(R.isWater(px,pz)){d[k]=20;d[k+1]=46;d[k+2]=66;}else{d[k]=70+t*62+sh;d[k+1]=68+t*44+sh;d[k+2]=50+t*26+sh;}d[k+3]=255;}x.putImageData(im,0,0);}
-  const top=mapBox?2:touchOn?8:46,bot=mapBox?2:touchOn?(opts.ui==='large'?166:136):20,s=Math.min((vw-24)/WX,(vh-top-bot)/WZ),mw=WX*s,mh2=WZ*s,ox=(vw-mw)/2,oy=top+(vh-top-bot-mh2)/2,X=x=>ox+(x-x0)*s,Y=z=>oy+(z-z0)*s,su=u;u=clamp(vw/900,0.7,1.1);
-  ctx.save();ctx.shadowBlur=0;ctx.fillStyle='rgba(2,6,8,0.6)';ctx.fillRect(0,0,vw,vh);ctx.globalAlpha=0.93;ctx.imageSmoothingEnabled=true;ctx.drawImage(mapBg,ox,oy,mw,mh2);ctx.globalAlpha=1;
+  const top=mapBox?2:touchOn?8:46,bot=mapBox?2:touchOn?(opts.ui==='large'?166:136):20,AW=vw-24,AH=vh-top-bot;
+  /* the whole country is too tall for a landscape screen: on the real map, show the area of the mission (you, the route and the threats) */
+  let vx0=x0,vz0=z0,VW=WX,VZ=WZ;if(theatre0==='israel'){const P=[[p.pos.x,p.pos.z],[0,0],...W.wps.map(q=>[q.x,q.z]),...W.sams.filter(q=>q.alive&&!(q.silent&&!q.awake)).map(q=>[q.pos.x,q.pos.z])];
+    let a=Math.min(...P.map(q=>q[0]))-25000,b=Math.max(...P.map(q=>q[0]))+25000,c=Math.min(...P.map(q=>q[1]))-25000,d=Math.max(...P.map(q=>q[1]))+25000;let w=b-a,h=d-c;const ar=AW/AH;
+    if(w/h<ar){const nw=h*ar;a-=(nw-w)/2;w=nw;}else{const nh=w/ar;c-=(nh-h)/2;h=nh;}if(w>WX){a=x0;w=WX;}if(h>WZ){c=z0;h=WZ;}a=clamp(a,x0,x0+WX-w);c=clamp(c,z0,z0+WZ-h);vx0=a;vz0=c;VW=w;VZ=h;}
+  const s=Math.min(AW/VW,AH/VZ),mw=VW*s,mh2=VZ*s,ox=(vw-mw)/2,oy=top+(AH-mh2)/2,X=x=>ox+(x-vx0)*s,Y=z=>oy+(z-vz0)*s,su=u;u=clamp(vw/900,0.7,1.1);
+  ctx.save();ctx.shadowBlur=0;ctx.fillStyle='rgba(2,6,8,0.6)';ctx.fillRect(0,0,vw,vh);ctx.globalAlpha=0.93;ctx.imageSmoothingEnabled=true;
+  ctx.drawImage(mapBg,(vx0-x0)/WX*mapBg.width,(vz0-z0)/WZ*mapBg.height,VW/WX*mapBg.width,VZ/WZ*mapBg.height,ox,oy,mw,mh2);ctx.globalAlpha=1;
   ctx.lineWidth=1.3;ctx.strokeStyle='rgba(235,230,214,0.6)';ctx.strokeRect(ox+0.5,oy+0.5,mw-1,mh2-1);ctx.beginPath();ctx.rect(ox,oy,mw,mh2);ctx.clip();
-  ctx.strokeStyle='rgba(235,230,214,0.12)';for(let gx=Math.ceil(x0/50000)*50000;gx<x0+WX;gx+=50000)line(X(gx),oy,X(gx),oy+mh2);for(let gz=Math.ceil(z0/50000)*50000;gz<z0+WZ;gz+=50000)line(ox,Y(gz),ox+mw,Y(gz));
+  ctx.strokeStyle='rgba(235,230,214,0.12)';for(let gx=Math.ceil(vx0/50000)*50000;gx<vx0+VW;gx+=50000)line(X(gx),oy,X(gx),oy+mh2);for(let gz=Math.ceil(vz0/50000)*50000;gz<vz0+VZ;gz+=50000)line(ox,Y(gz),ox+mw,Y(gz));
   const SND='#d2b47c';
+  if(theatre0==='israel'){ctx.save();ctx.direction='rtl';ctx.textAlign='center';const fs=Math.round(10*u);ctx.font=`600 ${fs}px Assistant,Arial,sans-serif`;const used=[],free=(x,y,w)=>{const r=[x-w/2-2,y-fs,x+w/2+2,y+3];if(used.some(q=>r[0]<q[2]&&r[2]>q[0]&&r[1]<q[3]&&r[3]>q[1]))return false;used.push(r);return true;};
+    for(const b of R.ISR.alt){const x=X(b.x),y=Y(b.z);ctx.fillStyle='#ffd98a';ctx.fillRect(x-3,y-1.5,6,3);if(free(x,y+11,ctx.measureText(b.name).width))ctx.fillText(b.name,x,y+11);}
+    for(const[n,la,lo,k]of PLACES){if(k===3)continue;const q=R.ISR.xy(la,lo),x=X(q.x),y=Y(q.z);if(x<ox||x>ox+mw||y<oy||y>oy+mh2)continue;if(!free(x,y-6,ctx.measureText(n).width))continue;ctx.fillStyle=k===1?'rgba(246,240,222,0.7)':'rgba(191,230,255,0.7)';if(k===1){ctx.beginPath();ctx.arc(x,y,1.6,0,7);ctx.fill();}ctx.fillText(n,x,y-6);}ctx.restore();}
   if((W.missionId==='strike'||W.missionId==='intercept'||W.missionId==='stealth')&&theatre0!=='israel'){ctx.strokeStyle=AMB;ctx.setLineDash([5,5]);line(X(16000),oy,X(16000),oy+mh2);ctx.setLineDash([]);txt('DEFENCE LINE',X(16000)+5,oy+12,'left',10,AMB);}
   for(const q of W.sams){if(!q.alive||(q.silent&&!q.awake))continue;const r=Math.min(W.d.samR*q.rk,60000*W.sig*Math.min(1.25,q.rk+0.25))*s;ctx.strokeStyle=RED;ctx.fillStyle='rgba(255,92,79,0.13)';ctx.beginPath();ctx.arc(X(q.pos.x),Y(q.pos.z),r,0,7);ctx.fill();ctx.stroke();txt(q.sym==='SA'?'SAM':'SA-'+q.sym,X(q.pos.x),Y(q.pos.z)-r-8,'center',10,RED);}
   for(const g of W.ground){if(!g.alive||g.kind==='launcher'||g.hid)continue;ctx.strokeStyle=g.kind==='radar'?RED:AMB;ctx.strokeRect(X(g.pos.x)-3,Y(g.pos.z)-3,6,6);}
-  if(theatre0==='israel'){ctx.save();ctx.direction='rtl';ctx.textAlign='center';ctx.font=`600 ${Math.round(11*u)}px Assistant,Arial,sans-serif`;
-    for(const[n,la,lo,k]of PLACES){if(k===3)continue;const q=R.ISR.xy(la,lo);ctx.fillStyle=k===1?'rgba(246,240,222,0.85)':'rgba(191,230,255,0.85)';if(k===1){ctx.beginPath();ctx.arc(X(q.x),Y(q.z),2,0,7);ctx.fill();}ctx.fillText(n,X(q.x),Y(q.z)-7);}
-    ctx.fillStyle='#ffd98a';for(const b of R.ISR.alt){ctx.fillRect(X(b.x)-3,Y(b.z)-1.5,6,3);ctx.fillText(b.name,X(b.x),Y(b.z)+11);}ctx.restore();}
+
   ctx.strokeStyle=SND;ctx.setLineDash([7,5]);ctx.beginPath();ctx.moveTo(X(p.pos.x),Y(p.pos.z));for(let i=W.wp;i<W.wps.length;i++)ctx.lineTo(X(W.wps[i].x),Y(W.wps[i].z));ctx.stroke();ctx.setLineDash([]);
   W.wps.forEach((q,i)=>{const cur=i===W.wp;ctx.strokeStyle=cur?HUDC:SND;ctx.lineWidth=cur?2:1.3;ctx.beginPath();ctx.arc(X(q.x),Y(q.z),5,0,7);ctx.stroke();txt(q.n,X(q.x),Y(q.z)-13,'center',11,cur?HUDC:SND);});ctx.lineWidth=1.3;
   ctx.fillStyle=SND;ctx.fillRect(X(RWY.x1),Y(0)-1.5,Math.max(8,(RWY.x2-RWY.x1)*s),3);
@@ -1213,7 +1272,8 @@ function drawHUD(){tgpR=null;
   if(sy.ins<1){txt('INS ALIGN',ax+40*u,by,'right',14,AMB);txt(Math.round(sy.ins*100)+'%',ax+40*u,by+18*u,'right',14,AMB);}
   else{txt(`WP${W.wp+1} ${wp.n}`,ax+40*u,by,'right',14);txt(`${(wd/NM).toFixed(1)}NM  ${Math.floor(eta/60)}:${String(Math.floor(eta%60)).padStart(2,'0')}`,ax+40*u,by+18*u,'right',14);}
   const names={AIM120:'MRM '+W.mrm.name.replace(/[CD]$/,''),PYTHON:'SRM '+W.srm.name,GUN:'GUN M61',SPICE:W.missionId==='recon'?'POD  PHOTO':'A/G '+W.plane.bomb.name},cnt={AIM120:w.aim120,PYTHON:w.python,GUN:w.gun,SPICE:w.spice};
-  txt(names[w.sel],sx-34*u,by,'left',14);if(W.missionId==='recon'&&w.sel==='SPICE')txt(`${W.stats.tgt}/3 SITES`,sx-34*u,by+18*u,'left',14);else txt('×'+cnt[w.sel]+(!cnt[w.sel]?'  EMPTY':W.arm?'  ARM':'  SAFE'),sx-34*u,by+18*u,'left',14,cnt[w.sel]&&W.arm?HUDC:AMB);
+  /* on a phone the touch buttons cover the lower left, so the weapon lines move to the middle */
+  {const wx0=touchOn?hx:sx-34*u,al=touchOn?'center':'left',wy=touchOn?by+12*u:by;txt(names[w.sel],wx0,wy,al,14);if(W.missionId==='recon'&&w.sel==='SPICE')txt(`${W.stats.tgt}/3 SITES`,wx0,wy+18*u,al,14);else txt('×'+cnt[w.sel]+(!cnt[w.sel]?'  EMPTY':W.arm?'  ARM':'  SAFE'),wx0,wy+18*u,al,14,cnt[w.sel]&&W.arm?HUDC:AMB);}
   /* target symbology */
   const bar=(R0,rmax,rne,label)=>{const x=hx+mh*0.24,y0=hy-mh*0.15,y1=hy+mh*0.15,top=Math.max(rmax*1.25,R0*1.08,1),Y=r=>y1-(y1-y0)*clamp(r/top,0,1);
     line(x,y0,x,y1);line(x,Y(rmax),x+10*u,Y(rmax));if(rne)line(x,Y(rne),x+7*u,Y(rne));const yc=Y(R0);line(x-11*u,yc-5*u,x-2*u,yc,x-11*u,yc+5*u);txt(label,x-14*u,yc,'right',13);};
