@@ -182,7 +182,7 @@ details[open] summary{margin-bottom:10px}
   <div id="radio" aria-live="polite"></div>
   <div id="toast" role="status" aria-live="polite"></div>
   <button id="lookBack" hidden>חזרה למבט קדימה</button>
-  <div id="chips" hidden><button id="mapBtn">מפה</button><button id="ecmBtn">שיבוש</button><button id="wingBtn" hidden>שתיים</button><button id="padBtn">מבט למטרה</button><button id="nvgBtn" hidden>משקפת לילה</button><button id="hookBtn" hidden>וו בלימה</button><button id="relightBtn" class="warn" hidden>התנעה באוויר</button></div>
+  <div id="chips" hidden><button id="mapBtn">מפה</button><button id="ecmBtn">שיבוש</button><button id="wingBtn" hidden>שתיים</button><button id="padBtn">מבט למטרה</button><button id="nvgBtn" hidden>משקפת לילה</button><button id="micBtn" hidden>פקודה קולית</button><button id="joinBtn" hidden>התקרבות אוטומטית</button><button id="hookBtn" hidden>וו בלימה</button><button id="relightBtn" class="warn" hidden>התנעה באוויר</button></div>
   <div id="check" hidden>
     <div class="chead"><b>רשימת תיוג להתנעה</b><button id="autoStart">התנעה אוטומטית</button></div>
     <ol id="checkList"></ol>
@@ -227,6 +227,7 @@ details[open] summary{margin-bottom:10px}
       <button id="mCsar" data-opt="mission" data-val="csar">חילוץ</button>
       <button id="mRecon" data-opt="mission" data-val="recon">צילום</button>
       <button id="mStealth" data-opt="mission" data-val="stealth">כטב"ם חמקן</button>
+      <button id="mNaval" data-opt="mission" data-val="naval">תקיפה ימית</button>
       <button id="mDuel" data-opt="mission" data-val="duel">קרב אוויר</button>
       <button id="mTanker" data-opt="mission" data-val="tanker">תדלוק אווירי</button>
       <button id="mTrain" data-opt="mission" data-val="train">הדרכה</button>
@@ -236,6 +237,7 @@ details[open] summary{margin-bottom:10px}
       <button data-opt="theatre" data-val="south">דרום · מדבר</button>
       <button data-opt="theatre" data-val="north">צפון · הרים</button>
       <button data-opt="theatre" data-val="far">רחוק · מעבר לים</button>
+      <button data-opt="theatre" data-val="israel">ישראל · מפה אמיתית</button>
     </div>
     <div class="seg" role="group" aria-label="מטוס">
       <span>מטוס</span>
@@ -315,6 +317,15 @@ details[open] summary{margin-bottom:10px}
         <li>אל תבזבז את כל הטילים על ההטעיות. המשימה תלויה רק בחמקן.</li>
         <li>רד נמוך כדי שהמכ"ם יראה אותו על רקע השמיים, או התקרב לטווח תותח.</li>
         <li>אם הוא עובר את קו ההגנה, המשימה נכשלת.</li>
+      </ol>
+    </div>
+    <div id="briefNaval" class="brief" hidden>
+      <h2>תקיפה ימית</h2>
+      <p>שלוש ספינות טילים משייטות בים. לכל אחת נ"מ קצר טווח ותותח קרוב שיכול ליירט טיל. אתה נושא טילי ים (AGM-84, ובאדיר JSM) שטסים נמוך מעל המים. ברמה קשה שומר על הספינות זוג מיג-29.</p>
+      <ol class="steps">
+        <li>בחר 4, נעל על ספינה (T) ושגר מ-10 עד 115 ק"מ. הטיל מוצא את הספינה גם כשהיא זזה.</li>
+        <li>אל תתקרב מתחת ל-15 ק"מ: שם הנ"מ של הספינות מגיע אליך.</li>
+        <li>טיל אחד יכול להיעצר בתותח הקרוב. שמור טיל רזרבי.</li>
       </ol>
     </div>
     <div id="briefTrain" class="brief" hidden>
@@ -416,6 +427,8 @@ details[open] summary{margin-bottom:10px}
       <span>חימוש לקרקע</span>
       <button data-opt="bomb" data-val="spice">דאייה (SPICE)</button>
       <button data-opt="bomb" data-val="lgb">לייזר (GBU-12)</button>
+      <button data-opt="bomb" data-val="jdam">לוויין (JDAM)</button>
+      <button data-opt="bomb" data-val="delilah">טיל שיוט (דלילה)</button>
     </div>
     <div class="seg" role="group" aria-label="איכות גרפיקה">
       <span>גרפיקה</span>
@@ -443,6 +456,17 @@ details[open] summary{margin-bottom:10px}
       <span>כפתורי מגע</span>
       <button data-opt="ui" data-val="normal">רגילים</button>
       <button data-opt="ui" data-val="large">גדולים</button>
+    </div>
+    <div class="seg" id="vrRow" hidden>
+      <span>מציאות מדומה</span>
+      <button id="vrGo">טוס במשקפי VR</button>
+      <span class="note">מוט ימני: היגוי. מוט שמאלי: מצערת והגה. הדק ימני: תותח, A: שיגור, B: נעילה. הדק שמאלי: נורים, X: חימוש, Y: כן נסע.</span>
+    </div>
+    <div class="seg" id="voiceRow" role="group" aria-label="פקודות קוליות" hidden>
+      <span>פקודות קוליות</span>
+      <button data-opt="voice" data-val="off">כבוי</button>
+      <button data-opt="voice" data-val="button">בלחיצה</button>
+      <button data-opt="voice" data-val="always">מקשיב תמיד</button>
     </div>
     <div class="seg">
       <span>קול הבקר</span>
@@ -505,6 +529,8 @@ details[open] summary{margin-bottom:10px}
         <div><h4>תדלוק אווירי</h4><ul>
           <li>פותחים את דלת התדלוק ב־<b>K</b> או במתג <b>AR DOOR</b>. ה־HUD מראה את המרחק למתדלק וחץ אליו.</li>
           <li>מתקרבים לאט מאחורי הזנב ומתחתיו. מקרוב מופיעה משבצת: הנקודה מראה לאן לזוז ימינה, שמאלה, למעלה ולמטה, והפס שלידה מראה קדימה ואחורה. כשהנקודה במרכז ומחזיקים שם, מתקבל <b>CONTACT</b> והדלק זורם.</li>
+          <li>מתחת לבטן המתדלק יש שני פסי נוריות הכוונה. בפס השמאלי הנורית הדולקת מראה אם לעלות (קדימה בפס) או לרדת (אחורה בפס), ובפס הימני אם להתקדם או לסגת. ירוק באמצע פירושו שאתה בעמדה. ב־HUD מופיעות אותן הוראות במטרים, למשל <b>UP 3  FWD 6</b>.</li>
+          <li>כפתור "התקרבות אוטומטית" (או מקש \) מביא אותך עד 40 מטר מאחורי הזרוע. משם ממשיכים לבד. ברמות קל ורגיל המשבצת רחבה יותר והמשחק מושך אותך לעמדה.</li>
           <li>בסיום סוגרים את הדלת ומתרחקים למטה ואחורה.</li>
         </ul></div>
         <div><h4>השורות שמתחת למסכים</h4><ul>
@@ -529,6 +555,8 @@ details[open] summary{margin-bottom:10px}
         <kbd>H · J</kbd><span>טייס אוטומטי (שומר גובה וכיוון) · השלכת חימוש קרקע</span>
         <kbd>Y · , .</kbd><span>מצב מכ"ם (חיפוש או קרב צמוד) · טווח המכ"ם קטן וגדול</span>
         <kbd>K</kbd><span>דלת תדלוק. כשהיא פתוחה ה־HUD מכוון אל המתדלק.</span>
+        <kbd>[</kbd><span>פקודה קולית: לחץ ואמור, למשל "שתיים תקוף", "כן נסע", "נעל", "נורים", "מגדל, בקשה לנחיתה". צריך להפעיל בתפריט.</span>
+        <kbd>\</kbd><span>התקרבות אוטומטית למתדלק, עד 40 מטר מאחורי הזרוע. הזזת המוט מבטלת.</span>
         <kbd>6 · ;</kbd><span>וו בלימה (נתפס בכבל 300 מטר לפני סוף המסלול) · התנעת מנוע באוויר אחרי כבייה, מעל 215 קשר</span>
         <kbd>X</kbd><span>מבט אל לוח המתגים. לוחצים על מתג כדי להפעיל אותו.</span>
         <kbd>גרירת עכבר</kbd><span>הזזת הראש בקוקפיט. הראש חוזר למרכז כשמשחררים.</span>
@@ -536,7 +564,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט. לחיצה על המוט השמאלי: וו בלימה, על הימני: מבט למטרה. Start מתחיל טיסה מהתפריט. באפליקציית האנדרואיד השלט עובד דרך האפליקציה עצמה.</p>
     </details>
-    <p class="note">גרסה 1.6 (4adf79d, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
+    <p class="note">גרסה 1.7 (50b4451, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
   </section>
 
   <div id="photoBar" hidden><span>גרור כדי לסובב</span><button id="phIn" aria-label="התקרב">+</button><button id="phOut" aria-label="התרחק">−</button><button id="phSave">שמור תמונה</button><button id="phBack" class="go">חזרה</button></div>
@@ -638,7 +666,16 @@ const ARM_PT={x:-1300,z:130};
 const RWY={x1:-1350,x2:1350,half:30},PARK={x:-320,z:474};   /* inside a hardened shelter on the apron, facing north */
 /* two theatres share the code: the southern desert and a greener, steeper north with the target much closer */
 const THEATRE={id:'south',base:'חצרים',cap:[40000,0],ipOff:[-64000,-5000],migOff:[32000,9000],duelX:66000};
-function setTheatre(id){if(TER.h)return;
+/* the real map of Israel: SRTM heights (data/israel-dem.bin, built by tools/terrain/make_israel.py) on a 700 m grid,
+   X east and Z south of Ramat David. The sea is west of 35.3E; east of it, ground below sea level is the Jordan rift. */
+const ISR={lat0:32.6653,lon0:35.1797,cell:700,nx:336,nz:665,dem:null};ISR.kx=111320*Math.cos(ISR.lat0*D2R);ISR.kz=110574;ISR.x0=(34.15-ISR.lon0)*ISR.kx;ISR.z0=-(33.65-ISR.lat0)*ISR.kz;ISR.seaX=(35.3-ISR.lon0)*ISR.kx;
+ISR.xy=(lat,lon)=>({x:(lon-ISR.lon0)*ISR.kx,z:-(lat-ISR.lat0)*ISR.kz});
+function setTheatre(id,dem){if(TER.h)return;
+  if(id==='israel'&&dem&&dem.length===ISR.nx*ISR.nz){ISR.dem=dem;Object.assign(TER,{x0:ISR.x0,z0:ISR.z0,cell:ISR.cell,nx:ISR.nx,nz:ISR.nz});
+    /* home is Ramat David; the enemy sites are north-east, beyond the Golan */
+    const T=ISR.xy(32.98,36.33),S=ISR.xy(32.86,36.13);Object.assign(THEATRE,{id:'israel',base:'רמת דוד',cap:[42000,-6000],ipOff:[-48000,10000],migOff:[18000,-14000],duelX:62000,tanker:[-42000,22000]});
+    Object.assign(SITES.tgt,{x:Math.round(T.x),z:Math.round(T.z)});Object.assign(SITES.sam,{x:Math.round(S.x),z:Math.round(S.z)});
+    for(const[n,s1,s2,w1,w2,h]of[['כנרת',32.70,32.91,35.51,35.66,-212],['ים המלח',31.33,31.79,35.37,35.61,-416]]){const a=ISR.xy(s2,w1),b=ISR.xy(s1,w2);LAKES.push({n,x1:a.x,z1:a.z,x2:b.x,z2:b.z,h});}return;}
   /* the far theatre: a long leg over open sea to a distant coast, out of reach without the tanker */
   if(id==='far'){Object.assign(THEATRE,{id:'far',base:'נבטים',cap:[70000,0],ipOff:[-52000,6000],migOff:[18000,10000],duelX:66000,tanker:[92000,-9000]});
     Object.assign(SITES.tgt,{x:212000,z:-8000});Object.assign(SITES.sam,{x:198000,z:4000});return;}
@@ -649,6 +686,10 @@ function vnoise(x,z){const i=Math.floor(x),j=Math.floor(z),fx=x-i,fz=z-j,u=fx*fx
   return lerp(lerp(hash2(i,j),hash2(i+1,j),u),lerp(hash2(i,j+1),hash2(i+1,j+1),u),w);}
 function fbm(x,z){let a=1,f=1,s=0,t=0;for(let o=0;o<5;o++){s+=a*vnoise(x*f,z*f);t+=a;a*=0.5;f*=2.03;}return s/t;}
 function rawH(x,z){
+  if(THEATRE.id==='israel'){const{nx,nz,cell,x0,z0}=ISR,d=ISR.dem;let fx=clamp((x-x0)/cell,0,nx-1.001),fz=clamp((z-z0)/cell,0,nz-1.001);const i=fx|0,j=fz|0;fx-=i;fz-=j;const k=j*nx+i;
+    const v=lerp(lerp(d[k],d[k+1],fx),lerp(d[k+nx],d[k+nx+1],fx),fz);if(x<ISR.seaX)return v<0?Math.max(v,-60):v;
+    /* the lakes: a flat bed just under the water, so the surface reads as one sheet */
+    for(const L of LAKES)if(x>L.x1&&x<L.x2&&z>L.z1&&z<L.z2&&v<L.h+5)return L.h-4;return v;}
   if(THEATRE.id==='far'){const c1=14000+3500*(fbm(z/26000+4.3,2.5)*2-1),c2=168000+7000*(fbm(z/22000+1.3,7.5)*2-1),n=fbm(x/21000+13.1,z/21000+47.7),r=1-Math.abs(2*fbm(x/9000+61.3,z/9000+5.9)-1);
     if(x<(c1+c2)/2){const h=40+70*n+22*(fbm(x/2500,z/2500)-0.5);return lerp(h,-40,sstep(x-c1,-4000,500));}
     const e=sstep(x,c2+2000,c2+40000);let h=35+110*n+e*(300+1500*n*n*(0.4+r));h+=30*(fbm(x/2400+3,z/2400)-0.5)*(1+e*3);return lerp(-40,h,sstep(x-c2,-500,4500));}
@@ -665,7 +706,7 @@ function rawH(x,z){
 /* built in slices so a page can stay responsive while it loads; each yield reports progress 0..1 */
 function* terrainSteps(){if(TER.h)return;const{nx,nz,cell,x0,z0}=TER,h=new Float32Array(nx*nz);
   for(let j=0;j<nz;j++){for(let i=0;i<nx;i++)h[j*nx+i]=rawH(x0+i*cell,z0+j*cell);if(j%12===11)yield j/nz;}
-  for(const k in SITES){const s=SITES[k],hc=k==='base'?60:rawH(s.x,s.z);s.h=hc;
+  for(const k in SITES){const s=SITES[k],hc=k==='base'&&THEATRE.id!=='israel'?60:rawH(s.x,s.z);s.h=hc;
     const n=Math.ceil(s.r*2/cell)+1,ci=Math.round((s.x-x0)/cell),cj=Math.round((s.z-z0)/cell);
     for(let j=cj-n;j<=cj+n;j++)for(let i=ci-n;i<=ci+n;i++){if(i<0||j<0||i>=nx||j>=nz)continue;
       const dd=Math.hypot(x0+i*cell-s.x,z0+j*cell-s.z);h[j*nx+i]=lerp(hc,h[j*nx+i],sstep(dd,s.r,s.r*2));}}
@@ -673,7 +714,11 @@ function* terrainSteps(){if(TER.h)return;const{nx,nz,cell,x0,z0}=TER,h=new Float
 function buildTerrain(){for(const p of terrainSteps());}
 function terrainH(x,z){const{nx,nz,cell,x0,z0,h}=TER;
   let fx=clamp((x-x0)/cell,0,nx-1.001),fz=clamp((z-z0)/cell,0,nz-1.001);const i=fx|0,j=fz|0;fx-=i;fz-=j;const k=j*nx+i;
-  const v=lerp(lerp(h[k],h[k+1],fx),lerp(h[k+nx],h[k+nx+1],fx),fz);return v>0?v:0;}
+  const v=lerp(lerp(h[k],h[k+1],fx),lerp(h[k+nx],h[k+nx+1],fx),fz);return v>0?v:THEATRE.id==='israel'&&x>ISR.seaX?v:0;}
+/* water: the sea, and in Israel also the Sea of Galilee and the Dead Sea */
+function isWater(x,z){const h=terrainH(x,z);if(THEATRE.id!=='israel')return h<2;if(x<ISR.seaX)return h<1;return lakeAt(x,z)!=null&&h<lakeAt(x,z)+1.5;}
+function lakeAt(x,z){for(const L of LAKES)if(x>L.x1&&x<L.x2&&z>L.z1&&z<L.z2)return L.h;return null;}
+const LAKES=[];
 
 /* ---------- aircraft ---------- */
 const TYPES={
@@ -866,13 +911,13 @@ function launchZone(spec,sp,sv,tp,tv){
 const SPICE={name:'SPICE-2000',mass:950,ld:8};
 function spiceRange(dh,V){return dh<=300?0:Math.max(0,5.8*dh+10*(V-180));}
 class Bomb{
-  constructor(owner,target,pos,vel,spec){this.ld=spec&&spec.ld||SPICE.ld;this.lgb=!!(spec&&spec.lgb);this.owner=owner;this.target=target;this.pos={...pos};this.vel={...vel};this.t=0;this.alive=true;this.kind='bomb';this.aim={x:target.pos.x+(Math.random()-0.5)*5,y:target.pos.y,z:target.pos.z+(Math.random()-0.5)*5};}
+  constructor(owner,target,pos,vel,spec){this.ld=spec&&spec.ld||SPICE.ld;this.lgb=!!(spec&&spec.lgb);this.gps=!!(spec&&spec.gps);this.owner=owner;this.target=target;this.pos={...pos};this.vel={...vel};this.t=0;this.alive=true;this.kind='bomb';this.aim={x:target.pos.x+(Math.random()-0.5)*5,y:target.pos.y,z:target.pos.z+(Math.random()-0.5)*5};}
   step(dt,W){
     this.t+=dt;const at=atmo(this.pos.y);let sp=vlen(this.vel),vh=vmul(this.vel,1/sp);
     const r=vsub(this.aim,this.pos),hd=Math.hypot(r.x,r.z),elev=Math.atan2(r.y,hd);
     let nload=Math.max(0,Math.cos(Math.asin(clamp(vh.y,-1,1))));
     /* a glide bomb's own camera takes over for the last few kilometres, so it can follow a target that moves */
-    if(!this.lgb&&this.target.alive&&this.target.vel&&Math.abs(this.target.vel.x)+Math.abs(this.target.vel.z)>0.5&&hd<4500){const tp=this.target.pos;this.aim={x:tp.x,y:tp.y,z:tp.z};}
+    if(!this.lgb&&!this.gps&&this.target.alive&&this.target.vel&&Math.abs(this.target.vel.x)+Math.abs(this.target.vel.z)>0.5&&hd<4500){const tp=this.target.pos;this.aim={x:tp.x,y:tp.y,z:tp.z};}
     if(this.lgb){this.guided=W.lasing(this.target);if(this.guided){const tp=this.target.pos;this.aim={x:tp.x,y:tp.y,z:tp.z};}if(!this.guided&&this.t>0.8)this.lost=(this.lost||0)+dt;}
     if(this.t>0.8&&(!this.lgb||this.guided)){let des;
       if(elev<-0.62||hd<1200)des=vnorm(r);
@@ -885,6 +930,22 @@ class Bomb{
     this.vel=vmul(vh,sp);this.pos=vadd(this.pos,vmul(this.vel,dt));
     if(this.pos.y<=terrainH(this.pos.x,this.pos.z)+1){this.alive=false;if(W.onBomb)W.onBomb(this);}
   }
+}
+/* ---------- stand-off weapons: a jet-powered cruise missile (Delilah) and a sea-skimming anti-ship missile ---------- */
+const STANDOFF={DELILAH:{name:'DELILAH',spd:250,clr:170,range:250000,term:4000,dive:true},AGM84:{name:'AGM-84',spd:270,clr:12,range:125000,term:0,ship:true}};
+class Cruise{
+  constructor(spec,owner,target,pos,vel){this.s=spec;this.owner=owner;this.target=target;this.pos={...pos};this.vel={...vel};this.t=0;this.alive=true;this.kind='msl';this.side=0;this.burning=true;this.dist=0;this.cruise=true;this.last=target?{...target.pos}:null;}
+  step(dt,W){const s=this.s,T=this.target;this.t+=dt;this.burning=this.t<2.5;if(T&&T.alive)this.last={...T.pos};const tp=this.last||this.pos;
+    const r=vsub(tp,this.pos),hd=Math.hypot(r.x,r.z);let want;
+    if(hd<(s.dive?s.term:1200)){want=vnorm(vsub(vadd(tp,v3(0,2,0)),this.pos));}
+    else{const h=Math.atan2(r.x,-r.z),sx=Math.sin(h),sz=-Math.cos(h),gy=Math.max(terrainH(this.pos.x,this.pos.z),terrainH(this.pos.x+sx*700,this.pos.z+sz*700),terrainH(this.pos.x+sx*1800,this.pos.z+sz*1800))+s.clr;
+      want=vnorm(v3(sx,clamp((gy-this.pos.y)/500,-0.22,0.4),sz));}
+    const sp=Math.max(vlen(this.vel),1),cur=vmul(this.vel,1/sp),nd=vnorm(vadd(cur,vmul(vsub(want,cur),Math.min(1,dt*(this.t<2?0.7:1.4))))),nsp=sp+(s.spd-sp)*Math.min(1,dt*0.4);
+    this.vel=vmul(nd,nsp);this.pos=vadd(this.pos,vmul(this.vel,dt));this.dist+=nsp*dt;
+    /* a ship's close-in guns get one chance at an incoming missile */
+    if(s.ship&&T&&T.alive&&!this.ciws&&hd<2500){this.ciws=true;if(Math.random()<(W.diff==='hard'?0.3:W.diff==='easy'?0.1:0.2)){this.alive=false;this.result='shot';W.events.push({type:'boom',pos:{...this.pos},size:0.7});W.msg('בקר: הספינה יירטה טיל אחד בתותח קרוב.');return;}}
+    if(T&&T.alive&&vdist(this.pos,vadd(T.pos,v3(0,3,0)))<15){this.alive=false;this.result='hit';W.events.push({type:'boom',pos:{...this.pos},size:s.ship?2.4:3,ground:true});W.killGround(T);return;}
+    if(this.pos.y<terrainH(this.pos.x,this.pos.z)+0.3||this.dist>s.range||this.t>1500){this.alive=false;this.result='ground';}}
 }
 /* ---------- attack drone ---------- */
 class Drone{
@@ -1066,12 +1127,14 @@ class World{
   constructor(o={}){
     buildTerrain();this.time=0;this.real=true;this.diff=DIFF[o.diff]?o.diff:'normal';this.d=DIFF[this.diff];this.events=[];this.missiles=[];this.bombs=[];this.bullets=[];
     const pl0=PLANES[o.plane]||PLANES.F15I,M=o.mission,duel=M==='duel',tank=M==='tanker',train=M==='train',conv=M==='convoy',esc=M==='escort',sead=M==='sead'&&!!pl0.spice,
-      csar=M==='csar',recon=M==='recon'&&!!pl0.spice,stl=M==='stealth',icpt=M==='intercept'||(!pl0.spice&&!duel&&!tank&&!train&&!conv&&!esc&&!csar&&!stl),
-      strike=!duel&&!tank&&!train&&!conv&&!sead&&!icpt&&!esc&&!csar&&!recon&&!stl,
-      pl=this.plane=sead&&!pl0.internal?Object.assign({},pl0,{spice:4,bomb:{name:'AGM-88',mass:360,soft:0,hard:0,arm:true}}):o.bomb==='lgb'&&pl0.spice&&!pl0.internal?Object.assign({},pl0,{spice:pl0.spice+2,bomb:{name:'GBU-12',mass:230,soft:30,hard:9,lgb:true,ld:3.4}}):pl0,
+      csar=M==='csar',recon=M==='recon'&&!!pl0.spice,stl=M==='stealth',naval=M==='naval'&&!!pl0.spice,icpt=M==='intercept'||(!pl0.spice&&!duel&&!tank&&!train&&!conv&&!esc&&!csar&&!stl),
+      strike=!duel&&!tank&&!train&&!conv&&!sead&&!icpt&&!esc&&!csar&&!recon&&!stl&&!naval,
+      pl=this.plane=naval?Object.assign({},pl0,{spice:pl0.type==='F15I'?4:2,bomb:pl0.internal?{name:'JSM',mass:416,soft:0,hard:0,cruise:'AGM84'}:{name:'AGM-84',mass:520,soft:0,hard:0,cruise:'AGM84'}})
+        :o.bomb==='jdam'&&pl0.spice&&!sead&&!conv?Object.assign({},pl0,{spice:pl0.type==='F15I'?4:2,bomb:{name:'GBU-31 JDAM',mass:925,soft:60,hard:16,gps:true,ld:3.2}})
+        :o.bomb==='delilah'&&pl0.spice&&!pl0.internal&&!sead?Object.assign({},pl0,{spice:pl0.type==='F15I'?4:2,bomb:{name:'DELILAH',mass:187,soft:0,hard:0,cruise:'DELILAH'}}):sead&&!pl0.internal?Object.assign({},pl0,{spice:4,bomb:{name:'AGM-88',mass:360,soft:0,hard:0,arm:true}}):o.bomb==='lgb'&&pl0.spice&&!pl0.internal?Object.assign({},pl0,{spice:pl0.spice+2,bomb:{name:'GBU-12',mass:230,soft:30,hard:9,lgb:true,ld:3.4}}):pl0,
       air=o.start==='air'||duel||tank||train||esc,cold=o.start==='cold'&&!air,quiet=duel||tank||train||icpt||esc||csar||recon||stl,TH=THEATRE;
     this.mrm=MSL[pl.mrm||'AIM120'];this.srm=MSL[pl.srm||'PYTHON5'];this.ecm=false;this.failOpt=!!o.fail;this.foeJam=false;
-    this.missionId=duel?'duel':tank?'tanker':train?'train':icpt?'intercept':esc?'escort':sead?'sead':conv?'convoy':csar?'csar':recon?'recon':stl?'stealth':'strike';this.call=pl.call;
+    this.missionId=naval?'naval':duel?'duel':tank?'tanker':train?'train':icpt?'intercept':esc?'escort':sead?'sead':conv?'convoy':csar?'csar':recon?'recon':stl?'stealth':'strike';this.call=pl.call;
     this.player=new Aircraft(pl.type,air?{x:duel?20000:9000,y:duel?6500:5500,z:0,hdg:Math.PI/2,pitch:0.055,speed:250,throttle:0.9,fuel:pl.fuelAir}
       :cold?{x:PARK.x,y:SITES.base.h+TYPES[pl.type].gearH,z:PARK.z,hdg:0,speed:0,throttle:0,gear:true,flaps:true,onGround:true,fuel:pl.fuelRwy}
       :{x:RWY.x1+110,y:SITES.base.h+TYPES[pl.type].gearH,z:0,hdg:Math.PI/2,speed:0,throttle:0,gear:true,flaps:true,onGround:true,fuel:pl.fuelRwy});
@@ -1095,7 +1158,8 @@ class World{
     this.load0={aam:this.w.aim120+this.w.python,bomb:this.w.spice};
     const tg=SITES.tgt,sm=SITES.sam;
     const CP=this.csarP={x:Math.min(68000,tg.x*0.55),z:Math.round(tg.z*0.5)+14000},RS=[{x:sm.x+2500,z:sm.z+3000},{x:Math.round(tg.x+TH.ipOff[0]*0.45),z:Math.round(tg.z+TH.ipOff[1]*0.45)-7000},{x:tg.x,z:tg.z}];
-    this.wps=csar?[{n:'PILOT',x:CP.x,z:CP.z,alt:3000},{n:'BASE',x:0,z:0,alt:1000}]:recon?[...RS.map((q,i)=>({n:'PH'+(i+1),x:q.x,z:q.z,alt:7000})),{n:'BASE',x:0,z:0,alt:1000}]:stl?[{n:'CAP',x:38000,z:0,alt:2500},{n:'BASE',x:0,z:0,alt:1000}]:esc?[{n:'TGT',x:tg.x,z:tg.z,alt:7600},{n:'BASE',x:0,z:0,alt:1000}]:sead?[{n:'CAP',x:TH.cap[0],z:TH.cap[1],alt:7000},{n:'SAM',x:sm.x-40000,z:sm.z,alt:8000},{n:'BASE',x:0,z:0,alt:1000}]:conv?[{n:'ROAD',x:46000,z:-6000,alt:3000},{n:'BASE',x:0,z:0,alt:1000}]:train?[{n:'TRAIN',x:40000,z:0,alt:6500},{n:'BASE',x:0,z:0,alt:1000}]:icpt?[{n:'CAP',x:45000,z:0,alt:3000},{n:'BASE',x:0,z:0,alt:1000}]:tank?[{n:'TANKER',x:this.tanker.pos.x,z:this.tanker.pos.z,alt:6000},{n:'BASE',x:0,z:0,alt:1000}]:duel?[{n:'MERGE',x:TH.duelX-4000,z:0,alt:6500},{n:'BASE',x:0,z:0,alt:1000}]
+    const SH=this.fleet={south:{x:-62000,z:-8000},north:{x:-52000,z:-6000},far:{x:120000,z:-5000},israel:{x:-62000,z:8000}}[TH.id]||{x:-62000,z:-8000};
+    this.wps=naval?[{n:'FLEET',x:SH.x,z:SH.z,alt:5000},{n:'BASE',x:0,z:0,alt:1000}]:csar?[{n:'PILOT',x:CP.x,z:CP.z,alt:3000},{n:'BASE',x:0,z:0,alt:1000}]:recon?[...RS.map((q,i)=>({n:'PH'+(i+1),x:q.x,z:q.z,alt:7000})),{n:'BASE',x:0,z:0,alt:1000}]:stl?[{n:'CAP',x:38000,z:0,alt:2500},{n:'BASE',x:0,z:0,alt:1000}]:esc?[{n:'TGT',x:tg.x,z:tg.z,alt:7600},{n:'BASE',x:0,z:0,alt:1000}]:sead?[{n:'CAP',x:TH.cap[0],z:TH.cap[1],alt:7000},{n:'SAM',x:sm.x-40000,z:sm.z,alt:8000},{n:'BASE',x:0,z:0,alt:1000}]:conv?[{n:'ROAD',x:46000,z:-6000,alt:3000},{n:'BASE',x:0,z:0,alt:1000}]:train?[{n:'TRAIN',x:40000,z:0,alt:6500},{n:'BASE',x:0,z:0,alt:1000}]:icpt?[{n:'CAP',x:45000,z:0,alt:3000},{n:'BASE',x:0,z:0,alt:1000}]:tank?[{n:'TANKER',x:this.tanker.pos.x,z:this.tanker.pos.z,alt:6000},{n:'BASE',x:0,z:0,alt:1000}]:duel?[{n:'MERGE',x:TH.duelX-4000,z:0,alt:6500},{n:'BASE',x:0,z:0,alt:1000}]
       :[{n:'CAP',x:TH.cap[0],z:TH.cap[1],alt:6000},{n:'IP',x:tg.x+TH.ipOff[0],z:tg.z+TH.ipOff[1],alt:9000},{n:'TGT',x:SITES.tgt.x,z:SITES.tgt.z,alt:9000},{n:'BASE',x:0,z:0,alt:1000}];this.wp=0;
     this.drones=[];if(strike)for(let i=0;i<4;i++)this.drones.push(new Drone(64000+i*2500,1500,-9000+i*6000,i));
     /* air defence: two waves of attack drones, then two fast low cruise missiles */
@@ -1106,8 +1170,8 @@ class World{
       for(let i=0;i<3;i++)this.drones.push(new Drone(60000+i*4000,2400+i*300,-sz*0.6+(i-1)*9000,i+1));}
     this.nDrone=this.drones.length;
     /* enemy fighters: type and number depend on the mission */
-    this.migs=[];this.migAI=[];const home=duel?v3(TH.duelX,6500,0):csar?v3(CP.x+32000,5000,CP.z-4000):v3(tg.x+TH.migOff[0],7500,tg.z+TH.migOff[1]),
-      foe=duel?(o.foe==='su27'?'SU27':o.foe==='mig21'?'MIG21':'MIG29'):sead||csar?'MIG21':'MIG29',nFoe=duel?(foe==='MIG21'?3:2):esc?(o.noMigs?2:4):strike?(o.noMigs?0:2):sead||csar||recon?2:0;
+    this.migs=[];this.migAI=[];const home=duel?v3(TH.duelX,6500,0):naval?v3(SH.x-15000,7000,SH.z):csar?v3(CP.x+32000,5000,CP.z-4000):v3(tg.x+TH.migOff[0],7500,tg.z+TH.migOff[1]),
+      foe=duel?(o.foe==='su27'?'SU27':o.foe==='mig21'?'MIG21':'MIG29'):sead||csar?'MIG21':'MIG29',nFoe=naval?(this.diff==='hard'?2:0):duel?(foe==='MIG21'?3:2):esc?(o.noMigs?2:4):strike?(o.noMigs?0:2):sead||csar||recon?2:0;
     this.foeName={SU27:'סוחוי-27',MIG21:'מיג-21',MIG29:'מיג-29'}[foe];
     for(let i=0;i<nFoe;i++){const ft=esc&&i>=2?'MIG21':foe;const m=new Aircraft(ft,duel?{side:1,x:home.x+i*2500,y:home.y+i*400,z:[-2600,2600,0][i],hdg:-Math.PI/2,speed:250,fuel:3000,storeCD:0.002}
         :{side:1,x:home.x+i*3000,y:home.y+i*300,z:home.z+9000*(i%2?-1:1),hdg:i%2?Math.PI/2:-Math.PI/2,speed:230,fuel:3000,storeCD:0.002});
@@ -1120,6 +1184,7 @@ class World{
     this.ground=esc?[G('TEL-1',260,-140,'tel',true,1),G('TEL-2',-310,190,'tel',true,1),G('BUNKER',20,430,'bunker',true,1)]:strike?[G('SAM RADAR',0,0,'radar',false,1),G('TEL-1',260,-140,'tel',true,1),G('TEL-2',-310,190,'tel',true,1),G('BUNKER',20,430,'bunker',true,1),
       G('LNCH',160,120,'launcher',false,1),G('LNCH',-170,90,'launcher',false,1),G('LNCH',10,-190,'launcher',false,1)]
       :sead?[G('SA-10 RADAR',0,0,'radar',true,1),G2('SA-6 RADAR',tg.x,tg.z,'radar',true,1),G2('SA-6 RADAR',sm.x-17000,sm.z+19000,'radar',true,1),G('LNCH',160,120,'launcher',false,1),G('LNCH',-170,90,'launcher',false,1)]
+      :naval?[0,1,2].map(i=>Object.assign(G2('SHIP-'+(i+1),SH.x+(i-1)*5500,SH.z+(i-1)*4000,'ship',true,14),{vel:v3(i===1?-4:3,0,i%2?6:-6),mob:true,z0:SH.z+(i-1)*4000,amp:7000}))
       :recon?[...RS.map((q,i)=>G2('SITE-'+(i+1),q.x,q.z,'site',true,1)),G2('SA-6 RADAR',RS[1].x+5000,RS[1].z-2500,'radar',false,1)]
       :csar?[G2('SA-8 RADAR',CP.x+8000,CP.z-6000,'radar',false,1)]
       :conv?[...Array.from({length:6},(_,i)=>Object.assign(G2('TRUCK-'+(i+1),62000+i*70,-6000,'truck',true,3),{vel:v3(-13,0,0)})),G2('SA-8 RADAR',54000,-2500,'radar',false,1)]:[];
@@ -1128,7 +1193,7 @@ class World{
     if(strike&&this.diff!=='easy'){const ip={x:tg.x+TH.ipOff[0],z:tg.z+TH.ipOff[1]};this.ground.push(G2('SA-6 RADAR',Math.round((ip.x+tg.x)/2),Math.round((ip.z+tg.z)/2)-6500,'radar',false,1));}
     if(strike&&TH.id==='far')this.ground.push(Object.assign(G2('SHIP',150000,-12000,'ship',false,14),{vel:v3(0,0,7),mob:true}));
     this.sams=strike?[new SamSite(this.ground[0]),...this.ground.filter((g,i)=>i>6&&g.kind==='radar').map(g=>Object.assign(new SamSite(g,0.55,'6',0.7),{silent:23000})),...this.ground.filter(g=>g.kind==='ship').map(g=>new SamSite(g,0.42,'N',0.8))]
-      :recon?[new SamSite(this.ground[3],0.55,'6',0.7)]:csar?[Object.assign(new SamSite(this.ground[0],0.36,'8',0.6),{silent:15000})]:sead?[new SamSite(this.ground[0],1.25,'10',1.1),new SamSite(this.ground[1],0.55,'6',0.7),new SamSite(this.ground[2],0.55,'6',0.7)]:conv?[new SamSite(this.ground[6],0.36,'8',0.6)]:[];
+      :naval?this.ground.map(g=>new SamSite(g,0.42,'N',0.8)):recon?[new SamSite(this.ground[3],0.55,'6',0.7)]:csar?[Object.assign(new SamSite(this.ground[0],0.36,'8',0.6),{silent:15000})]:sead?[new SamSite(this.ground[0],1.25,'10',1.1),new SamSite(this.ground[1],0.55,'6',0.7),new SamSite(this.ground[2],0.55,'6',0.7)]:conv?[new SamSite(this.ground[6],0.36,'8',0.6)]:[];
     for(const q of this.sams)q.left=q.rk<1?Math.ceil(this.d.samN*0.6):this.d.samN;
     if(strike&&o.noSam){this.ground[0].alive=false;this.stats0sam=true;}
     this.sam=this.sams[0]||new SamSite({alive:false,pos:v3(sm.x,sm.h,sm.z)});
@@ -1136,7 +1201,7 @@ class World{
     /* the escorted pair starts ahead of the player, already on its way */
     this.strikers=[];if(esc)for(let i=0;i<2;i++){const sa=new Aircraft('F16I',{x:this.player.pos.x+2500+i*250,y:7600+i*250,z:i?700:-700,hdg:Math.atan2(tg.x-11500,-tg.z),pitch:0.04,speed:240,throttle:0.8});sa.model='F16I';sa.label='S'+(i+1);this.strikers.push(new StrikerAI(sa,i));this.friends.push(sa);}
     this.helo=null;this.hoverT=120;if(csar){this.helo=new Helo(24000,Math.round(CP.z*0.4),CP);this.friends.push(this.helo);}
-    this.wing=null;if(o.wing&&(strike||icpt||duel||sead||conv||esc||csar||recon||stl)){const p=this.player,gnd=p.onGround,wa=new Aircraft(pl.type,gnd?{x:RWY.x1+96,y:SITES.base.h+TYPES[pl.type].gearH,z:19,hdg:Math.PI/2,speed:0,throttle:0,gear:true,flaps:true,onGround:true}:{x:p.pos.x-22,y:p.pos.y+6,z:p.pos.z+50,hdg:Math.PI/2,pitch:0.05,speed:250,throttle:0.9});
+    this.wing=null;if(o.wing&&(strike||icpt||duel||sead||conv||esc||csar||recon||stl||naval)){const p=this.player,gnd=p.onGround,wa=new Aircraft(pl.type,gnd?{x:RWY.x1+96,y:SITES.base.h+TYPES[pl.type].gearH,z:19,hdg:Math.PI/2,speed:0,throttle:0,gear:true,flaps:true,onGround:true}:{x:p.pos.x-22,y:p.pos.y+6,z:p.pos.z+50,hdg:Math.PI/2,pitch:0.05,speed:250,throttle:0.9});
       this.wing=new WingAI(wa,pl);this.wing.gnd=gnd;this.friends.push(wa);}
     this.wx=o.wx==='wind'||o.wx==='storm'||o.wx==='fog'?o.wx:'clear';this.wind=this.wx==='storm'?v3(-3,0,9):this.wx==='wind'?v3(-2,0,7):null;this.player.wind=this.wind;
     this.failT=o.fail?150+Math.random()*420:null;this.birdAt=o.fail&&!tank&&!train&&Math.random()<0.35?(air||Math.random()<0.5?'app':'climb'):null;this.sig=Math.min(1,Math.pow(this.player.rcs/5,0.25));this.arm=air&&!train;this.contacts=[];this.lock=null;this.gtgt=null;this.irTgt=null;this.dlz=null;this.migsActive=duel;
@@ -1146,7 +1211,7 @@ class World{
     if(this.lesson==='evade'){this.w.chaff=this.w.flare=120;}
     this.nPrimary=this.ground.filter(g=>g.primary).length;
     if(o.faults&&o.faults.length){const p=this.player;for(const f of o.faults){if(f==='RADAR'){this.dmgRadar=true;this.sys.radar=false;}else if(f==='RWR')this.dmgRwr=true;else if(f==='HYD')p.hyd=0.4;else if(f==='FUEL')p.leak=2;else if(f.startsWith('ENG'))p.engOK[0]=0.5;else if(f==='BRAKE')p.brakeK=0.12;}this.syncDmg();}
-    this.msg(this.lesson==='land'?'מדריך: שיעור נחיתה. המסלול לפניך, שבעה מייל. התחל בהורדת כן נסע ומדפים.':this.lesson==='refuel'?'מדריך: שיעור תדלוק. המתדלק לפניך, שני קילומטר. התחל בפתיחת דלת התדלוק.':this.lesson==='ground'?'מדריך: שיעור תקיפת קרקע. המטרה לפניך, 42 קילומטר. התחל בבחירת חימוש לקרקע.':this.lesson==='evade'?'מדריך: שיעור התחמקות מטיל. טוס ישר, בעוד רגע ישוגר אליך טיל אימון.':csar?(air?'בקר: פטיש אחת, טייס נטש מזרחה לך ומסוק החילוץ כבר בדרך אליו, נמוך. שמור עליו בדרך, בזמן האיסוף ובחזרה.':'מגדל חצרים: פטיש אחת, רשאי להמריא. מסוק החילוץ כבר בדרך לטייס, הדבק אותו.'):recon?(air?'בקר: פטיש אחת, משימת צילום. שלושה אתרים, צלם כל אחד בפוד: בחר 4, נעל על האתר והחזק אותו בתמונה שלוש שניות.':'מגדל חצרים: פטיש אחת, רשאי להמריא. משימת צילום, שלושה אתרים.'):stl?(air?'בקר: פטיש אחת, כטב"ם חמקן חוצה מערבה בגובה נמוך מאוד, בין כמה כטב"מי הטעיה. המכ"ם יראה אותו רק מקרוב. אני אתן לך כיוון אליו.':'מגדל חצרים: פטיש אחת, הזנקה! כטב"ם חמקן בדרך, נמוך מאוד.'):esc?'בקר: פטיש אחת, זוג המובילים לפניך בדרכו לאתר השיגור. הסוללה שותקה. מיירטים צפויים לעלות מולם, שמור עליהם עד לשחרור.':sead?(air?'בקר: פטיש אחת, משימת דיכוי הגנה אווירית. שלוש סוללות לפניך: אחת ארוכת טווח ושתיים בינוניות. הטיל ננעל רק על מכ"ם שמשדר. רשאי אש.':'מגדל חצרים: פטיש אחת, רשאי להמריא. משימת דיכוי הגנה אווירית, שלוש סוללות.'):conv?(air?'בקר: פטיש אחת, שיירת משאיות נעה מערבה על הציר, מלווה בסוללה קצרת טווח. עצור אותה לפני שתגיע לקו. מטרות נעות, פצצת לייזר או תותח.':'מגדל חצרים: פטיש אחת, רשאי להמריא. שיירה נעה מערבה על הציר.'):train?'מדריך: ברוך הבא, פטיש אחת. נתחיל בפשוט: משוך מעט את הסטיק וטפס מעל עשרים אלף רגל.':icpt?(air?'בקר: פטיש אחת, מטח כטב"מי תקיפה חוצה את הגבול מערבה בגובה נמוך, שני גלים. אחריהם טילי שיוט. אל תיתן להם לעבור. רשאי אש.':cold?'מגדל חצרים: פטיש אחת, הזנקה! התנע והמרא, מטח כטב"מים בדרך.':'מגדל חצרים: פטיש אחת, הזנקה! רשאי להמריא ממסלול 09. מטח כטב"מים בדרך.'):tank?'בקר: פטיש אחת, המתדלק לפניך, שני קילומטר. פתח דלת תדלוק והתקרב לעמדת המגע.':cold?'מגדל חצרים: פטיש אחת, רשאי להתניע. בצע רשימת תיוג ודווח מוכן.':duel?`בקר: פטיש אחת, ${this.migs.length===3?'שלישיית':'זוג'} ${this.foeName} מולך, 45 קילומטר, באותו גובה. רשאי אש.`:air?'בקר: פטיש אחת, אתה בדרך לנקודה 1. ארבעה כטב"מי תקיפה נעים מערבה בגובה נמוך. רשאי אש.':'מגדל חצרים: פטיש אחת, רשאי להמריא ממסלול 09. מבער מלא, הרמת אף ב-150 קשר.');
+    this.msg(this.lesson==='land'?'מדריך: שיעור נחיתה. המסלול לפניך, שבעה מייל. התחל בהורדת כן נסע ומדפים.':this.lesson==='refuel'?'מדריך: שיעור תדלוק. המתדלק לפניך, שני קילומטר. התחל בפתיחת דלת התדלוק.':this.lesson==='ground'?'מדריך: שיעור תקיפת קרקע. המטרה לפניך, 42 קילומטר. התחל בבחירת חימוש לקרקע.':this.lesson==='evade'?'מדריך: שיעור התחמקות מטיל. טוס ישר, בעוד רגע ישוגר אליך טיל אימון.':naval?(air?`בקר: פטיש אחת, שלוש ספינות טילים בים, ${Math.round(Math.hypot(SH.x,SH.z)/1000)} קילומטר ממך. לכל אחת נ"מ קצר טווח ותותח קרוב. שגר טילי ים מרחוק, רשאי אש.`:'מגדל חצרים: פטיש אחת, רשאי להמריא. שלוש ספינות טילים בים, טילי ים מוכנים.'):csar?(air?'בקר: פטיש אחת, טייס נטש מזרחה לך ומסוק החילוץ כבר בדרך אליו, נמוך. שמור עליו בדרך, בזמן האיסוף ובחזרה.':'מגדל חצרים: פטיש אחת, רשאי להמריא. מסוק החילוץ כבר בדרך לטייס, הדבק אותו.'):recon?(air?'בקר: פטיש אחת, משימת צילום. שלושה אתרים, צלם כל אחד בפוד: בחר 4, נעל על האתר והחזק אותו בתמונה שלוש שניות.':'מגדל חצרים: פטיש אחת, רשאי להמריא. משימת צילום, שלושה אתרים.'):stl?(air?'בקר: פטיש אחת, כטב"ם חמקן חוצה מערבה בגובה נמוך מאוד, בין כמה כטב"מי הטעיה. המכ"ם יראה אותו רק מקרוב. אני אתן לך כיוון אליו.':'מגדל חצרים: פטיש אחת, הזנקה! כטב"ם חמקן בדרך, נמוך מאוד.'):esc?'בקר: פטיש אחת, זוג המובילים לפניך בדרכו לאתר השיגור. הסוללה שותקה. מיירטים צפויים לעלות מולם, שמור עליהם עד לשחרור.':sead?(air?'בקר: פטיש אחת, משימת דיכוי הגנה אווירית. שלוש סוללות לפניך: אחת ארוכת טווח ושתיים בינוניות. הטיל ננעל רק על מכ"ם שמשדר. רשאי אש.':'מגדל חצרים: פטיש אחת, רשאי להמריא. משימת דיכוי הגנה אווירית, שלוש סוללות.'):conv?(air?'בקר: פטיש אחת, שיירת משאיות נעה מערבה על הציר, מלווה בסוללה קצרת טווח. עצור אותה לפני שתגיע לקו. מטרות נעות, פצצת לייזר או תותח.':'מגדל חצרים: פטיש אחת, רשאי להמריא. שיירה נעה מערבה על הציר.'):train?'מדריך: ברוך הבא, פטיש אחת. נתחיל בפשוט: משוך מעט את הסטיק וטפס מעל עשרים אלף רגל.':icpt?(air?'בקר: פטיש אחת, מטח כטב"מי תקיפה חוצה את הגבול מערבה בגובה נמוך, שני גלים. אחריהם טילי שיוט. אל תיתן להם לעבור. רשאי אש.':cold?'מגדל חצרים: פטיש אחת, הזנקה! התנע והמרא, מטח כטב"מים בדרך.':'מגדל חצרים: פטיש אחת, הזנקה! רשאי להמריא ממסלול 09. מטח כטב"מים בדרך.'):tank?'בקר: פטיש אחת, המתדלק לפניך, שני קילומטר. פתח דלת תדלוק והתקרב לעמדת המגע.':cold?'מגדל חצרים: פטיש אחת, רשאי להתניע. בצע רשימת תיוג ודווח מוכן.':duel?`בקר: פטיש אחת, ${this.migs.length===3?'שלישיית':'זוג'} ${this.foeName} מולך, 45 קילומטר, באותו גובה. רשאי אש.`:air?'בקר: פטיש אחת, אתה בדרך לנקודה 1. ארבעה כטב"מי תקיפה נעים מערבה בגובה נמוך. רשאי אש.':'מגדל חצרים: פטיש אחת, רשאי להמריא ממסלול 09. מבער מלא, הרמת אף ב-150 קשר.');
     if(air)this.flags.airborne=true;
   }
   get vr(){const p=this.player,T=p.t,ref=T.mEmpty+T.fuelMax*0.8+2600;return Math.round(150*Math.sqrt(p.mass/ref)/5)*5;}
@@ -1196,6 +1261,7 @@ class World{
     if(g.primary){this.stats.tgt++;
       if(id==='sead'){this.msg(left?`בקר: מכ"ם הושמד. נותרו ${left} סוללות.`:'בקר: כל הסוללות שותקו. השמיים פתוחים למבנה התקיפה.');if(!this.migsActive&&this.migs.length){this.migsActive=true;this.msg(`בקר: זהירות, זוג ${this.foeName} הוזנק לעברך.`);}}
       else if(id==='convoy')this.msg(left?`בקר: רכב הושמד. נותרו ${left}.`:'בקר: השיירה הושמדה.');
+      else if(id==='naval')this.msg(left?`בקר: פגיעה! ספינה טובעת. נותרו ${left}.`:'בקר: כל הספינות הוטבעו. חזור הביתה.');
       else this.msg(left?`בקר: פגיעה טובה ב-${g.name}. נותרו ${left} מטרות.`:'בקר: כל המטרות הושמדו. חזור לבסיס לנחיתה.');}
     else if(g.kind==='ship'){this.stats.ship=true;this.msg('בקר: ספינת הטילים נפגעה ושותקה.');}
     else if(g.kind==='radar')this.msg('בקר: מכ"ם הסוללה הושמד. איום הנ"מ הוסר.');
@@ -1314,20 +1380,29 @@ class World{
   syncDmg(){const p=this.player,L=[],nm=p.nEng===2?['ENG L','ENG R']:['ENG'];
     for(let i=0;i<p.nEng;i++){if(p.fire[i])L.push({t:nm[i]+' FIRE',lvl:2,id:'fire'+i});else if(p.flame&&p.flame[i]&&p.engOK[i]>0)L.push({t:nm[i]+' FLAMEOUT',lvl:2,id:'eng'+i});else if(p.engOK[i]===0)L.push({t:nm[i]+' OUT',lvl:1});else if(p.engOK[i]<1)L.push({t:nm[i]+' DEGRADED',lvl:1});}
     if(p.leak)L.push({t:'FUEL LEAK',lvl:1});if(p.hyd<1)L.push({t:'HYD FAIL',lvl:1});if(this.dmgRadar)L.push({t:'RADAR FAIL',lvl:1});if(this.dmgRwr)L.push({t:'RWR FAIL',lvl:1});if(p.brakeK<1)L.push({t:'BRAKE FAIL',lvl:1});if(p.bird)L.push({t:'BIRD STRIKE',lvl:1});this.dmg=L;}
+  /* automatic join-up: flies the jet to a waiting point 32 m behind and a little below the boom, then hands back */
+  joinStep(dt){const tk=this.tanker,p=this.player;if(!this.arJoin)return;if(!tk||!p.alive||p.onGround||this.ar.state==='contact'){this.arJoin=false;return;}
+    if(!this.sys.arDoor)this.sw('ardoor');
+    const wait=vadd(tk.pos,qrot(tk.q,v3(0,-9,62))),r=vsub(wait,p.pos),R=vlen(r),fw=qrot(tk.q,FWD);
+    /* fly a closure that shrinks with distance: fast from far away, a walking pace at the end */
+    const cl=Math.min(R*0.09,R>3000?140:60),dvel=vadd(tk.vel,vmul(vnorm(r),cl)),k=R<250?1:Math.min(1,dt*3);p.vel=vadd(p.vel,vmul(vsub(dvel,p.vel),k));
+    apSteer(p,vnorm(vadd(vmul(fw,600),vmul(r,R<400?0.5:1))),0.5);p.ctl.throttle=clamp(0.6+(vlen(dvel)-p.V)*0.05,0,1.2);p.ctl.brake=false;
+    if(R<12&&vlen(vsub(p.vel,tk.vel))<2.5){this.arJoin=false;this.msg('מתדלק: בעמדת המתנה. מכאן אתה בשליטה: התקדם לאט אל המשבצת.');this.events.push({type:'join'});}}
   /* boom refuelling: hold the contact position behind and below the tanker with the door open */
   refuel(dt){const tk=this.tanker,a=this.ar,p=this.player;if(!tk)return;
     const cp=vadd(tk.pos,qrot(tk.q,v3(0,-7.5,30))),relW=vsub(p.pos,cp),rv=vsub(p.vel,tk.vel);
     a.rel=qrotInv(tk.q,relW);a.dist=vlen(relW);a.range=vdist(p.pos,tk.pos);const rel=a.rel;
     const body=qrotInv(tk.q,vsub(p.pos,tk.pos));if(Math.abs(body.x)<3.5&&Math.abs(body.y)<4&&Math.abs(body.z)<23||Math.abs(body.x)<21&&Math.abs(body.y)<2.5&&Math.abs(body.z+2)<5){p.die('התנגשות במתדלק');return;}
     if(!this.sys.arDoor||p.onGround){if(a.state==='contact')this.msg('מתדלק: ניתוק.');a.state='none';a.t=0;return;}
-    const assist=this.diff==='hard'?0:1;
+    /* the contact window and the pull into it get wider on easier settings */
+    const assist=this.diff==='hard'?0:1,bx=this.diff==='easy'?1.7:this.diff==='normal'?1.3:1,pull=this.diff==='easy'?70:this.diff==='normal'?45:0;a.box=bx;
     if(a.state!=='contact'){
       if(a.dist<700&&!a.called){a.called=true;this.msg('מתדלק: רואה אותך. התקרב לעמדת המגע, מאחורי הזנב ומתחתיו.');}
-      if(Math.abs(rel.x)<5&&Math.abs(rel.y)<4&&Math.abs(rel.z)<7&&vlen(rv)<7){a.t+=dt;if(a.t>1.5){a.state='contact';a.full=false;this.msg('מתדלק: מגע. דלק זורם.');this.events.push({type:'contact'});}}else a.t=0;
-      if(assist&&a.dist<28)p.vel=vadd(p.vel,vadd(vmul(rv,-1.1*dt),vmul(relW,-0.22*dt)));
+      if(Math.abs(rel.x)<5*bx&&Math.abs(rel.y)<4*bx&&Math.abs(rel.z)<7*bx&&vlen(rv)<7){a.t+=dt;if(a.t>1.5){a.state='contact';a.full=false;this.msg('מתדלק: מגע. דלק זורם.');this.events.push({type:'contact'});}}else a.t=0;
+      if(assist&&!this.arJoin&&a.dist<pull)p.vel=vadd(p.vel,vadd(vmul(rv,-1.1*dt),v3(-relW.x*0.22*dt,-relW.y*0.9*dt,-relW.z*0.22*dt)));
     }else{
-      if(Math.abs(rel.x)>8||Math.abs(rel.y)>6.5||Math.abs(rel.z)>11){a.state='none';a.t=0;this.msg('מתדלק: ניתוק. חזור לעמדה.');return;}
-      if(assist)p.vel=vadd(p.vel,vadd(vmul(rv,-2.2*dt),vmul(relW,-0.5*dt)));
+      if(Math.abs(rel.x)>8*bx||Math.abs(rel.y)>6.5*bx||Math.abs(rel.z)>11*bx){a.state='none';a.t=0;this.msg('מתדלק: ניתוק. חזור לעמדה.');return;}
+      if(assist)p.vel=vadd(p.vel,vadd(vmul(rv,-2.2*dt),v3(-relW.x*0.5*dt,-relW.y*1.4*dt,-relW.z*0.5*dt)));
       const q=Math.min(p.t.fuelMax-p.fuel,32*dt);p.fuel+=q;a.taken+=q;
       if(p.t.fuelMax-p.fuel<1&&!a.full){a.full=true;this.msg('מתדלק: מלא. סגור דלת תדלוק והתנתק.');}
     }}
@@ -1342,6 +1417,7 @@ class World{
     if(p.onGround||w.sel==='GUN'){this.events.push({type:'deny'});return;}
     if(w.sel==='AIM120'){if(this.lock&&this.lock.side===0)this.events.push({type:'iff'});else if(w.aim120>0&&this.lock){this.launch(this.mrm,p,this.lock);w.aim120--;this.stats.shots++;}else this.events.push({type:'deny'});}
     else if(w.sel==='PYTHON'){if(w.python>0&&this.irTgt){this.launch(this.srm,p,this.irTgt);w.python--;this.stats.shots++;}else this.events.push({type:'deny'});}
+    else if(w.sel==='SPICE'&&this.plane.bomb.cruise){const b=this.bombSol();if(w.spice>0&&b&&b.ok){const m=new Cruise(STANDOFF[this.plane.bomb.cruise],p,this.gtgt,vadd(p.pos,vmul(qrot(p.q,UP),-2)),p.vel);this.missiles.push(m);this.events.push({type:'launch',m});w.spice--;this.stats.shots++;this.syncStores();}else this.events.push({type:'deny'});}
     else if(w.sel==='SPICE'&&this.plane.bomb.arm){const b=this.bombSol();if(w.spice>0&&b&&b.ok){this.launch(MSL.ARM,p,this.gtgt);w.spice--;this.stats.shots++;this.syncStores();}else this.events.push({type:'deny'});}
     else if(w.sel==='SPICE'){const b=this.bombSol();if(w.spice>0&&b&&b.ok){this.bombs.push(new Bomb(p,this.gtgt,vadd(p.pos,vmul(qrot(p.q,UP),-2)),p.vel,this.plane.bomb));w.spice--;this.stats.shots++;this.events.push({type:'release'});}else this.events.push({type:'deny'});}
     this.syncStores();}
@@ -1362,8 +1438,10 @@ class World{
     this.ejected={t:this.time,pos:{...p.pos},vel:vadd(p.vel,vmul(up,22)),safe:p.onGround?p.V<5||true:(p.agl+up.y*60+Math.min(0,p.vel.y)*2>25)};
     p.ctl.throttle=0;p.ctl.pitch=p.ctl.roll=p.ctl.yaw=0;this.autoStart=false;this.events.push({type:'eject'});return true;}
   bombSol(){const g=this.gtgt,p=this.player;if(!g||!g.alive)return null;
+    if(this.plane.bomb.cruise){const S=STANDOFF[this.plane.bomb.cruise],r=vsub(g.pos,p.pos),hd=Math.hypot(r.x,r.z),f=qrot(p.q,FWD),brg=Math.acos(clamp((f.x*r.x+f.z*r.z)/(Math.hypot(f.x,f.z)*hd||1),-1,1)),rmax=S.range*0.92,rmin=S.ship?8000:6000,ship=g.kind==='ship';
+      return{hd,rmax,rmin,brg,wrong:!!S.ship!==ship,ok:hd<rmax&&hd>rmin&&brg<75*D2R&&p.agl>120&&!!S.ship===ship,tof:hd/S.spd};}
     if(this.plane.bomb.arm){const r=vsub(g.pos,p.pos),hd=Math.hypot(r.x,r.z),f=qrot(p.q,FWD),brg=Math.acos(clamp((f.x*r.x+f.z*r.z)/(Math.hypot(f.x,f.z)*hd||1),-1,1)),rmax=22000+Math.max(0,-r.y)*4.2+(p.V-200)*30,em=g.kind==='radar'&&this.sams.some(q=>q.radar===g&&q.search);
-      return{hd,rmax,rmin:5000,brg,emit:em,ok:em&&hd<rmax&&hd>5000&&brg<40*D2R&&this.los(p.pos,vadd(g.pos,v3(0,15,0))),tof:hd/600};}const r=vsub(g.pos,p.pos),hd=Math.hypot(r.x,r.z),lg=this.plane.bomb.lgb,rmax=spiceRange(-r.y,p.V)*(lg?0.4:1);
+      return{hd,rmax,rmin:5000,brg,emit:em,ok:em&&hd<rmax&&hd>5000&&brg<40*D2R&&this.los(p.pos,vadd(g.pos,v3(0,15,0))),tof:hd/600};}const r=vsub(g.pos,p.pos),hd=Math.hypot(r.x,r.z),lg=this.plane.bomb.lgb,rmax=spiceRange(-r.y,p.V)*(lg?0.4:this.plane.bomb.gps?0.45:1);
     const f=qrot(p.q,FWD),brg=Math.acos(clamp((f.x*r.x+f.z*r.z)/(Math.hypot(f.x,f.z)*hd||1),-1,1));
     return{hd,rmax,rmin:2500,brg,ok:hd<rmax&&hd>2500&&brg<(lg?25:50)*D2R&&Math.abs(p.euler().roll)<1.05,tof:hd/250};}
   /* sensors */
@@ -1397,6 +1475,11 @@ class World{
       this.msg(head+({intercept:'פנה מזרחה לנקודה 1, הכטב"מים נמוכים, חפש אותם במכ"ם.',sead:'פנה לנקודה 1. שלוש סוללות לפניך, הטיל ננעל רק על מכ"ם שמשדר.',convoy:'השיירה על הציר מזרחה לך. פצצת לייזר או תותח.',csar:'המסוק לפניך, נמוך. הדבק אותו ושמור עליו.',recon:'פנה לאתר הצילום הראשון.',stealth:'הכטב"ם החמקן נמוך מאוד. אתן לך כיוון אליו.'}[id]||'פנה לנקודה 1, ארבעה כטב"מי תקיפה נעים מערבה בגובה נמוך. רשאי אש.'));}
     if(this.missionId==='train'){this.train();return;}
     const lost=()=>{if(!p.alive){if(!this.over)this.over={win:false,title:'המטוס אבד',reason:p.crash};return true;}if(!f.bingo&&p.fuel<this.bingo){f.bingo=true;this.msg('בינגו דלק.');}return false;};
+    if(this.missionId==='naval'){if(lost())return;const left=this.ground.filter(g=>g.primary&&g.alive).length;
+      if(!this.migsActive&&this.migs.length&&Math.hypot(p.pos.x-this.fleet.x,p.pos.z-this.fleet.z)<60000){this.migsActive=true;this.msg(`בקר: זוג ${this.foeName} שומר על הספינות, פונה אליך.`);}
+      if(!left){this.wp=1;if(Math.hypot(p.pos.x,p.pos.z)<25000||p.onGround){this.stopT+=0.5;if(this.stopT>2&&!this.over)this.over={win:true,title:'הצי הושמד',reason:`שלוש ספינות הטילים טובעו, ${S.shots} טילים שוגרו.`};}return;}
+      if(this.w.spice===0&&!this.missiles.some(m=>m.alive&&m.owner===p)){this.stopT+=0.5;if(this.stopT>20&&!this.over)this.over={win:false,title:'נגמר החימוש',reason:`הוטבעו ${S.tgt} מתוך 3 ספינות.`};}
+      return;}
     if(this.missionId==='csar'){if(lost())return;const h=this.helo,dP=Math.hypot(h.pos.x-this.csarP.x,h.pos.z-this.csarP.z);
       if(!this.migsActive&&h.alive&&dP<26000){this.migsActive=true;this.msg(`בקר: זוג ${this.foeName} ממריא מזרחה לטייס. הם הולכים על המסוק.`);}
       if(!f.cap2&&h.phase==='hover'){f.cap2=true;this.wp=0;}if(h.phase==='home')this.wp=1;
@@ -1532,12 +1615,12 @@ class World{
     if(f.done){this.stopT+=0.5;if(this.stopT>5&&!this.over)this.over=L==='basic'?{win:true,title:'ההדרכה הושלמה',reason:'טיפוס, פנייה, נעילה, שיגור טיל, תותח ונצירה.'}:{win:true,title:LES[L].win,reason:LES[L].why};}}
   step(dt){
     this.time+=dt;const p=this.player;
-    this.systems(dt);p.step(dt);for(const k of this.friends)if(k.type==='TANKER')k.step(dt);if(this.helo)this.helo.step(dt,this);
+    this.systems(dt);this.joinStep(dt);p.step(dt);for(const k of this.friends)if(k.type==='TANKER')k.step(dt);if(this.helo)this.helo.step(dt,this);
     for(const ai of this.migAI)ai.update(dt,this);
     for(const m of this.migs){m.step(dt);if(!m.alive&&m.crash&&m.crash!=='shot'&&m.crash!=='rtb'){m.crash='shot';this.killAir(Object.assign(m,{alive:true}));}}
     for(const d of this.drones)d.step(dt);
     for(const q of this.sams)q.update(dt,this);if(this.wing)this.wing.update(dt,this);for(const k of this.strikers)k.update(dt,this);
-    for(const g of this.ground)if(g.alive&&(g.kind==='truck'||g.mob)){g.pos.x+=g.vel.x*dt;g.pos.z+=g.vel.z*dt;g.pos.y=terrainH(g.pos.x,g.pos.z);if(g.kind==='ship'&&Math.abs(g.pos.z)>15000&&g.pos.z*g.vel.z>0)g.vel.z=-g.vel.z;}
+    for(const g of this.ground)if(g.alive&&(g.kind==='truck'||g.mob)){g.pos.x+=g.vel.x*dt;g.pos.z+=g.vel.z*dt;g.pos.y=terrainH(g.pos.x,g.pos.z);if(g.kind==='ship'){const z0=g.z0??0,amp=g.amp??15000;if(Math.abs(g.pos.z-z0)>amp&&(g.pos.z-z0)*g.vel.z>0)g.vel.z=-g.vel.z;}}
     for(const m of this.missiles)if(m.alive)m.step(dt,this);
     for(const b of this.bombs)if(b.alive)b.step(dt,this);
     for(const b of this.bullets){b.t+=dt;const np=vadd(b.pos,vmul(b.vel,dt));b.vel.y-=G0*dt;
@@ -1558,7 +1641,7 @@ class World{
       this.dlz=T&&p.alive?launchZone(s==='AIM120'?this.mrm:this.srm,p.pos,p.vel,T.pos,T.vel):null;}
   }
 }
-const RAAM={Helo,ARM_PT,StrikerAI,THEATRE,setTheatre,WingAI,DIFF,PLANES,PARK,Tanker,G0,D2R,R2D,KT,FT,NM,clamp,lerp,sstep,v3,vadd,vsub,vmul,vdot,vcross,vlen,vnorm,vdist,qmul,qrot,qrotInv,qaxis,qeuler,FWD,UP,RIGHT,atmo,TER,SITES,RWY,buildTerrain,terrainSteps,terrainH,TYPES,Aircraft,apSteer,MSL,Missile,flyout,launchZone,SPICE,spiceRange,Bomb,Drone,MigAI,SamSite,World};
+const RAAM={Cruise,STANDOFF,ISR,LAKES,isWater,lakeAt,Helo,ARM_PT,StrikerAI,THEATRE,setTheatre,WingAI,DIFF,PLANES,PARK,Tanker,G0,D2R,R2D,KT,FT,NM,clamp,lerp,sstep,v3,vadd,vsub,vmul,vdot,vcross,vlen,vnorm,vdist,qmul,qrot,qrotInv,qaxis,qeuler,FWD,UP,RIGHT,atmo,TER,SITES,RWY,buildTerrain,terrainSteps,terrainH,TYPES,Aircraft,apSteer,MSL,Missile,flyout,launchZone,SPICE,spiceRange,Bomb,Drone,MigAI,SamSite,World};
 if(typeof module!=='undefined')module.exports=RAAM;
 
 return RAAM;})();
@@ -1575,7 +1658,9 @@ const rnd=(()=>{let a=1234567;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a
 /* loading is split into slices with a pause between them, so the page paints, the bar moves and taps register */
 const tick=()=>new Promise(r=>setTimeout(r,0)),loadBar=document.querySelector('#loading .bar i');
 const prog=p=>{if(loadBar){loadBar.style.animation='none';loadBar.style.width=Math.round(p*100)+'%';}return tick();};
-let theatre0='south';try{const o=JSON.parse(localStorage.getItem('haniaflight-opts')||'{}');if(o.theatre==='north'||o.theatre==='far'){theatre0=o.theatre;R.setTheatre(o.theatre);}}catch(e){}
+let theatre0='south',demFail=false;try{const o=JSON.parse(localStorage.getItem('haniaflight-opts')||'{}');if(o.theatre==='north'||o.theatre==='far'){theatre0=o.theatre;R.setTheatre(o.theatre);}
+  /* the real map: real heights, downloaded once (the service worker keeps it for offline play) */
+  else if(o.theatre==='israel'){try{const lt=document.getElementById('loadText');if(lt)lt.textContent='טוען את מפת ישראל…';const r=await fetch('data/israel-dem.bin');if(!r.ok)throw new Error(r.status);R.setTheatre('israel',new Int16Array(await r.arrayBuffer()));theatre0='israel';}catch(e){demFail=true;}}}catch(e){}
 for(const p of R.terrainSteps())await prog(p*0.55);
 
 /* ================= scene ================= */
@@ -1637,6 +1722,14 @@ function setTOD(k){tod=k;const c=TOD[k],pos=sky.geometry.attributes.position,col
   for(const d of duskOnly)d.visible=k!=='day';for(const g of nightGlow)g.visible=k!=='day';for(const m of glowMats)m.uniforms.vis.value=k==='night'?1:k==='dusk'?0.6:0.9;for(const n of navSprites)n.userData.on=k!=='day';landLight.visible=k!=='day'&&opts.q!=='eco';for(const d of nightOnly)d.visible=k==='night';sunSp.scale.setScalar(k==='night'?26000:80000);if(k!=='night')setNVG(false);
 }
 await prog(0.58);
+/* ground colour on the real map: green in the wetter north and on the coastal plain, desert in the Negev and the Judean desert,
+   dark basalt on the Golan, red granite around Eilat */
+function isrCol(x,z,hh,patch){const I=R.ISR,lat=I.lat0-z/I.kz,lon=I.lon0+x/I.kx;
+  let wet=sstep(lat,30.95,32.1)*(1-0.85*sstep(lon,35.22,35.4)*(1-sstep(lat,32.3,32.55)))*(1-0.7*sstep(lon,36.05,36.45)*(1-sstep(lat,33.15,33.45)));wet*=0.55+0.45*patch;
+  const sand=[0.82,0.72,0.53],loess=[0.74,0.63,0.47],green=[0.42,0.5,0.3],farm=[0.5,0.55,0.33],basalt=[0.4,0.38,0.34],granite=[0.66,0.5,0.4];
+  let c=lerp3(lerp3(sand,loess,sstep(lat,30.8,31.4)),lerp3(green,farm,patch),wet*sstep(hh,-200,40));
+  if(lat>32.7&&lon>35.62&&lon<36.0)c=lerp3(c,basalt,0.45*sstep(hh,150,500));if(lat<29.9)c=lerp3(c,granite,sstep(hh,150,600)*0.7);return c;}
+const lerp3=(a,b,t)=>[lerp(a[0],b[0],t),lerp(a[1],b[1],t),lerp(a[2],b[2],t)];
 /* terrain */
 {const{nx,nz,cell,x0,z0,h}=TER,P=new Float32Array(nx*nz*3),C=new Float32Array(nx*nz*3),U=new Float32Array(nx*nz*2);
   const mix=(a,b,t)=>[lerp(a[0],b[0],t),lerp(a[1],b[1],t),lerp(a[2],b[2],t)];
@@ -1644,8 +1737,9 @@ await prog(0.58);
   for(let j=0;j<nz;j++)for(let i=0;i<nx;i++){const k=j*nx+i,x=x0+i*cell,z=z0+j*cell,hh=h[k];P[k*3]=x;P[k*3+1]=hh;P[k*3+2]=z;U[k*2]=x/640;U[k*2+1]=z/640;
     const hx=h[j*nx+Math.min(i+1,nx-1)]-h[j*nx+Math.max(i-1,0)],hz=h[Math.min(j+1,nz-1)*nx+i]-h[Math.max(j-1,0)*nx+i],sl=Math.hypot(hx,hz)/(2*cell);
     const n=(Math.sin(i*12.9898+j*78.233)*43758.5453)%1,patch=0.5+0.5*Math.sin(x/3100+Math.sin(z/1900)*1.7)*Math.sin(z/2700+Math.sin(x/2300));
-    let c=theatre0==='north'?mix(mix(sand,green,0.55),[0.36,0.47,0.27],sstep(hh,3,40)*(0.35+0.65*patch)*sstep(hh,1500,500)):mix(sand,green,sstep(x,40000,-6000)*sstep(hh,3,30)*(0.25+0.75*patch)*0.85);
-    c=mix(c,hill,sstep(hh,160,700));c=mix(c,rock,sstep(sl,0.1,0.42));c=mix(c,pale,sstep(hh,1300,2100)*0.6);c=mix(c,beach,sstep(hh,8,0));
+    let c=theatre0==='israel'?isrCol(x,z,hh,patch):theatre0==='north'?mix(mix(sand,green,0.55),[0.36,0.47,0.27],sstep(hh,3,40)*(0.35+0.65*patch)*sstep(hh,1500,500)):mix(sand,green,sstep(x,40000,-6000)*sstep(hh,3,30)*(0.25+0.75*patch)*0.85);
+    if(theatre0==='israel'){c=mix(c,rock,sstep(sl,0.12,0.5)*0.8);c=mix(c,[0.93,0.94,0.96],sstep(hh,2050,2500));if(x<R.ISR.seaX)c=mix(c,beach,sstep(hh,6,0));else if(hh<-300)c=mix(c,[0.86,0.83,0.74],0.6);}
+    else{c=mix(c,hill,sstep(hh,160,700));c=mix(c,rock,sstep(sl,0.1,0.42));c=mix(c,pale,sstep(hh,1300,2100)*0.6);c=mix(c,beach,sstep(hh,8,0));}
     const p2=0.5+0.5*Math.sin(x/7300+Math.sin(z/5100)*2.1)*Math.sin(z/6100+Math.sin(x/4700)*1.3),cv=(h[j*nx+Math.min(i+1,nx-1)]+h[j*nx+Math.max(i-1,0)]+h[Math.min(j+1,nz-1)*nx+i]+h[Math.max(j-1,0)*nx+i])/4-hh,f=(0.93+0.1*Math.abs(n))*(0.84+0.22*p2)*(1-clamp(cv/45,-0.13,0.24));C[k*3]=c[0]*f;C[k*3+1]=c[1]*f;C[k*3+2]=c[2]*f;}
   const I=new Uint32Array((nx-1)*(nz-1)*6);let q=0;
   for(let j=0;j<nz-1;j++)for(let i=0;i<nx-1;i++){const a=j*nx+i,b=a+1,c=a+nx,d=c+1;I[q++]=a;I[q++]=c;I[q++]=b;I[q++]=b;I[q++]=c;I[q++]=d;}
@@ -1658,7 +1752,11 @@ await prog(0.58);
   const tmat=new T.MeshLambertMaterial({vertexColors:true,map:det});
   tmat.onBeforeCompile=s=>{s.fragmentShader=s.fragmentShader.replace('#include <map_fragment>',`vec2 u2=mat2(0.8,-0.6,0.6,0.8)*vUv;float dd=texture2D(map,vUv*9.0).g*texture2D(map,vUv).g*texture2D(map,u2*0.11+vec2(0.31,0.17)).g;diffuseColor.rgb*=dd*1.5;`);};
   const tm=new T.Mesh(g,tmat);tm.frustumCulled=false;scene.add(tm);
-  seaMat=new T.MeshPhongMaterial({color:0x2d6d8c,specular:0x8a96a0,shininess:80});const sea=new T.Mesh(new T.PlaneGeometry(900000,900000),seaMat);sea.rotation.x=-Math.PI/2;sea.position.set(80000,0,0);scene.add(sea);}
+  seaMat=new T.MeshPhongMaterial({color:0x2d6d8c,specular:0x8a96a0,shininess:80});
+  /* in Israel the sea stops west of the Jordan rift, which lies below sea level; the two lakes get their own water */
+  if(theatre0==='israel'){const xs=R.ISR.seaX,xw=x0-300000,sea=new T.Mesh(new T.PlaneGeometry(xs-xw,900000),seaMat);sea.rotation.x=-Math.PI/2;sea.position.set((xs+xw)/2,0,z0+nz*cell/2);scene.add(sea);
+    for(const L of R.LAKES){const m=new T.Mesh(new T.PlaneGeometry(L.x2-L.x1,L.z2-L.z1),seaMat);m.rotation.x=-Math.PI/2;m.position.set((L.x1+L.x2)/2,L.h+0.6,(L.z1+L.z2)/2);scene.add(m);}}
+  else{const sea=new T.Mesh(new T.PlaneGeometry(900000,900000),seaMat);sea.rotation.x=-Math.PI/2;sea.position.set(80000,0,0);scene.add(sea);}}
 await prog(0.74);
 /* base */
 const BY=SITES.base.h;
@@ -1686,10 +1784,16 @@ const BY=SITES.base.h;
   part(new T.BoxGeometry(9,30,9),conc,260,BY+15,330,scene);part(new T.BoxGeometry(15,6,15),lam(0x394a52),260,BY+33,330,scene);
   for(let i=0;i<10;i++)part(new T.BoxGeometry(30+rnd()*40,6+rnd()*8,20+rnd()*20),conc,350+rnd()*500,BY+4,340+rnd()*260,scene);
   /* towns */
-  const tl=[],N=1700,im=new T.InstancedMesh(new T.BoxGeometry(1,1,1),new T.MeshLambertMaterial({color:0xffffff}),N),d=new T.Object3D(),c=new T.Color();let n=0;
-  const towns=[];for(let t=0;t<17;t++){const cx=-9000+rnd()*52000,cz=-60000+rnd()*120000;if(Math.hypot(cx,cz)<5000)continue;if(terrainH(cx,cz)>3)towns.push([cx,cz]);
-    for(let i=0;i<100&&n<N;i++){const a=rnd()*7,r=Math.sqrt(rnd())*1000,x=cx+Math.cos(a)*r,z=cz+Math.sin(a)*r,y=terrainH(x,z);if(y<3)continue;
-      const hh=4+rnd()*10;tl.push(x,y+hh,z);d.position.set(x,y+hh/2,z);d.scale.set(9+rnd()*16,hh,9+rnd()*16);d.rotation.y=rnd()*3;d.updateMatrix();im.setMatrixAt(n,d.matrix);
+  /* on the real map: the cities and towns where they really are, sized roughly by population */
+  const CITIES=[[32.08,34.80,4.5],[31.78,35.21,3.5],[32.80,35.00,3],[31.25,34.79,2.5],[31.80,34.65,2],[32.32,34.86,2],[31.96,34.80,2.5],[32.09,34.88,2],[31.89,34.81,1.6],[32.18,34.91,1.6],[31.67,34.57,1.6],[32.44,34.92,1.4],
+    [31.90,35.01,1.4],[32.61,35.29,1.2],[32.70,35.30,1.6],[32.79,35.53,1],[29.56,34.95,1.3],[32.92,35.30,1.1],[33.21,35.57,0.8],[31.07,35.03,0.8],[31.26,35.21,0.8],[32.96,35.50,0.9],[33.01,35.10,1],[32.50,35.50,0.7],
+    [32.66,35.11,0.8],[31.61,34.76,1],[31.52,34.60,0.6],[31.31,34.62,0.6],[30.61,34.80,0.5],[30.99,34.93,0.5],[32.17,34.84,1.2],[31.50,34.46,2.5],[31.53,35.10,1.6],[32.22,35.26,1.6],[31.90,35.20,1.3],[32.46,35.30,0.9],
+    [31.95,35.93,4],[32.55,35.85,2.2],[32.07,36.09,2.2],[29.53,35.01,1.2],[32.62,36.10,1.2],[31.18,35.70,0.7],[32.92,35.07,1.2]];
+  const isr=theatre0==='israel',tl=[],N=isr?4600:1700,im=new T.InstancedMesh(new T.BoxGeometry(1,1,1),new T.MeshLambertMaterial({color:0xffffff}),N),d=new T.Object3D(),c=new T.Color();let n=0;
+  const towns=[],TL=isr?CITIES.map(([la,lo,r])=>{const q=R.ISR.xy(la,lo);return[q.x,q.z,r];}):Array.from({length:17},()=>[-9000+rnd()*52000,-60000+rnd()*120000,1]);
+  for(const[cx,cz,rk]of TL){if(Math.hypot(cx,cz)<5000)continue;if(!R.isWater(cx,cz))towns.push([cx,cz]);
+    for(let i=0,nb=Math.round(100*rk);i<nb&&n<N;i++){const a=rnd()*7,r=Math.sqrt(rnd())*1000*rk,x=cx+Math.cos(a)*r,z=cz+Math.sin(a)*r,y=terrainH(x,z);if(R.isWater(x,z)||(!isr&&y<3))continue;
+      const hh=(4+rnd()*10)*(isr&&rk>2&&r<1200*rk*0.4?1+rnd()*3:1);tl.push(x,y+hh,z);d.position.set(x,y+hh/2,z);d.scale.set(9+rnd()*16,hh,9+rnd()*16);d.rotation.y=rnd()*3;d.updateMatrix();im.setMatrixAt(n,d.matrix);
       c.setHSL(0.1,0.18,0.72+rnd()*0.2);im.setColorAt(n,c);n++;}}
   im.count=n;im.frustumCulled=false;scene.add(im);
   /* roads between the base and the towns, and farmed plots around them; both follow the terrain triangles exactly */
@@ -1698,11 +1802,11 @@ const BY=SITES.base.h;
     const V=[],C2=[],quad=(p,col)=>{for(const i of[0,1,2,2,1,3]){V.push(p[i][0],p[i][1],p[i][2]);C2.push(col[0],col[1],col[2]);}};
     const road=(x1,z1,x2,z2,w,col)=>{const L=Math.hypot(x2-x1,z2-z1),nseg=Math.max(1,Math.ceil(L/90)),nxn=-(z2-z1)/L*w/2,nzn=(x2-x1)/L*w/2;let pa=null;
       for(let i=0;i<=nseg;i++){const t=i/nseg,bend=Math.min(260,L*0.05)*Math.sin(t*Math.PI)*Math.sin(t*L/1700+x1),x=lerp(x1,x2,t)+nxn/w*2*bend,z=lerp(z1,z2,t)+nzn/w*2*bend;
-        const l=[x-nxn,mh(x-nxn,z-nzn)+0.9,z-nzn],r=[x+nxn,mh(x+nxn,z+nzn)+0.9,z+nzn];if(pa&&l[1]>3&&r[1]>3)quad([pa[0],pa[1],l,r],col);pa=[l,r];}};
+        const l=[x-nxn,mh(x-nxn,z-nzn)+0.9,z-nzn],r=[x+nxn,mh(x+nxn,z+nzn)+0.9,z+nzn];if(pa&&(theatre0==='israel'?!R.isWater(l[0],l[2])&&!R.isWater(r[0],r[2]):l[1]>3&&r[1]>3))quad([pa[0],pa[1],l,r],col);pa=[l,r];}};
     const nodes=[[700,640]],asph=[0.2,0.2,0.2],dirt=[0.52,0.46,0.36];
     for(const[cx,cz]of towns){let best=nodes[0],bd=1e12;for(const q of nodes){const d=Math.hypot(q[0]-cx,q[1]-cz);if(d<bd){bd=d;best=q;}}road(best[0],best[1],cx,cz,11,asph);nodes.push([cx,cz]);
       for(let i=0;i<3;i++){const a=rnd()*7;road(cx,cz,cx+Math.cos(a)*1700,cz+Math.sin(a)*1700,6,dirt);}
-      for(let i=0;i<26;i++){const a=rnd()*7,r=1100+rnd()*2600,fx=cx+Math.cos(a)*r,fz=cz+Math.sin(a)*r,w=160+rnd()*300,dd=160+rnd()*300,rot=rnd()*3,ca=Math.cos(rot),sa=Math.sin(rot),g=rnd(),col=g<0.5?[0.3+rnd()*0.1,0.42+rnd()*0.12,0.2]:g<0.8?[0.55,0.47,0.3]:[0.66,0.6,0.36];if(mh(fx,fz)<4)continue;
+      for(let i=0;i<26;i++){const a=rnd()*7,r=1100+rnd()*2600,fx=cx+Math.cos(a)*r,fz=cz+Math.sin(a)*r,w=160+rnd()*300,dd=160+rnd()*300,rot=rnd()*3,ca=Math.cos(rot),sa=Math.sin(rot),g=rnd(),col=g<0.5?[0.3+rnd()*0.1,0.42+rnd()*0.12,0.2]:g<0.8?[0.55,0.47,0.3]:[0.66,0.6,0.36];if(theatre0==='israel'?R.isWater(fx,fz):mh(fx,fz)<4)continue;
         const pt=(u,v)=>{const x=fx+(u*w*ca-v*dd*sa),z=fz+(u*w*sa+v*dd*ca);return[x,mh(x,z)+0.6,z];},N=4;
         for(let iu=0;iu<N;iu++)for(let iv=0;iv<N;iv++)quad([pt(iu/N-0.5,iv/N-0.5),pt((iu+1)/N-0.5,iv/N-0.5),pt(iu/N-0.5,(iv+1)/N-0.5),pt((iu+1)/N-0.5,(iv+1)/N-0.5)],col);}}
     const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(V,3));g.setAttribute('color',new T.Float32BufferAttribute(C2,3));g.computeVertexNormals();
@@ -1710,7 +1814,7 @@ const BY=SITES.base.h;
   const mkPts=(arr,col,size)=>{const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(arr,3));const p=new T.Points(g,new T.PointsMaterial({color:col,size,sizeAttenuation:false}));p.frustumCulled=false;scene.add(p);duskOnly.push(p);};
   /* towns at night: windows and roof lights, and street lamps along a few streets in each town */
   {const P=[],C=[],add=(x,y,z,c)=>{P.push(x,y,z);C.push(...c);};for(let i=0;i<tl.length;i+=3){const r=rnd();add(tl[i],tl[i+1]-1.5,tl[i+2],r<0.7?[1,0.78,0.45]:r<0.9?[1,0.92,0.75]:[0.75,0.85,1]);}
-    for(const[cx,cz]of towns)for(let k=0;k<7;k++){const a=k/7*6.283+rnd(),L=500+rnd()*700;for(let d=60;d<L;d+=75){const x=cx+Math.cos(a)*d,z=cz+Math.sin(a)*d,y=terrainH(x,z);if(y<3)break;add(x,y+7,z,[1,0.66,0.3]);}}
+    for(const[cx,cz]of towns)for(let k=0;k<7;k++){const a=k/7*6.283+rnd(),L=500+rnd()*700;for(let d=60;d<L;d+=75){const x=cx+Math.cos(a)*d,z=cz+Math.sin(a)*d,y=terrainH(x,z);if(R.isWater(x,z)||(theatre0!=='israel'&&y<3))break;add(x,y+7,z,[1,0.66,0.3]);}}
     glowPts(P,C,{k:9000,mn:2.4,mx:9});}
   /* the airfield: runway edges, thresholds, approach lights with a running strobe, blue taxiway edges and apron floodlights */
   {const P=[],C=[],S=[],add=(x,y,z,c,q)=>{P.push(x,y,z);C.push(...c);S.push(q==null?-1:q);};const W1=[1,0.95,0.82],GR=[0.35,1,0.5],RD=[1,0.25,0.2],BL=[0.35,0.55,1];
@@ -1728,7 +1832,7 @@ const BY=SITES.base.h;
   /* clouds */
   const ct=canvasTex(128,128,(x,w)=>{for(let i=0;i<9;i++){const px=30+rnd()*68,py=44+rnd()*40,r=18+rnd()*22,gr=x.createRadialGradient(px,py,0,px,py,r);gr.addColorStop(0,'rgba(255,255,255,0.9)');gr.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=gr;x.fillRect(0,0,w,w);}});
   const cm=new T.SpriteMaterial({map:ct,transparent:true,opacity:0.82,depthWrite:false}),ci=new T.SpriteMaterial({map:ct,transparent:true,opacity:0.2,depthWrite:false});cloudMats.push(cm,ci);
-  for(let i=0;i<58;i++){const cx=-40000+rnd()*260000,cy=3000+rnd()*2200,cz=-85000+rnd()*170000,big=1700+rnd()*2500,n=5+(rnd()*5|0);
+  for(let i=0;i<58;i++){const cx=theatre0==='israel'?-90000+rnd()*220000:-40000+rnd()*260000,cy=3000+rnd()*2200,cz=theatre0==='israel'?-100000+rnd()*420000:-85000+rnd()*170000,big=1700+rnd()*2500,n=5+(rnd()*5|0);
     for(let j=0;j<n;j++){const s=new T.Sprite(cm),k=big*(0.6+rnd()*0.8);s.position.set(cx+(rnd()-0.5)*big*3.2,cy+(rnd()-0.3)*big*0.5,cz+(rnd()-0.5)*big*3.2);s.scale.set(k*1.6,k,1);scene.add(s);cloudSp.push(s);}}
   for(let i=0;i<26;i++){const s=new T.Sprite(ci);s.position.set(-60000+rnd()*300000,10800+rnd()*1500,-90000+rnd()*180000);const k=14000+rnd()*22000;s.scale.set(k*2.6,k*0.5,1);scene.add(s);}
 }
@@ -1907,7 +2011,9 @@ function buildTanker(){const G=new T.Group(),bd=lam(0xb4b8bc),dk=lam(0x4c5258);
   const a=new T.Vector3(0,-1.6,20.5),b=new T.Vector3(0,-6.2,30),d=b.clone().sub(a),boom=part(new T.CylinderGeometry(0.22,0.16,d.length(),8),lam(0xd8d8d4),0,0,0,G);
   boom.position.copy(a).addScaledVector(d,0.5);boom.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),d.clone().normalize());
   for(const s of[-1,1])part(new T.BoxGeometry(1.6,0.06,0.7),lam(0xd8d8d4),s*0.8,-5.5,28.6,G);
-  for(let i=0;i<5;i++)part(new T.BoxGeometry(0.5,0.05,0.9),new T.MeshBasicMaterial({color:i===2?0x40ff70:0xffb040}),(i-2)*0.7,-1.92,-4+0,G).position.z=-6+i*0;
+  /* pilot director lights under the belly: left bar up/down, right bar forward/back. The lit cell tells the receiver where to move. */
+  const pdi=[[],[]];for(let b=0;b<2;b++)for(let i=0;i<5;i++){const m=part(new T.BoxGeometry(0.42,0.06,0.62),new T.MeshBasicMaterial({color:0x202020,fog:false}),b?1.15:-1.15,-1.95,-9+i*0.75,G);pdi[b].push(m);}
+  for(const x of[-1.15,1.15])part(new T.BoxGeometry(0.6,0.04,4.1),lam(0x2a2d30),x,-1.9,-7.5,G);G.userData.pdi=pdi;
   return G;}
 function buildDrone(){const G=new T.Group(),m=lam(0xb9b5a6);let g=new T.CylinderGeometry(0.28,0.3,3.3,8);g.rotateX(Math.PI/2);part(g,m,0,0,0,G);
   part(flatGeo([[0,-1.3],[1.3,1.5],[-1.3,1.5]],0.12),m,0,0.05,0,G);for(const s of[-1,1])part(new T.BoxGeometry(0.06,0.7,0.6),m,s*1.25,0,1.2,G);return G;}
@@ -2099,6 +2205,8 @@ function act(a){if(!W||state!=='fly')return;const p=W.player;
   else if(a==='mute'){muted=!muted;if(muted)hush();if(Snd.master)Snd.master.gain.value=muted?0:0.9;}
   else if(a==='wp')W.wp=(W.wp+1)%W.wps.length;
   else if(a==='ap'){if(ap.on)ap.on=false;else if(!p.onGround){ap.on=true;ap.alt=p.pos.y;ap.hdg=p.euler().hdg;}beep(ap.on?1100:600,0.06);}
+  else if(a==='mic'){if(opts.voice==='off'){toast('פקודות קוליות כבויות. אפשר להפעיל בתפריט.');return;}listen();}
+  else if(a==='join'){if(!W.tanker){toast('אין מתדלק במשימה הזאת');return;}if(W.arJoin){W.arJoin=false;toast('התקרבות אוטומטית בוטלה');return;}if(p.onGround||W.ar.state==='contact')return;W.arJoin=true;toast('התקרבות אוטומטית למתדלק. הזזת המוט מבטלת.');}
   else if(a==='hook'){W.sw('hook');toast(p.hook?'וו בלימה למטה: ייתפס בכבל 300 מטר לפני סוף המסלול':'וו בלימה למעלה');}
   else if(a==='relight'){if(W.relight())toast('התנעה באוויר: המנוע מסתובב, כ-12 שניות');}
   else if(a==='jett'){if(W.jettison())buzz(60);else beep(220,0.15,0.06);}}
@@ -2111,14 +2219,14 @@ for(const ev of['pointerup','pointercancel'])glc.addEventListener(ev,e=>{if(e.po
     ray.setFromCamera(rayV,camera);const h=ray.intersectObjects(cockpit.userData.hits,false)[0];if(h){doSwitch(h.object.userData.sw);buzz(12);}return;}
   /* looking well down at the panel holds the view there; looking back up releases it */
   if(!look.panel&&look.pitch<-0.36)look.panel=true;else if(look.panel&&look.pitch>(touchOn?-0.55:-0.3))look.panel=false;});
-$('lookBack').onclick=()=>{look.panel=false;};$('nvgBtn').onclick=()=>act('nvg');$('mapBtn').onclick=()=>act('map');$('ecmBtn').onclick=()=>act('ecm');$('wingBtn').onclick=()=>act('wing');$('padBtn').onclick=()=>act('padlock');$('hookBtn').onclick=()=>act('hook');$('relightBtn').onclick=()=>act('relight');
+$('lookBack').onclick=()=>{look.panel=false;};$('nvgBtn').onclick=()=>act('nvg');$('mapBtn').onclick=()=>act('map');$('ecmBtn').onclick=()=>act('ecm');$('wingBtn').onclick=()=>act('wing');$('padBtn').onclick=()=>act('padlock');$('hookBtn').onclick=()=>act('hook');$('micBtn').onclick=()=>{if(voice.busy)micStop();else listen();};$('joinBtn').onclick=()=>act('join');$('relightBtn').onclick=()=>act('relight');
 addEventListener('keydown',e=>{
   if(state==='photo'&&(e.code==='Escape'||e.code==='KeyP')){endPhoto();return;}
   if(state==='pause'&&(e.code==='Escape'||e.code==='KeyP')){resume();return;}
   if(state!=='fly')return;
   if(/^(Space|Arrow|Tab|Enter|Backspace)/.test(e.code))e.preventDefault();
   keys[e.code]=true;if(e.repeat)return;if(e.code==='Space')tap.gun=true;if(e.code==='Enter'||e.code==='NumpadEnter')tap.pickle=true;if(e.code==='KeyC')tap.cm=true;
-  const m={KeyG:'gear',KeyL:'flaps',KeyV:'view',KeyT:'tgt',KeyU:'unlock',KeyO:'time',KeyM:'arm',Digit0:'mute',KeyN:'wp',KeyH:'ap',KeyJ:'jett',KeyK:'ardoor',KeyY:'rmode',Period:'rrng',Comma:'rrngdn',Digit5:'ecm',Digit7:'w_attack',Digit8:'w_cover',Digit9:'w_form',KeyX:'panel',KeyI:'nvg',Tab:'map',KeyZ:'padlock',Backspace:'eject',Digit6:'hook',Semicolon:'relight'}[e.code];
+  const m={KeyG:'gear',KeyL:'flaps',KeyV:'view',KeyT:'tgt',KeyU:'unlock',KeyO:'time',KeyM:'arm',Digit0:'mute',KeyN:'wp',KeyH:'ap',KeyJ:'jett',KeyK:'ardoor',KeyY:'rmode',Period:'rrng',Comma:'rrngdn',Digit5:'ecm',Digit7:'w_attack',Digit8:'w_cover',Digit9:'w_form',KeyX:'panel',KeyI:'nvg',Tab:'map',KeyZ:'padlock',Backspace:'eject',Digit6:'hook',Semicolon:'relight',Backslash:'join',BracketLeft:'mic'}[e.code];
   if(m)act(m);else if(/^Digit[1-4]$/.test(e.code)){W.select(WSEL[+e.code[5]-1]);beep(900,0.04);}
   else if(e.code==='Escape'||e.code==='KeyP')pause();});
 addEventListener('keyup',e=>{keys[e.code]=false;});
@@ -2139,7 +2247,7 @@ function readPad(dt){let gp=null;try{const l=navigator.getGamepads?navigator.get
   if(std){lever=clamp(lever+(b(7)-b(6))*0.6*dt,0,1.3);if(hit(10))act('hook');if(hit(11))act('padlock');if(hit(14))act('view');if(hit(15))act('arm');if(hit(12))act('gear');if(hit(13))act('flaps');if(hit(8))act('time');if(hit(9)){pause();return null;}}
   /* right stick looks around in the air and steers the nose wheel on the ground */
   return{x:dz(gp.axes[0]||0),y:dz(gp.axes[1]||0),lx:std?dz(gp.axes[2]||0):0,ly:std?dz(gp.axes[3]||0):0,gun:b(std?5:1)>0.5,cm:std&&b(1)>0.5,brk:std&&b(4)>0.5};}
-function readInput(dt){const pad=readPad(dt);if(state!=='fly')return;
+function readInput(dt){const pad=readXR(dt)||readPad(dt);if(state!=='fly')return;if(xr.on&&pad)padUsed=true;
   const k=keys,tx=(k.ArrowRight||k.KeyD?1:0)-(k.ArrowLeft||k.KeyA?1:0),ty=(k.ArrowDown||k.KeyS?1:0)-(k.ArrowUp||k.KeyW?1:0),tr=(k.KeyE?1:0)-(k.KeyQ?1:0);
   const ap=(c,t)=>{const rate=(t===0?5:3.2)*dt;return Math.abs(t-c)<rate?t:c+Math.sign(t-c)*rate;};
   if(tx||ty||tr)padUsed=false;else if(pad&&(pad.x||pad.y))padUsed=true;
@@ -2149,6 +2257,7 @@ function readInput(dt){const pad=readPad(dt);if(state!=='fly')return;
   const up=k.ShiftLeft||k.ShiftRight||k.Equal||k.KeyR,dn=k.Minus||k.KeyF;
   if(up)lever=Math.min(1.3,lever+0.55*dt);if(dn)lever=Math.max(0,lever-0.55*dt);
   if(W.ejected){stick.x=stick.y=stick.r=0;return;}
+  if(W.arJoin&&(Math.abs(stick.x)>0.35||Math.abs(stick.y)>0.35)){W.arJoin=false;toast('התקרבות אוטומטית בוטלה');}if(W.arJoin){lever=W.player.ctl.throttle;trigG=trigP=false;return;}
   const c=W.player.ctl;c.roll=curve(stick.x);c.pitch=curve(stick.y)*(opts.inv==='on'?-1:1);c.yaw=stick.r;c.throttle=lever;c.brake=!!k.KeyB||touch.brk||!!(pad&&pad.brk);
   if(ap.on){if(Math.abs(stick.x)>0.25||Math.abs(stick.y)>0.25||W.player.onGround){ap.on=false;beep(600,0.06);}
     else R.apSteer(W.player,vnorm(v3(Math.sin(ap.hdg),clamp((ap.alt-W.player.pos.y)/1500,-0.2,0.2),-Math.cos(ap.hdg))),0.45);}
@@ -2215,6 +2324,65 @@ function updAudio(dt){if(!Snd.ac||!W)return;const p=W.player,fly=state==='fly'&&
   if(rwrT<=0&&lvl>=1){if(lvl>=3){beep(1900,0.06,0.07);rwrT=0.14;}else if(lvl===2){beep(1500,0.08,0.06);rwrT=0.3;}else{beep(900,0.07,0.04);rwrT=1.1;}}
   if(warnT<=0&&hudWarn.pull){beep(700,0.12,0.09);setTimeout(()=>beep(1000,0.12,0.09),150);warnT=0.5;}
   else if(warnT<=0&&hudWarn.stall){beep(300,0.2,0.06,'sawtooth');warnT=0.45;}}
+/* ================= VR (WebXR) ================= */
+/* in a headset the cockpit is all around you: the view follows your head, a HUD panel sits on the combiner glass,
+   and the controllers fly the jet. The 2D overlays (menus, map) stay on the computer or phone screen. */
+const xr={on:false,ok:false,session:null,rig:new T.Group(),prev:{}};scene.add(xr.rig);
+try{if(navigator.xr&&navigator.xr.isSessionSupported)navigator.xr.isSessionSupported('immersive-vr').then(ok=>{xr.ok=!!ok;$('vrRow').hidden=!ok;}).catch(()=>{});}catch(e){}
+const vrHud=(()=>{const cv=document.createElement('canvas');cv.width=cv.height=512;const tex=new T.CanvasTexture(cv),m=new T.Mesh(new T.PlaneGeometry(0.34,0.34),new T.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false,fog:false,blending:T.AdditiveBlending}));m.renderOrder=20;m.visible=false;
+  const cv2=document.createElement('canvas');cv2.width=1024;cv2.height=128;const tex2=new T.CanvasTexture(cv2),m2=new T.Mesh(new T.PlaneGeometry(0.5,0.0625),new T.MeshBasicMaterial({map:tex2,transparent:true,depthWrite:false,fog:false}));m2.renderOrder=20;m2.visible=false;
+  return{cv,tex,m,cv2,tex2,m2,radio:''};})();
+function drawVrHud(){const p=W.player,c=vrHud.cv.getContext('2d'),S=512,e=p.euler(),k=S/(2*Math.atan(0.17/0.62)),g='#74ff96';c.clearRect(0,0,S,S);c.strokeStyle=c.fillStyle=g;c.lineWidth=2.5;c.font='bold 22px monospace';c.textBaseline='middle';
+  /* pitch ladder and horizon, turning with the bank */
+  c.save();c.translate(S/2,S/2);c.rotate(-e.roll);for(let d=-30;d<=30;d+=5){const y=(e.pitch*R2D-d)*D2R*k;if(Math.abs(y)>S*0.42)continue;const w=d?70:200;c.setLineDash(d<0?[8,6]:[]);c.beginPath();c.moveTo(-w-40,y);c.lineTo(-40,y);c.moveTo(40,y);c.lineTo(w+40,y);c.stroke();if(d){c.textAlign='left';c.fillText(String(Math.abs(d)),w+46,y);}}c.setLineDash([]);c.restore();
+  /* where the jet is really going */
+  const vx=S/2+p.beta*k,vy=S/2+p.alpha*k;c.beginPath();c.arc(vx,vy,11,0,7);c.stroke();c.beginPath();c.moveTo(vx-26,vy);c.lineTo(vx-11,vy);c.moveTo(vx+11,vy);c.lineTo(vx+26,vy);c.moveTo(vx,vy-11);c.lineTo(vx,vy-22);c.stroke();
+  c.textAlign='center';c.fillText(String(Math.round(e.hdg*R2D)%360).padStart(3,'0'),S/2,26);c.strokeRect(S/2-36,10,72,32);
+  c.textAlign='left';c.fillText(Math.round(p.V*KT)+' KT',14,S/2);c.fillText('G '+p.g.toFixed(1),14,S/2+30);c.textAlign='right';c.fillText(Math.round(p.pos.y*FT)+' FT',S-14,S/2);
+  const w=W.w,nm={AIM120:'AIM-120 ×'+w.aim120,PYTHON:'PYTHON ×'+w.python,GUN:'GUN '+w.gun,SPICE:W.plane.bomb.name+' ×'+w.spice}[w.sel];c.textAlign='left';c.fillText(nm+(W.arm?'  ARM':'  SAFE'),14,S-60);
+  const T0=w.sel==='SPICE'?W.gtgt:W.lock;if(T0){c.textAlign='right';c.fillText((vdist(T0.pos,p.pos)/NM).toFixed(1)+' NM',S-14,S-60);const b=w.sel==='SPICE'?W.bombSol():null,z=W.dlz;c.textAlign='center';if(b&&b.ok||z&&z.R<z.rmax)c.fillText(b?'IN RNG':'SHOOT',S/2,S-100);}
+  const warn=[...W.dmg.map(d=>d.t),W.mwarn?'MISSILE':'',p.alpha>p.t.aStall*0.85?'STALL':''].filter(Boolean);c.fillStyle='#ffbe55';c.textAlign='center';warn.slice(0,3).forEach((t,i)=>c.fillText(t,S/2,70+i*26));
+  vrHud.tex.needsUpdate=true;
+  const r=$('radio').textContent||'';if(r!==vrHud.radio){vrHud.radio=r;const c2=vrHud.cv2.getContext('2d');c2.clearRect(0,0,1024,128);if(r){c2.fillStyle='rgba(8,12,14,0.75)';c2.fillRect(0,0,1024,128);c2.fillStyle='#f1ead8';c2.font='600 34px Assistant,Arial,sans-serif';c2.direction='rtl';c2.textAlign='right';c2.textBaseline='middle';
+    const words=r.split(' ');let line='',y=40;for(const wd of words){if(c2.measureText(line+' '+wd).width>980){c2.fillText(line,1004,y);y+=44;line=wd;}else line=line?line+' '+wd:wd;}c2.fillText(line,1004,y);}vrHud.tex2.needsUpdate=true;}}
+/* the controllers: right stick flies, left stick is throttle and rudder; triggers fire, buttons lock, pickle and work the jet */
+function readXR(dt){if(!xr.on||!xr.session)return null;const o={x:0,y:0,lx:0,ly:0,gun:false,cm:false,brk:false};
+  for(const src of xr.session.inputSources){const gp=src.gamepad;if(!gp)continue;const ax=gp.axes,b=i=>!!(gp.buttons[i]&&gp.buttons[i].pressed),h=src.handedness,hit=i=>{const key=h+i,on=b(i),was=xr.prev[key];xr.prev[key]=on;return on&&!was;},dz=v=>Math.abs(v)<0.12?0:v;
+    if(h==='right'){o.x=dz(ax[2]||0);o.y=dz(ax[3]||0);o.gun=b(0);if(hit(4))tap.pickle=true;if(hit(5))act('tgt');if(hit(1))act('padlock');if(hit(3))act('arm');}
+    else{lever=clamp(lever-dz(ax[3]||0)*0.6*dt,0,1.3);o.lx=dz(ax[2]||0);o.cm=b(0);if(hit(4))act('wpn');if(hit(5))act('gear');if(hit(1))act('flaps');if(hit(3))act('mic');o.brk=false;}}
+  return o;}
+async function startVR(mode){if(!xr.ok)return;try{renderer.xr.enabled=true;renderer.xr.setReferenceSpaceType('local');renderer.xr.setFramebufferScaleFactor(opts.q==='high'?0.9:0.7);
+    const sess=await navigator.xr.requestSession('immersive-vr',{optionalFeatures:['local-floor']});await renderer.xr.setSession(sess);xr.session=sess;xr.on=true;xr.rig.add(camera);
+    sess.addEventListener('end',endVR);renderer.setAnimationLoop(frame);cockpit.add(vrHud.m);cockpit.add(vrHud.m2);start(mode);view=0;}
+  catch(e){renderer.xr.enabled=false;toast('לא ניתן להפעיל מציאות מדומה במכשיר הזה.');}}
+function endVR(){if(!xr.on)return;xr.on=false;renderer.setAnimationLoop(null);renderer.xr.enabled=false;xr.rig.remove(camera);vrHud.m.visible=vrHud.m2.visible=false;xr.session=null;last=performance.now();requestAnimationFrame(frame);resize();if(state==='fly')pause();}
+$('vrGo').onclick=()=>{const m=opts.mission;startVR(['duel','escort','tanker','train'].includes(m)?'air':'runway');};
+/* ================= voice commands ================= */
+/* say a short order in Hebrew. The browser's speech recogniser (or, in the Android app, the phone's own) turns it into text,
+   and the first phrase that matches below is carried out. */
+const SRec=window.SpeechRecognition||window.webkitSpeechRecognition;
+const voice={busy:false,rec:null,get ok(){return !!SRec||!!(window.HFNative&&window.HFNative.canListen&&window.HFNative.canListen());}};
+const VCMD=[[/(שחרר|בטל) נעילה/,'unlock','שחרור נעילה'],[/שתיים.*(תקוף|תקיפה)/,'w_attack','שתיים תוקף'],[/שתיים.*(חופשי|ציד|כסה|כיסוי)/,'w_cover','שתיים בציד חופשי'],[/שתיים.*(מבנה|חזור)/,'w_form','שתיים חוזר למבנה'],
+  [/מגדל.*נחית|בקשה לנחיתה/,'atc_land','בקשת נחיתה'],[/מגדל.*המרא|בקשה להמראה/,'atc_to','בקשת המראה'],[/כן נסע|גלגלים/,'gear','כן נסע'],[/מדפים/,'flaps','מדפים'],[/נעל|נעילה|מטרה הבאה/,'tgt','נעילה'],
+  [/מאסטר|חמש|נצור/,'arm','מאסטר ארם'],[/נורים|מוץ|פלרים/,'cm','נורים ומוץ'],[/מפה/,'map','מפה'],[/טייס אוטומטי/,'ap','טייס אוטומטי'],[/דלת תדלוק/,'ardoor','דלת תדלוק'],[/התקרבות|מתדלק/,'join','התקרבות למתדלק'],
+  [/שיבוש/,'ecm','שיבוש'],[/(^|\s)וו(\s|$)|וו בלימה/,'hook','וו בלימה'],[/התנעה|התנע/,'relight','התנעה באוויר'],[/משקפת/,'nvg','משקפת לילה'],[/השלך/,'jett','השלכה'],
+  [/טיל מכ"?ם|אמרם|מכ"ם|מכם/,'s_AIM120','טיל מכ"ם'],[/פייתון|טיל חום|תרמי/,'s_PYTHON','טיל תרמי'],[/תותח/,'s_GUN','תותח'],[/פצצ|קרקע|דלילה|טיל ים|טילי ים/,'s_SPICE','חימוש לקרקע'],[/מבט|מצלמה/,'view','החלפת מבט'],[/השהי|עצור משחק/,'pause','השהיה']];
+function heard(alts){if(state!=='fly')return;for(const raw of alts){const t=String(raw).replace(/[\u0591-\u05C7]/g,'').trim();for(const[re,cmd,label]of VCMD)if(re.test(t)){doVoice(cmd);toast(`פקודה קולית: ${label}`);return;}}toast(`פקודה קולית: לא הבנתי: "${alts[0]||''}"`);}
+function doVoice(c){const p=W.player;
+  if(c.startsWith('s_')){W.select(c.slice(2));beep(900,0.04);}
+  else if(c==='cm'){for(let i=0;i<3;i++)setTimeout(()=>{if(W&&state==='fly')W.dispense(W.player);},i*300);}
+  else if(c==='atc_land')W.msg(p.onGround?'מגדל חצרים: פטיש אחת, אתה כבר על הקרקע.':`מגדל חצרים: פטיש אחת, רשאי לנחות במסלול ${p.pos.x>0?'27':'09'}. כן נסע למטה, רוח שקטה.`);
+  else if(c==='atc_to')W.msg(p.onGround?'מגדל חצרים: פטיש אחת, רשאי להמריא ממסלול 09. רוח שקטה.':'מגדל חצרים: פטיש אחת, אתה כבר באוויר.');
+  else act(c);}
+function listen(){if(!voice.ok||voice.busy||state!=='fly'||opts.voice==='off')return;voice.busy=true;$('micBtn').dataset.on='1';
+  if(window.HFNative&&window.HFNative.listen){try{window.HFNative.listen();}catch(e){voice.busy=false;$('micBtn').dataset.on='';}return;}
+  const r=new SRec();r.lang='he-IL';r.interimResults=false;r.maxAlternatives=3;
+  r.onresult=e=>{const res=e.results[e.results.length-1];heard([...res].map(a=>a.transcript));};
+  r.onerror=e=>{if(e.error==='not-allowed'||e.error==='service-not-allowed'){toast('אין הרשאה למיקרופון. אפשר לאשר בהגדרות הדפדפן.');opts.voice='off';applyOpts();}};
+  r.onend=()=>{voice.busy=false;voice.rec=null;$('micBtn').dataset.on='';if(opts.voice==='always'&&state==='fly')setTimeout(listen,250);};
+  try{r.start();voice.rec=r;}catch(e){voice.busy=false;$('micBtn').dataset.on='';}}
+function micStop(){try{if(voice.rec)voice.rec.abort();if(window.HFNative&&window.HFNative.stopListening)window.HFNative.stopListening();}catch(e){}voice.busy=false;}
+window.__hfHeard=t=>{voice.busy=false;$('micBtn').dataset.on='';if(t)heard(String(t).split('\n'));if(opts.voice==='always'&&state==='fly')setTimeout(listen,250);};
 /* ================= UI glue ================= */
 const radioQ=[];let radioT=0;
 /* spoken radio: the device's own Hebrew voice, when it has one */
@@ -2250,7 +2418,7 @@ $('checkList').addEventListener('pointerdown',e=>{const b=e.target.closest('butt
 $('autoStart').onclick=()=>{if(W){W.autoStart=!W.autoStart;checkSig='';}};
 function goImmersive(){if(touchOn&&!window.HFNative&&!document.fullscreenElement&&!matchMedia('(display-mode: fullscreen)').matches){try{const el=document.documentElement,pr=el.requestFullscreen&&el.requestFullscreen();if(pr&&pr.then)pr.then(()=>{try{const o=screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape');if(o&&o.catch)o.catch(()=>{});}catch(e){}}).catch(()=>{});}catch(e){}}
   try{if(navigator.wakeLock){const w=navigator.wakeLock.request('screen');if(w&&w.catch)w.catch(()=>{});}}catch(e){}}
-function start(mode){tilt.p0=null;mapOn=false;padlock=false;startedAt=performance.now();goImmersive();hush();Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();newGame(mode);view=0;state='fly';show('menu',false);show('pause',false);show('debrief',false);$('app').dataset.fly='1';}
+function start(mode){if(opts.voice==='always')setTimeout(listen,1500);tilt.p0=null;mapOn=false;padlock=false;startedAt=performance.now();goImmersive();hush();Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();newGame(mode);view=0;state='fly';show('menu',false);show('pause',false);show('debrief',false);$('app').dataset.fly='1';}
 const photo={az:0.9,el:0.2,dist:38,drag:false,px:0,py:0};
 function startPhoto(){if(state!=='pause')return;state='photo';show('pause',false);show('photoBar',true);photo.az=0.9;photo.el=0.2;photo.dist=38;$('app').dataset.photo='1';}
 function endPhoto(){if(state!=='photo')return;show('photoBar',false);$('app').dataset.photo='';state='pause';show('pause',true);}
@@ -2260,8 +2428,8 @@ glc.addEventListener('pointerdown',e=>{if(state!=='photo')return;photo.drag=true
 glc.addEventListener('pointermove',e=>{if(state!=='photo'||!photo.drag)return;photo.az-=(e.clientX-photo.px)*0.006;photo.el=clamp(photo.el+(e.clientY-photo.py)*0.005,-0.45,1.45);photo.px=e.clientX;photo.py=e.clientY;});
 for(const ev of['pointerup','pointercancel'])glc.addEventListener(ev,()=>{photo.drag=false;});
 glc.addEventListener('wheel',e=>{if(state!=='photo')return;e.preventDefault();photo.dist=clamp(photo.dist*(e.deltaY>0?1.15:0.87),9,2500);},{passive:false});
-function pause(){if(state!=='fly')return;hush();state='pause';show('pause',true);$('resume').focus();}
-function resume(){tilt.p0=null;state='fly';show('pause',false);last=performance.now();}
+function pause(){if(state!=='fly'||xr.on)return;hush();micStop();state='pause';show('pause',true);$('resume').focus();}
+function resume(){tilt.p0=null;state='fly';show('pause',false);last=performance.now();if(opts.voice==='always')setTimeout(listen,400);}
 function toMenu(){if(window.__hfPending){location.reload();return;}hush();state='menu';dailyEnd();show('pause',false);show('debrief',false);show('menu',true);$('app').dataset.fly='';newGame('runway',true);}
 let lastMode='runway';
 $('startRwy').onclick=()=>{camp.on=false;dailyEnd();start(lastMode='runway');};$('startAir').onclick=()=>{camp.on=false;dailyEnd();start(lastMode='air');};$('startCold').onclick=()=>{camp.on=false;dailyEnd();start(lastMode='cold');};
@@ -2357,7 +2525,7 @@ function openBrief(n=camp.n){camp.n=n;const c=readCamp(n),st=CL(n)[c.i],pl=R.PLA
   opts.mission=st.id;if(st.foe)opts.foe=st.foe;applyOpts();
   $('bStage').textContent=`${n===2?'מערכה מעבר לים':'מערכה'} · שלב ${c.i+1} מתוך ${CL(n).length}`;$('bTitle').textContent=st.t;$('bText').textContent=st.b(c);$('bGoals').innerHTML=st.g.map(x=>`<li>${x}</li>`).join('');
   $('bFleet').hidden=n!==2;$('bFleet').textContent=n===2?fleetLine(c)+(c.rep&&c.jets-c.rep<=0?' · אין מטוס אחר: טסים במטוס הפגוע.':''):'';
-  $('bPlane').textContent=pl.name+' · '+{south:'זירת הדרום',north:'זירת הצפון',far:'הזירה הרחוקה'}[opts.theatre];const air=st.id==='duel'||st.id==='escort';$('bCold').hidden=air;$('bGo').textContent=air?'לאוויר':'המראה מהמסלול';
+  $('bPlane').textContent=pl.name+' · '+{south:'זירת הדרום',north:'זירת הצפון',far:'הזירה הרחוקה',israel:'מפת ישראל'}[opts.theatre];const air=st.id==='duel'||st.id==='escort';$('bCold').hidden=air;$('bGo').textContent=air?'לאוויר':'המראה מהמסלול';
   show('brief',true);
   requestAnimationFrame(()=>{const cv=$('bMap'),r=cv.getBoundingClientRect(),d=Math.min(2,window.devicePixelRatio||1);cv.width=r.width*d;cv.height=r.height*d;
     const BW=new R.World(Object.assign({start:'air',plane:opts.plane,mission:st.id,foe:st.foe},(camp.on=true,campOpts()))),sW=W,sc=ctx,sv=vw,sh=vh,su=u;camp.on=false;
@@ -2368,7 +2536,7 @@ $('bGo').onclick=()=>{const st=CL(camp.n)[readCamp().i];show('brief',false);dail
 $('bCold').onclick=()=>{show('brief',false);daily.on=false;camp.on=true;start(lastMode='cold');};
 $('campReset').onclick=()=>{saveCamp({...CZ[1],done:readCamp(1).done},1);};$('campReset2').onclick=()=>{saveCamp({...CZ[2],done:readCamp(2).done},2);};
 /* daily challenge: one sortie a day, the same for everyone on that date, scored */
-const MNAME={strike:'פטיש ברזל',intercept:'הגנת שמיים',sead:'דיכוי נ"מ',convoy:'סיור חמוש',escort:'ליווי',duel:'קרב אוויר',csar:'חילוץ',recon:'צילום',stealth:'כטב"ם חמקן'};
+const MNAME={naval:'תקיפה ימית',strike:'פטיש ברזל',intercept:'הגנת שמיים',sead:'דיכוי נ"מ',convoy:'סיור חמוש',escort:'ליווי',duel:'קרב אוויר',csar:'חילוץ',recon:'צילום',stealth:'כטב"ם חמקן'};
 const daily={on:false,saved:null};
 function dailySpec(d=new Date()){const key=d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();let a=key%2147483647;const r=()=>{a=(a*48271)%2147483647;return a/2147483647;};for(let i=0;i<4;i++)r();
   const m=Object.keys(MNAME)[r()*9|0],pls=['F15I','F16I','F35I','F15C'].filter(k=>R.PLANES[k].spice||!['strike','sead','recon','convoy'].includes(m));
@@ -2399,9 +2567,9 @@ function judge(){newAch.length=0;const s=W.stats,o=W.over,p=W.player,L=readLog()
   if(win&&tod==='night')unlock('night');if(id==='escort'&&win&&W.strikers.every(k=>k.ac.alive))unlock('guard');if(win&&W.wx==='storm')unlock('storm');if(W.ejected&&W.ejected.safe)unlock('eject');if(s.home)unlock('home');if(id==='train'&&win&&W.lesson!=='basic')unlock('school');if(s.pair)unlock('pair');if(id==='csar'&&win)unlock('rescue');if(p.caught&&p.alive)unlock('hook');if(s.relit)unlock('relight');
   let best=null;if(win){const B=readBest(),k=id+(id==='duel'?'-'+opts.foe:''),old=B[k];if(!old||W.time<old.t){B[k]={t:Math.round(W.time),plane:W.plane.name,diff:W.diff};try{localStorage.setItem('haniaflight-best',JSON.stringify(B));}catch(e){}best={now:true,old};}else best={now:false,old};}
   return best;}
-function debrief(){hush();state='debrief';writeLog();const best=judge();$('dCamp').textContent=[campResult(),dailyResult()].filter(Boolean).join(' · ');$('dAch').innerHTML=newAch.map(id=>{const x=ACH.find(q=>q[0]===id);return `<span>הישג חדש: <b>${x[1]}</b> · ${x[2]}</span>`;}).join('');if(rec.length)recFrame();$('watch').hidden=rec.length<20;const o=W.over,s=W.stats,p=W.player,mm=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
+function debrief(){if(xr.on&&xr.session)xr.session.end().catch(()=>{});hush();state='debrief';writeLog();const best=judge();$('dCamp').textContent=[campResult(),dailyResult()].filter(Boolean).join(' · ');$('dAch').innerHTML=newAch.map(id=>{const x=ACH.find(q=>q[0]===id);return `<span>הישג חדש: <b>${x[1]}</b> · ${x[2]}</span>`;}).join('');if(rec.length)recFrame();$('watch').hidden=rec.length<20;const o=W.over,s=W.stats,p=W.player,mm=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
   $('dTitle').textContent=o.title;$('dReason').textContent=o.reason||'';$('debrief').dataset.win=o.win?'1':'';
-  const rows=W.missionId==='tanker'?[['דלק שהתקבל',`${Math.round(W.ar.taken).toLocaleString('en')} ק"ג`]]:W.missionId==='duel'?[[W.foeName+' שהופלו',`${s.mig} מתוך ${W.migs.length}`]]:W.missionId==='escort'?[['מטוסי תקיפה ששרדו',`${W.strikers.filter(k=>k.ac.alive).length} מתוך ${W.strikers.length}`],['מטרות שהושמדו',`${s.tgt} מתוך ${W.nPrimary}`],['מטוסי אויב שהופלו',`${s.mig} מתוך ${W.migs.length}`]]:W.missionId==='sead'?[['סוללות ששותקו',`${s.tgt} מתוך ${W.nPrimary}`],[W.foeName+' שהופלו',`${s.mig} מתוך ${W.migs.length}`]]:W.missionId==='convoy'?[['כלי רכב שהושמדו',`${s.tgt} מתוך ${W.nPrimary}`],['סוללת הליווי',s.sam?'הושמדה':'לא הושמדה']]:W.missionId==='csar'?[['המסוק',W.helo.alive?(W.helo.phase==='home'?'חזר עם הטייס':'עדיין באוויר'):'הופל'],[W.foeName+' שהופלו',`${s.mig} מתוך ${W.migs.length}`]]:W.missionId==='recon'?[['אתרים שצולמו',`${s.tgt} מתוך 3`],[W.foeName+' שהופלו',`${s.mig} מתוך ${W.migs.length}`]]:W.missionId==='stealth'?[['הכטב"ם החמקן',W.stealthUav.alive?(W.stealthUav.leaked?'חדר':'לא יורט'):'יורט'],['כטב"מי הטעיה שהופלו',`${s.uav-(W.stealthUav.alive?0:1)} מתוך 3`]]:W.missionId==='train'?[['מטרות אימון שהופלו',`${s.uav} מתוך 2`]]:W.missionId==='intercept'?[['איומים שהופלו',`${s.uav} מתוך ${W.nDrone}`],['חדרו',s.leak]]:[['כטב"מים שהופלו',`${s.uav} מתוך 4`+(s.leak?` (${s.leak} חדרו)`:'')],['מיג-29 שהופלו',`${s.mig} מתוך 2`],['מטרות אתר השיגור',`${s.tgt} מתוך 3`],['מכ"ם סוללת הנ"מ',s.sam?'הושמד':'לא הושמד']];
+  const rows=W.missionId==='tanker'?[['דלק שהתקבל',`${Math.round(W.ar.taken).toLocaleString('en')} ק"ג`]]:W.missionId==='duel'?[[W.foeName+' שהופלו',`${s.mig} מתוך ${W.migs.length}`]]:W.missionId==='escort'?[['מטוסי תקיפה ששרדו',`${W.strikers.filter(k=>k.ac.alive).length} מתוך ${W.strikers.length}`],['מטרות שהושמדו',`${s.tgt} מתוך ${W.nPrimary}`],['מטוסי אויב שהופלו',`${s.mig} מתוך ${W.migs.length}`]]:W.missionId==='sead'?[['סוללות ששותקו',`${s.tgt} מתוך ${W.nPrimary}`],[W.foeName+' שהופלו',`${s.mig} מתוך ${W.migs.length}`]]:W.missionId==='convoy'?[['כלי רכב שהושמדו',`${s.tgt} מתוך ${W.nPrimary}`],['סוללת הליווי',s.sam?'הושמדה':'לא הושמדה']]:W.missionId==='naval'?[['ספינות שהוטבעו',`${s.tgt} מתוך 3`],['טילים ששוגרו',s.shots]]:W.missionId==='csar'?[['המסוק',W.helo.alive?(W.helo.phase==='home'?'חזר עם הטייס':'עדיין באוויר'):'הופל'],[W.foeName+' שהופלו',`${s.mig} מתוך ${W.migs.length}`]]:W.missionId==='recon'?[['אתרים שצולמו',`${s.tgt} מתוך 3`],[W.foeName+' שהופלו',`${s.mig} מתוך ${W.migs.length}`]]:W.missionId==='stealth'?[['הכטב"ם החמקן',W.stealthUav.alive?(W.stealthUav.leaked?'חדר':'לא יורט'):'יורט'],['כטב"מי הטעיה שהופלו',`${s.uav-(W.stealthUav.alive?0:1)} מתוך 3`]]:W.missionId==='train'?[['מטרות אימון שהופלו',`${s.uav} מתוך 2`]]:W.missionId==='intercept'?[['איומים שהופלו',`${s.uav} מתוך ${W.nDrone}`],['חדרו',s.leak]]:[['כטב"מים שהופלו',`${s.uav} מתוך 4`+(s.leak?` (${s.leak} חדרו)`:'')],['מיג-29 שהופלו',`${s.mig} מתוך 2`],['מטרות אתר השיגור',`${s.tgt} מתוך 3`],['מכ"ם סוללת הנ"מ',s.sam?'הושמד':'לא הושמד']];
   rows.push(['מטוס',W.plane.name],['רמת קושי',{easy:'קל',normal:'רגיל',hard:'קשה'}[W.diff]],['חימוש ששוגר',s.shots],['נזק',W.dmg.length?W.dmg.map(d=>d.t).join(', '):'אין'],['דלק שנותר',`${Math.round(p.fuel).toLocaleString()} ק"ג`],['זמן משימה',mm(W.time)]);
   if(best)rows.push(['שיא אישי',best.now?(best.old?`חדש! ${mm(W.time)} (קודם ${mm(best.old.t)})`:`נקבע: ${mm(W.time)}`):`${mm(best.old.t)} · ${best.old.plane}`]);
   if(s.sink!=null&&p.alive)rows.push(['שיעור שקיעה בנגיעה',`${Math.round(s.sink*196.85)} רגל לדקה`]);
@@ -2413,6 +2581,7 @@ function handleEvents(){const p=W.player,cp=camera.position;
     else if(e.type==='release'){beep(160,0.12,0.12,'sine');buzz(45);}
     else if(e.type==='boom'){recEv.push({t:W.time,pos:{...e.pos},size:e.size,ground:e.ground});explosion(e.pos,e.size,e.ground);const d=Math.hypot(e.pos.x-cp.x,e.pos.y-cp.y,e.pos.z-cp.z);Snd.boom(clamp(0.9*e.size*800/(d+300),0.03,0.9));shake=Math.max(shake,clamp(e.size*700/(d+150),0,1.6));if(shake>0.3)buzz(Math.round(40+shake*60));if(e.ground&&e.size>2)emitters.push({pos:{...e.pos},vel:v3(),until:clock+90,rate:0.12,t:0,smoke:true});}
     else if(e.type==='eject'){const j=W.ejected;chute.userData.sim={pos:{...j.pos},vel:{...j.vel},t:0};chute.visible=true;Snd.boom(0.7);Snd.whoosh();buzz([80,40,160]);shake=1.5;hush();}
+    else if(e.type==='join'){lever=W.player.ctl.throttle;beep(1300,0.08,0.06);}
     else if(e.type==='bird'){Snd.boom(0.45);shake=1.4;buzz([60,30,90]);}
     else if(e.type==='photo'){for(let i=0;i<3;i++)setTimeout(()=>beep(2200,0.025,0.05,'square'),i*90);buzz(20);}
     else if(e.type==='fail'){beep(880,0.15,0.09);setTimeout(()=>beep(880,0.15,0.09),260);buzz(80);}
@@ -2435,6 +2604,9 @@ function handleEvents(){const p=W.player,cp=camera.position;
 const tv=new T.Vector3(),tq=new T.Quaternion(),tv2=new T.Vector3(),tq2=new T.Quaternion(),headE=new T.Euler(),HEAD_PITCH=-0.17;let camMode=1,hudM=400;
 function setQ(o,q){o.quaternion.set(q.x,q.y,q.z,q.w);}
 function aim(o,vel){tv.set(-vel.x,-vel.y,-vel.z).normalize();o.quaternion.setFromUnitVectors(tv2.set(0,0,1),tv);}
+function updPdi(m){/* director lights: index 0 is the front of each bar */
+      const a=W.ar,on=W.sys.arDoor&&a.dist<500,cell=(v,k)=>clamp(Math.round(v/k),-2,2);const up=on?cell(-a.rel.y,1.6*(a.box||1)):null,fa=on?cell(-a.rel.z,2.6*(a.box||1)):null;
+      m.userData.pdi.forEach((bar,b)=>{const c=b?fa:up;bar.forEach((q,i)=>{const lit=c!=null&&(b?i===2-c:i===2-c);q.material.color.setHex(!lit?0x1c1c1c:c===0?0x40ff70:Math.abs(c)===1?0xffc040:0xff4030);});});}
 function syncScene(dt){
   const p=W.player,ud=pMesh.userData;
   pMesh.position.set(p.pos.x,p.pos.y,p.pos.z);setQ(pMesh,p.q);pMesh.visible=p.alive;const inPit=view===0&&(state==='fly'||state==='pause')&&p.alive&&!W.ejected;updChute(dt);updCrew(dt);updTraffic(dt);dchute.visible=!!p.dragChute&&state!=='replay';if(dchute.visible){dchute.position.set(p.pos.x,p.pos.y,p.pos.z);setQ(dchute,p.q);}for(const o of ud.front)o.visible=!inPit;
@@ -2445,7 +2617,7 @@ function syncScene(dt){
   let di=0;const cp=camera.position;
   for(const[e,m]of meshOf){
     if(e.kind==='air'){if(!e.alive)continue;m.position.set(e.pos.x,e.pos.y,e.pos.z);setQ(m,e.q);
-      if(m.userData.ab)for(const f of m.userData.ab)f.visible=e.eng>1.02;if(m.userData.rot){m.userData.rot.rotation.y+=dt*27;m.userData.trot.rotation.x+=dt*60;if(dt>0&&e.pos.y-terrainH(e.pos.x,e.pos.z)<40&&rnd()<0.5)spawn(v3(e.pos.x+(rnd()-0.5)*16,terrainH(e.pos.x,e.pos.z)+1,e.pos.z+(rnd()-0.5)*16),v3((rnd()-0.5)*14,2,(rnd()-0.5)*14),2,5,20,terrainH(e.pos.x,e.pos.z)<1?[0.9,0.93,0.95]:[0.72,0.66,0.55],0.25);}if(m.userData.wing&&e.gearPos!=null)m.userData.gear.visible=e.gearPos>0.3;
+      if(m.userData.pdi)updPdi(m);if(m.userData.ab)for(const f of m.userData.ab)f.visible=e.eng>1.02;if(m.userData.rot){m.userData.rot.rotation.y+=dt*27;m.userData.trot.rotation.x+=dt*60;if(dt>0&&e.pos.y-terrainH(e.pos.x,e.pos.z)<40&&rnd()<0.5)spawn(v3(e.pos.x+(rnd()-0.5)*16,terrainH(e.pos.x,e.pos.z)+1,e.pos.z+(rnd()-0.5)*16),v3((rnd()-0.5)*14,2,(rnd()-0.5)*14),2,5,20,terrainH(e.pos.x,e.pos.z)<1?[0.9,0.93,0.95]:[0.72,0.66,0.55],0.25);}if(m.userData.wing&&e.gearPos!=null)m.userData.gear.visible=e.gearPos>0.3;
       const d=Math.hypot(e.pos.x-cp.x,e.pos.y-cp.y,e.pos.z-cp.z);if(d>500&&d<(e.type==='UAV'?5000:15000)&&di<16){dp[di*3]=e.pos.x;dp[di*3+1]=e.pos.y;dp[di*3+2]=e.pos.z;di++;}}
     else if(e.kind==='msl'||e.kind==='bomb'){
       if(!e.alive){dyn.remove(m);meshOf.delete(e);continue;}
@@ -2505,6 +2677,7 @@ function syncScene(dt){
   cockpit.visible=inPit;const cm=inPit?(look.panel?2:0):1;if(cm!==camMode){camMode=cm;layout();$('touch').dataset.panel=cm===2?'1':'';$('lookBack').hidden=cm!==2;}
   {const nb=$('nvgBtn'),h=!(state==='fly'&&tod==='night');if(nb.hidden!==h)nb.hidden=h;
     const hb=$('hookBtn'),hh=!(p.gear&&p.alive&&(p.brakeK<1||W.flags.airborne||p.hook)&&(p.agl<1500||p.onGround));if(hb.hidden!==hh)hb.hidden=hh;if(!hh){const t=p.hook?'וו: למטה':'וו בלימה';if(hb.textContent!==t)hb.textContent=t;hb.dataset.on=p.hook?'1':'';}
+    {const mb=$('micBtn'),mh=!(opts.voice!=='off'&&voice.ok);if(mb.hidden!==mh)mb.hidden=mh;}const jb=$('joinBtn'),jh=!(W.tanker&&W.sys.arDoor&&p.alive&&!p.onGround&&W.ar.state!=='contact'&&(W.arJoin||W.ar.dist>45));if(jb.hidden!==jh)jb.hidden=jh;if(!jh){const t=W.arJoin?'מתקרב… (ביטול)':'התקרבות אוטומטית';if(jb.textContent!==t)jb.textContent=t;}
     const rb=$('relightBtn'),rh=!(p.alive&&!p.onGround&&p.flame&&p.flame.some(Boolean));if(rb.hidden!==rh)rb.hidden=rh;const ch=$('chips'),hc=state!=='fly'||cm===2;if(ch.hidden!==hc)ch.hidden=hc;{const wb=$('wingBtn'),hw=!(W&&W.wing);if(wb.hidden!==hw)wb.hidden=hw;if(!hw){const t='שתיים: '+{form:'במבנה',attack:'תוקף',cover:'ציד חופשי'}[W.wing.mode];if(wb.textContent!==t)wb.textContent=t;}}if(W&&(!!W.ecm)!==($('ecmBtn').dataset.on==='1'))$('ecmBtn').dataset.on=W.ecm?'1':'';if(padlock!==($('padBtn').dataset.on==='1'))$('padBtn').dataset.on=padlock?'1':'';if(state!=='fly'&&nvg)setNVG(false);}
   if(inPit){const cs=cockpit.userData.sw;for(const id in cs){const v=swState(id),o=cs[id],k=o.kind,ease=Math.min(1,Math.max(dt,0.016)*14),since=clock-o.clickT;
       if(k==='push'||k==='tap'){const tz=(k==='push'&&v)||since<0.18?0.006:0.012;o.lev.position.z+=(tz-o.lev.position.z)*ease*1.6;}
@@ -2533,7 +2706,7 @@ function resize(){const r=$('app').getBoundingClientRect();vw=Math.max(200,r.wid
 addEventListener('resize',resize);
 let last=performance.now();
 let slowT=0;
-function frame(now){requestAnimationFrame(frame);if(eco&&now-last<31)return;if(state!=='fly')readPad(0);const wall=Math.min(1,(now-last)/1000),dt=Math.min(0.05,Math.max(0.001,(now-last)/1000));last=now;clock+=dt;
+function frame(now){if(!xr.on)requestAnimationFrame(frame);if(eco&&now-last<31&&!xr.on)return;if(state!=='fly')readPad(0);const wall=Math.min(1,(now-last)/1000),dt=Math.min(0.05,Math.max(0.001,(now-last)/1000));last=now;clock+=dt;
   if(state==='fly'&&opts.q!=='eco'){slowT=wall>(opts.q==='high'?1/24:1/18)?slowT+wall:Math.max(0,slowT-wall*2);if(slowT>(opts.q==='high'?5:8)){slowT=0;const hi=opts.q==='high';opts.q=hi?'low':'eco';applyOpts();radioQ.push(hi?'המחשב: הגרפיקה הועברה למצב חסכוני כדי לשפר את הקצב.':'המחשב: עדיין איטי, עברתי למצב חיסכון סוללה.');}}
   if(state==='fly'){
     readInput(dt);if(W.mwarn&&timeAcc>1)timeAcc=1;
@@ -2547,6 +2720,8 @@ function frame(now){requestAnimationFrame(frame);if(eco&&now-last<31)return;if(s
   if(state==='replay')stepReplay(wall);
   const sdt=state==='fly'?dt*timeAcc:state==='pause'||state==='photo'?0:dt;
   if(sdt>0)updParticles(sdt);syncScene(sdt);updWx();updRadio(dt);updCheck(dt);updAudio(dt);
+  if(xr.on&&W){const p=W.player;view=0;look.panel=false;xr.rig.position.copy(camera.position);xr.rig.quaternion.set(p.q.x,p.q.y,p.q.z,p.q.w);camera.position.set(0,0,0);camera.quaternion.identity();
+    const vis=state==='fly'||state==='pause';vrHud.m.visible=vrHud.m2.visible=vis&&p.alive;if(vis&&p.alive){vrHud.m.position.set(0,0.02,-0.62);vrHud.m2.position.set(0,-0.3,-0.55);vrHud.m2.rotation.x=-0.5;drawVrHud();}}
   renderer.render(scene,camera);renderTgp();drawHUD();}
 /* ================= HUD ================= */
 const HUDC='#74ff96',AMB='#ffbe55',RED='#ff5c4f',hudWarn={pull:false,stall:false};let u=1;
@@ -2559,9 +2734,9 @@ const dirAE=(az,el)=>v3(Math.sin(az)*Math.cos(el),Math.sin(el),-Math.cos(az)*Mat
 /* tactical map: north up, the whole theatre. Shows only what the pilot would know. */
 let mapBox=false;
 function drawMap(p,e){const{nx,nz,cell,x0,z0}=TER,WX=(nx-1)*cell,WZ=(nz-1)*cell;
-  if(!mapBg){mapBg=document.createElement('canvas');mapBg.width=312;mapBg.height=180;const x=mapBg.getContext('2d'),im=x.createImageData(312,180),d=im.data;
-    for(let j=0;j<180;j++)for(let i=0;i<312;i++){const h=terrainH(x0+i/311*WX,z0+j/179*WZ),hr=terrainH(x0+(i+1)/311*WX,z0+j/179*WZ),k=(j*312+i)*4,t=clamp(h/1500,0,1),sh=clamp((h-hr)/90,-1,1)*26;
-      if(h<2){d[k]=20;d[k+1]=46;d[k+2]=66;}else{d[k]=70+t*62+sh;d[k+1]=68+t*44+sh;d[k+2]=50+t*26+sh;}d[k+3]=255;}x.putImageData(im,0,0);}
+  if(!mapBg){const BW=WX>=WZ?312:220,BH=WX>=WZ?180:440;mapBg=document.createElement('canvas');mapBg.width=BW;mapBg.height=BH;const x=mapBg.getContext('2d'),im=x.createImageData(BW,BH),d=im.data;
+    for(let j=0;j<BH;j++)for(let i=0;i<BW;i++){const px=x0+i/(BW-1)*WX,pz=z0+j/(BH-1)*WZ,h=terrainH(px,pz),hr=terrainH(x0+(i+1)/(BW-1)*WX,pz),k=(j*BW+i)*4,t=clamp(h/1500,0,1),sh=clamp((h-hr)/90,-1,1)*26;
+      if(R.isWater(px,pz)){d[k]=20;d[k+1]=46;d[k+2]=66;}else{d[k]=70+t*62+sh;d[k+1]=68+t*44+sh;d[k+2]=50+t*26+sh;}d[k+3]=255;}x.putImageData(im,0,0);}
   const top=mapBox?2:touchOn?8:46,bot=mapBox?2:touchOn?(opts.ui==='large'?166:136):20,s=Math.min((vw-24)/WX,(vh-top-bot)/WZ),mw=WX*s,mh2=WZ*s,ox=(vw-mw)/2,oy=top+(vh-top-bot-mh2)/2,X=x=>ox+(x-x0)*s,Y=z=>oy+(z-z0)*s,su=u;u=clamp(vw/900,0.7,1.1);
   ctx.save();ctx.shadowBlur=0;ctx.fillStyle='rgba(2,6,8,0.6)';ctx.fillRect(0,0,vw,vh);ctx.globalAlpha=0.93;ctx.imageSmoothingEnabled=true;ctx.drawImage(mapBg,ox,oy,mw,mh2);ctx.globalAlpha=1;
   ctx.lineWidth=1.3;ctx.strokeStyle='rgba(235,230,214,0.6)';ctx.strokeRect(ox+0.5,oy+0.5,mw-1,mh2-1);ctx.beginPath();ctx.rect(ox,oy,mw,mh2);ctx.clip();
@@ -2581,9 +2756,9 @@ function drawMap(p,e){const{nx,nz,cell,x0,z0}=TER,WX=(nx-1)*cell,WZ=(nz-1)*cell;
 /* targeting pod picture: a second, zoomed camera drawn into a corner of the view */
 let tgpR=null;const tgpCam=new T.PerspectiveCamera(3,1,20,260000),tgpFx=document.createElement('div');
 tgpFx.style.cssText='position:absolute;pointer-events:none;display:none;backdrop-filter:grayscale(1) contrast(1.3) brightness(0.82);-webkit-backdrop-filter:grayscale(1) contrast(1.3) brightness(0.82)';hudc.parentNode.insertBefore(tgpFx,hudc);
-function renderTgp(){const on=!!tgpR&&state==='fly'&&!!W.gtgt;tgpFx.style.display=on?'block':'none';if(!on)return;const p=W.player,g=W.gtgt,r=tgpR,R0=vdist(g.pos,p.pos),dn=qrot(p.q,UP);
+function renderTgp(){const on=!!tgpR&&state==='fly'&&!!W.gtgt&&!xr.on;tgpFx.style.display=on?'block':'none';if(!on)return;const p=W.player,g=W.gtgt,r=tgpR,mc=W.missiles.find(q=>q.cruise&&q.alive&&q.target===g&&q.s.dive),src=mc?mc.pos:p.pos,R0=vdist(g.pos,src),dn=mc?v3(0,0,0):qrot(p.q,UP);
   tgpFx.style.left=r.x+'px';tgpFx.style.top=r.y+'px';tgpFx.style.width=tgpFx.style.height=r.s+'px';
-  tgpCam.fov=clamp(2*Math.atan(110/R0)*R2D,0.35,14);tgpCam.updateProjectionMatrix();tgpCam.position.set(p.pos.x-dn.x*2.5,p.pos.y-dn.y*2.5,p.pos.z-dn.z*2.5);tgpCam.up.set(0,1,0);tgpCam.lookAt(g.pos.x,g.pos.y+3,g.pos.z);
+  tgpCam.fov=clamp(2*Math.atan(110/R0)*R2D,0.35,14);tgpCam.updateProjectionMatrix();tgpCam.position.set(src.x-dn.x*2.5,src.y-dn.y*2.5,src.z-dn.z*2.5);tgpCam.up.set(0,1,0);tgpCam.lookAt(g.pos.x,g.pos.y+3,g.pos.z);
   const cv=cockpit.visible,pv=pMesh.visible,y=vh-r.y-r.s;cockpit.visible=false;pMesh.visible=false;renderer.setScissorTest(true);renderer.setScissor(r.x,y,r.s,r.s);renderer.setViewport(r.x,y,r.s,r.s);renderer.render(scene,tgpCam);
   renderer.setScissorTest(false);renderer.setViewport(0,0,vw,vh);cockpit.visible=cv;pMesh.visible=pv;}
 function drawHUD(){tgpR=null;
@@ -2659,7 +2834,7 @@ function drawHUD(){tgpR=null;
       const ix=ax+40*u,iy=hy+78*u;txt(g.name,ix,iy,'right',14);txt((b.hd/NM).toFixed(1)+' NM',ix,iy+17*u,'right',14);txt('MAX '+(b.rmax/NM).toFixed(1),ix,iy+34*u,'right',14);
       if(W.missionId==='recon'){const sees=W.podSees(g)&&b.hd<32000;txt(g.shot?'PHOTO DONE':sees?'POD TRACK':'POD MASKED',hx,hy+mh*0.2,'center',15,g.shot||sees?HUDC:AMB);}
       else{bar(b.hd,b.rmax,b.rmin,(b.hd/NM).toFixed(1));
-      txt(b.ok?'IN RNG':b.emit===false?'NO EMISSION':b.hd>b.rmax?'OUT RNG':b.hd<b.rmin?'TOO CLOSE':'STEER TO TGT',hx,hy+mh*0.2,'center',b.ok?20:15,b.ok?HUDC:AMB);}}
+      txt(b.ok?'IN RNG':b.wrong?(W.plane.bomb.cruise==='AGM84'?'SHIPS ONLY':'LAND TGT ONLY'):b.emit===false?'NO EMISSION':b.hd>b.rmax?'OUT RNG':b.hd<b.rmin?'TOO CLOSE':'STEER TO TGT',hx,hy+mh*0.2,'center',b.ok?20:15,b.ok?HUDC:AMB);}}
     else txt('NO TARGET',hx,hy+mh*0.2,'center',15,AMB);
     for(const b2 of W.bombs){const s=proj(b2.pos.x,b2.pos.y,b2.pos.z);if(s.ok){ctx.beginPath();ctx.arc(s.x,s.y,3*u,0,7);ctx.stroke();}}}
   /* waypoint marker */
@@ -2674,7 +2849,10 @@ function drawHUD(){tgpR=null;
     txt(a.state==='contact'?'CONTACT  +'+Math.round(a.taken)+' KG':far?'TANKER '+(a.range/NM).toFixed(1)+' NM':'PRE-CONTACT '+Math.round(a.dist)+' M',hx,hy-mh*0.3,'center',15,a.state==='contact'?HUDC:AMB);
     if(!far){const bx=hx-mh*0.19,by2=hy+mh*0.13,r=30*u,dx=clamp(-a.rel.x/15,-1,1)*r,dy=clamp(a.rel.y/15,-1,1)*r,dz=clamp(a.rel.z/40,-1,1)*r;
       ctx.strokeRect(bx-r,by2-r,2*r,2*r);line(bx-6*u,by2,bx+6*u,by2);line(bx,by2-6*u,bx,by2+6*u);ctx.beginPath();ctx.arc(bx+dx,by2+dy,5*u,0,7);ctx.fill();
-      line(bx+r+10*u,by2-r,bx+r+10*u,by2+r);line(bx+r+5*u,by2,bx+r+15*u,by2);ctx.fillRect(bx+r+6*u,by2+dz-2*u,8*u,4*u);txt('FWD',bx+r+10*u,by2-r-9*u,'center',10);txt('AFT',bx+r+10*u,by2+r+9*u,'center',10);}}
+      line(bx+r+10*u,by2-r,bx+r+10*u,by2+r);line(bx+r+5*u,by2,bx+r+15*u,by2);ctx.fillRect(bx+r+6*u,by2+dz-2*u,8*u,4*u);txt('FWD',bx+r+10*u,by2-r-9*u,'center',10);txt('AFT',bx+r+10*u,by2+r+9*u,'center',10);
+      /* spoken-style commands, the same as the director lights: which way and how many metres */
+      if(a.state!=='contact'){const c=[],m=v=>Math.abs(Math.round(v));if(Math.abs(a.rel.y)>1.5)c.push((a.rel.y<0?'UP ':'DOWN ')+m(a.rel.y));if(Math.abs(a.rel.z)>2)c.push((a.rel.z>0?'FWD ':'BACK ')+m(a.rel.z));if(Math.abs(a.rel.x)>1.5)c.push((a.rel.x>0?'LEFT ':'RIGHT ')+m(a.rel.x));txt(c.length?c.join('  '):'HOLD',bx,by2+r+24*u,'center',13,c.length?AMB:HUDC);}}
+    if(W.arJoin)txt('AUTO JOIN',hx,hy-mh*0.3+18*u,'center',13,HUDC);}
   ctx.restore();
   /* warnings */
   const ahead=terrainH(p.pos.x+p.vel.x*5,p.pos.z+p.vel.z*5);
@@ -2715,9 +2893,9 @@ function drawHUD(){tgpR=null;
     txt('MASTER '+(W.arm?'ARM':'SAFE')+(W.ecm?'  ECM':'')+(ap.on?'  AP':'')+(sy.pbrake?'  PBRK':'')+(sy.arDoor?'  AR':''),xc,y0+r*3.4,'center',13,W.arm?RED:HUDC);
     let s2='';for(const k of WSEL)s2+=(k===w.sel?'>':' ')+{AIM120:'120',PYTHON:'PY5',GUN:'GUN',SPICE:'SPC'}[k]+' '+cnt[k]+' ';if(wide)txt(s2.trim(),xc,y0+r*4.35,'center',12);};
   const ag=w.sel==='SPICE'&&!!W.gtgt&&W.gtgt.alive&&pw;
-  const mfdTgp=(x,y0,ms)=>{const g=W.gtgt,sees=W.podSees(g),c0=x+ms/2,c1=y0+ms/2,gp=ms*0.07,ln=ms*0.2;if(sees)tgpR={x,y:y0,s:ms};else{ctx.fillStyle='#030504';ctx.fillRect(x,y0,ms,ms);}
+  const mfdTgp=(x,y0,ms)=>{const g=W.gtgt,mc=W.missiles.find(q=>q.cruise&&q.alive&&q.target===g&&q.s.dive),sees=!!mc||W.podSees(g),c0=x+ms/2,c1=y0+ms/2,gp=ms*0.07,ln=ms*0.2;if(sees)tgpR={x,y:y0,s:ms};else{ctx.fillStyle='#030504';ctx.fillRect(x,y0,ms,ms);}
     ctx.strokeStyle='rgba(116,255,150,0.6)';ctx.lineWidth=1.2*u;ctx.strokeRect(x+0.5,y0+0.5,ms-1,ms-1);ctx.strokeStyle='#f2f2ea';line(c0-ln,c1,c0-gp,c1);line(c0+gp,c1,c0+ln,c1);line(c0,c1-ln,c0,c1-gp);line(c0,c1+gp,c0,c1+ln);
-    txt('TGP',x+5*u,y0+10*u,'left',11,'#f2f2ea');txt((vdist(g.pos,p.pos)/NM).toFixed(1)+' NM',x+ms-5*u,y0+10*u,'right',11,'#f2f2ea');txt(g.name,x+5*u,y0+ms-9*u,'left',10,'#f2f2ea');
+    txt(mc?'DELILAH CAM':'TGP',x+5*u,y0+10*u,'left',11,'#f2f2ea');txt((vdist(g.pos,mc?mc.pos:p.pos)/NM).toFixed(1)+' NM',x+ms-5*u,y0+10*u,'right',11,'#f2f2ea');txt(g.name,x+5*u,y0+ms-9*u,'left',10,'#f2f2ea');
     const lg=W.plane.bomb.lgb,fl=W.bombs.length>0;txt(sees?(lg?(fl?'LASING':'LASER RDY'):'TRACK'):'MASKED',x+ms-5*u,y0+ms-9*u,'right',11,sees?(lg&&fl&&blink?RED:'#f2f2ea'):AMB);};
   if(ag&&view===0&&!touchOn)mfdTgp(10*u,vh-clamp(m*0.27,104,230)-10*u,clamp(m*0.27,104,230));
   if(view===0&&(opts.q==='high'||(clock*30|0)%(eco?3:2)===0)){const main=ctx,su=u,cv=cockpit.userData.cv;mfdSolid=true;u=1.3;
@@ -2742,26 +2920,27 @@ function drawHUD(){tgpR=null;
   /* g vignette */
   if(gAcc>0.02){const g=ctx.createRadialGradient(cx,cy,m*(0.75-gAcc*0.62),cx,cy,m*(0.95-gAcc*0.4));g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,`rgba(0,0,0,${Math.min(1,gAcc*1.5)})`);ctx.fillStyle=g;ctx.fillRect(0,0,vw,vh);}
   /* objectives */
-  if((clock*2|0)!==drawHUD.t){drawHUD.t=clock*2|0;const s=W.stats;$('obj').textContent=W.missionId==='tanker'?`דלק שהתקבל ${Math.round(W.ar.taken)} ק"ג`:W.missionId==='duel'?`הפלות ${s.mig}/${W.migs.length}`:W.missionId==='escort'?`מובילים ${W.strikers.filter(k=>k.ac.alive).length}/${W.strikers.length} · מטרות ${s.tgt}/${W.nPrimary} · הפלות ${s.mig}/${W.migs.length}`:W.missionId==='sead'?`סוללות ${s.tgt}/${W.nPrimary}`:W.missionId==='convoy'?`כלי רכב ${s.tgt}/${W.nPrimary}`:W.missionId==='train'?`הדרכה · שלב ${Math.min((W.trainStep||0)+1,W.trainN||6)} מתוך ${W.trainN||6}`:W.missionId==='intercept'?`הופלו ${s.uav}/${W.nDrone} · חדרו ${s.leak}`:W.missionId==='csar'?`מסוק: ${W.helo.alive?{out:'בדרך לטייס',hover:'אוסף את הטייס',home:'חוזר עם הטייס'}[W.helo.phase]:'הופל'} · הפלות ${s.mig}/${W.migs.length}`:W.missionId==='recon'?`צולמו ${s.tgt}/3`+(W.photo!=null?` · צילום ${Math.round(W.photo*100)}%`:''):W.missionId==='stealth'?`חמקן: ${W.stealthUav.alive?'באוויר':'יורט'} · הטעיות ${s.uav-(W.stealthUav.alive?0:1)}/3`:`כטב"מים ${s.uav}/4 · מטרות ${s.tgt}/3 · מיגים ${s.mig}/2`;}
+  if((clock*2|0)!==drawHUD.t){drawHUD.t=clock*2|0;const s=W.stats;$('obj').textContent=W.missionId==='tanker'?`דלק שהתקבל ${Math.round(W.ar.taken)} ק"ג`:W.missionId==='duel'?`הפלות ${s.mig}/${W.migs.length}`:W.missionId==='escort'?`מובילים ${W.strikers.filter(k=>k.ac.alive).length}/${W.strikers.length} · מטרות ${s.tgt}/${W.nPrimary} · הפלות ${s.mig}/${W.migs.length}`:W.missionId==='sead'?`סוללות ${s.tgt}/${W.nPrimary}`:W.missionId==='convoy'?`כלי רכב ${s.tgt}/${W.nPrimary}`:W.missionId==='train'?`הדרכה · שלב ${Math.min((W.trainStep||0)+1,W.trainN||6)} מתוך ${W.trainN||6}`:W.missionId==='intercept'?`הופלו ${s.uav}/${W.nDrone} · חדרו ${s.leak}`:W.missionId==='naval'?`ספינות ${s.tgt}/3`:W.missionId==='csar'?`מסוק: ${W.helo.alive?{out:'בדרך לטייס',hover:'אוסף את הטייס',home:'חוזר עם הטייס'}[W.helo.phase]:'הופל'} · הפלות ${s.mig}/${W.migs.length}`:W.missionId==='recon'?`צולמו ${s.tgt}/3`+(W.photo!=null?` · צילום ${Math.round(W.photo*100)}%`:''):W.missionId==='stealth'?`חמקן: ${W.stealthUav.alive?'באוויר':'יורט'} · הטעיות ${s.uav-(W.stealthUav.alive?0:1)}/3`:`כטב"מים ${s.uav}/4 · מטרות ${s.tgt}/3 · מיגים ${s.mig}/2`;}
 }
 const touchOn=matchMedia('(pointer:coarse)').matches,fsMode=matchMedia('(display-mode: fullscreen)').matches||!!window.HFNative;
 $('voiceTest').onclick=()=>{Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();if(!Voice.v)pickVoice();if(!say('בקר: פטיש אחת, שומע אותך חמש על חמש.'))pickVoice();};
-const opts={diff:'normal',tod:'day',q:touchOn?'low':'high',plane:'F15I',mission:'strike',sens:'normal',inv:'off',tilt:'off',ui:'normal',wx:'clear',fail:'off',bomb:'spice',theatre:theatre0,foe:'mig29',wing:'on',lesson:'basic',fuelPct:'80',tanks:'0',aam:'full'};
+const opts={diff:'normal',tod:'day',q:touchOn?'low':'high',plane:'F15I',mission:'strike',sens:'normal',inv:'off',tilt:'off',ui:'normal',wx:'clear',fail:'off',bomb:'spice',theatre:theatre0,foe:'mig29',wing:'on',lesson:'basic',fuelPct:'80',tanks:'0',aam:'full',voice:'off',vr:'off'};
 try{const o=JSON.parse(localStorage.getItem('haniaflight-opts')||'{}');for(const k in opts)if(typeof o[k]==='string')opts[k]=o[k];}catch(e){}
-if(!R.PLANES[opts.plane])opts.plane='F15I';if(!['strike','intercept','sead','convoy','escort','duel','tanker','train','csar','recon','stealth'].includes(opts.mission))opts.mission='strike';if(!TOD[opts.tod])opts.tod='day';if(!R.DIFF[opts.diff])opts.diff='normal';if(!['high','low','eco'].includes(opts.q))opts.q='low';
-if(!['low','normal','high'].includes(opts.sens))opts.sens='normal';for(const k of['inv','tilt'])if(opts[k]!=='on')opts[k]='off';if(opts.ui!=='large')opts.ui='normal';if(opts.fail!=='on')opts.fail='off';if(opts.bomb!=='lgb')opts.bomb='spice';opts.theatre=theatre0;if(!['mig29','su27','mig21'].includes(opts.foe))opts.foe='mig29';if(opts.wing!=='off')opts.wing='on';if(!['basic','land','refuel','ground','evade'].includes(opts.lesson))opts.lesson='basic';if(!['60','80','100'].includes(opts.fuelPct))opts.fuelPct='80';if(!['0','1','2','3'].includes(opts.tanks))opts.tanks='0';if(opts.aam!=='light')opts.aam='full';if(!['clear','wind','storm','fog'].includes(opts.wx))opts.wx='clear';
-function fillBrief(){const pl=R.PLANES[opts.plane];if(!pl.spice&&opts.mission==='strike')opts.mission='intercept';$('mStrike').disabled=!pl.spice;if(!pl.spice&&opts.mission==='sead')opts.mission='intercept';$('mSead').disabled=!pl.spice;if(!pl.spice&&opts.mission==='recon')opts.mission='intercept';$('mRecon').disabled=!pl.spice;const m=opts.mission,air=m==='duel'||m==='tanker'||m==='train'||m==='escort';if(m==='train'&&opts.lesson==='ground'&&!pl.spice)opts.lesson='basic';$('foeRow').hidden=m!=='duel';$('lessonRow').hidden=m!=='train';$('lessonText').textContent=m==='train'?{basic:'טיסה ראשונה עם מדריך ברדיו, בלי אויב: טיפוס, פנייה לכיוון, נעילת מכ"ם, שיגור טיל, ירי בתותח ונצירת הנשק. כעשר דקות.',land:'מתחילים שבעה מייל מהמסלול, מיושרים. המדריך מוביל שלב אחר שלב: כן נסע ומדפים, האטה, גישה לפי ה-ILS, נגיעה ועצירה.',refuel:'מתחילים שני קילומטר מאחורי המתדלק. המדריך מסביר איך להתקרב, להחזיק את המטוס בריבוע ההכוונה, לקבל דלק ולהתנתק.',ground:'מטרה לדוגמה במרחק 42 קילומטר, בלי נ"מ. בחירת חימוש, נעילה, קריאת סרגל הטווח, שחרור ופגיעה.',evade:'טיל אימון משוגר אליך מלפנים. לומדים לשבור כך שהטיל יהיה בצד, ולשחרר נורים ומוץ. פעם עם הנחיות ופעם לבד. המטוס לא נהרס בשיעור הזה.'}[opts.lesson]:'';$('wingRow').hidden=m==='tanker'||m==='train';
-  $('unit').textContent=pl.name+' · '+pl.unit;for(const[k,id]of[['strike','briefStrike'],['duel','briefDuel'],['tanker','briefTanker'],['intercept','briefIcpt'],['train','briefTrain'],['sead','briefSead'],['convoy','briefConvoy'],['escort','briefEscort'],['csar','briefCsar'],['recon','briefRecon'],['stealth','briefStealth']])$(id).hidden=m!==k;$('startRwy').hidden=$('startCold').hidden=air;
+if(!['spice','lgb','jdam','delilah'].includes(opts.bomb))opts.bomb='spice';if(!['off','button','always'].includes(opts.voice))opts.voice='off';if(!R.PLANES[opts.plane])opts.plane='F15I';if(!['strike','intercept','sead','convoy','escort','duel','tanker','train','csar','recon','stealth','naval'].includes(opts.mission))opts.mission='strike';if(!TOD[opts.tod])opts.tod='day';if(!R.DIFF[opts.diff])opts.diff='normal';if(!['high','low','eco'].includes(opts.q))opts.q='low';
+if(!['low','normal','high'].includes(opts.sens))opts.sens='normal';for(const k of['inv','tilt'])if(opts[k]!=='on')opts[k]='off';if(opts.ui!=='large')opts.ui='normal';if(opts.fail!=='on')opts.fail='off';opts.theatre=theatre0;if(!['mig29','su27','mig21'].includes(opts.foe))opts.foe='mig29';if(opts.wing!=='off')opts.wing='on';if(!['basic','land','refuel','ground','evade'].includes(opts.lesson))opts.lesson='basic';if(!['60','80','100'].includes(opts.fuelPct))opts.fuelPct='80';if(!['0','1','2','3'].includes(opts.tanks))opts.tanks='0';if(opts.aam!=='light')opts.aam='full';if(!['clear','wind','storm','fog'].includes(opts.wx))opts.wx='clear';
+function fillBrief(){const pl=R.PLANES[opts.plane];if(!pl.spice&&opts.mission==='strike')opts.mission='intercept';$('mStrike').disabled=!pl.spice;if(!pl.spice&&opts.mission==='sead')opts.mission='intercept';$('mSead').disabled=!pl.spice;if(!pl.spice&&opts.mission==='recon')opts.mission='intercept';$('mRecon').disabled=!pl.spice;if(!pl.spice&&opts.mission==='naval')opts.mission='intercept';$('mNaval').disabled=!pl.spice;const m=opts.mission,air=m==='duel'||m==='tanker'||m==='train'||m==='escort';if(m==='train'&&opts.lesson==='ground'&&!pl.spice)opts.lesson='basic';$('foeRow').hidden=m!=='duel';$('lessonRow').hidden=m!=='train';$('lessonText').textContent=m==='train'?{basic:'טיסה ראשונה עם מדריך ברדיו, בלי אויב: טיפוס, פנייה לכיוון, נעילת מכ"ם, שיגור טיל, ירי בתותח ונצירת הנשק. כעשר דקות.',land:'מתחילים שבעה מייל מהמסלול, מיושרים. המדריך מוביל שלב אחר שלב: כן נסע ומדפים, האטה, גישה לפי ה-ILS, נגיעה ועצירה.',refuel:'מתחילים שני קילומטר מאחורי המתדלק. המדריך מסביר איך להתקרב, להחזיק את המטוס בריבוע ההכוונה, לקבל דלק ולהתנתק.',ground:'מטרה לדוגמה במרחק 42 קילומטר, בלי נ"מ. בחירת חימוש, נעילה, קריאת סרגל הטווח, שחרור ופגיעה.',evade:'טיל אימון משוגר אליך מלפנים. לומדים לשבור כך שהטיל יהיה בצד, ולשחרר נורים ומוץ. פעם עם הנחיות ופעם לבד. המטוס לא נהרס בשיעור הזה.'}[opts.lesson]:'';$('wingRow').hidden=m==='tanker'||m==='train';
+  $('unit').textContent=pl.name+' · '+pl.unit;for(const[k,id]of[['strike','briefStrike'],['duel','briefDuel'],['tanker','briefTanker'],['intercept','briefIcpt'],['train','briefTrain'],['sead','briefSead'],['convoy','briefConvoy'],['escort','briefEscort'],['csar','briefCsar'],['recon','briefRecon'],['stealth','briefStealth'],['naval','briefNaval']])$(id).hidden=m!==k;$('startRwy').hidden=$('startCold').hidden=air;
   $('startAir').classList.toggle('go',air);$('startAir').textContent=m==='duel'?'לקרב':m==='tanker'?'אל המתדלק':m==='train'?'להדרכה':m==='escort'?'אל המבנה':'התחלה באוויר';
   const rows=[['טילי אוויר־אוויר מכ"מיים',pl.aim120+' × '+R.MSL[pl.mrm||'AIM120'].name]];if(pl.python)rows.push(['טילי אוויר־אוויר תרמיים',pl.python+' × '+R.MSL[pl.srm||'PYTHON5'].name]);
-  const lg=opts.bomb==='lgb'&&!pl.internal;$('bombRow').hidden=(m!=='strike'&&m!=='convoy')||!!pl.internal||!pl.spice;if(m==='sead'&&!pl.internal)rows.push(['טילים נגד מכ"ם','4 × AGM-88']);else if(m==='sead'||m==='convoy'&&pl.spice)rows.push(['פצצות מונחות',pl.spice+' × '+pl.bomb.name]);if(m==='strike')rows.push(lg?['פצצות מונחות לייזר',(pl.spice+2)+' × GBU-12']:['פצצות דאייה מונחות',pl.spice+' × '+pl.bomb.name]);if(m==='recon')rows.push(['פוד ציון וצילום','LITENING · זום ×20']);if(pl.internal)rows.push(['חתימת מכ"ם','נמוכה מאוד · חימוש פנימי']);if(+opts.tanks)rows.push(['מכלים נתיקים',opts.tanks+' × '+pl.tankKg.toLocaleString('en')+' kg']);rows.push(['תותח',(pl.internal?'GAU-22 · ':'M61A1 · ')+(pl.gun||510)],['דלק',(m==='tanker'?Math.round(R.TYPES[pl.type].fuelMax*0.3):air?pl.fuelAir:pl.fuelRwy).toLocaleString('en')+' kg']);
+  $('bombRow').hidden=(m!=='strike'&&m!=='convoy')||!pl.spice;for(const b of document.querySelectorAll('[data-opt="bomb"]')){const v=b.dataset.val;b.disabled=(pl.internal&&(v==='lgb'||v==='delilah'))||(m==='convoy'&&v==='jdam');}
+  if((pl.internal&&(opts.bomb==='lgb'||opts.bomb==='delilah'))||(m==='convoy'&&opts.bomb==='jdam'))opts.bomb='spice';
+  if(pl.spice&&['strike','convoy','sead','naval'].includes(m)){const PW=new R.World({plane:opts.plane,mission:m,bomb:opts.bomb,start:'air'}),bn=PW.plane.bomb;rows.push([bn.cruise==='AGM84'?'טילי ים':bn.cruise?'טילי שיוט':bn.arm?'טילים נגד מכ"ם':bn.lgb?'פצצות מונחות לייזר':bn.gps?'פצצות JDAM מונחות לוויין':'פצצות מונחות',PW.w.spice+' × '+bn.name]);}if(m==='recon')rows.push(['פוד ציון וצילום','LITENING · זום ×20']);if(pl.internal)rows.push(['חתימת מכ"ם','נמוכה מאוד · חימוש פנימי']);if(+opts.tanks)rows.push(['מכלים נתיקים',opts.tanks+' × '+pl.tankKg.toLocaleString('en')+' kg']);rows.push(['תותח',(pl.internal?'GAU-22 · ':'M61A1 · ')+(pl.gun||510)],['דלק',(m==='tanker'?Math.round(R.TYPES[pl.type].fuelMax*0.3):air?pl.fuelAir:pl.fuelRwy).toLocaleString('en')+' kg']);
   $('loadout').innerHTML=rows.map(r=>`<div><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join('');}
 function applyOpts(){fillBrief();if(W&&state==='menu'&&(W.plane.type!==opts.plane||W.wx!==opts.wx))newGame('runway',true);for(const b of document.querySelectorAll('[data-opt]'))b.setAttribute('aria-pressed',String(opts[b.dataset.opt]===b.dataset.val));
-  if(tod!==opts.tod||!applyOpts.done)setTOD(opts.tod);applyOpts.done=true;$('touch').dataset.big=opts.ui==='large'?'1':'';$('app').dataset.big=opts.ui==='large'&&touchOn?'1':'';$('tiltRow').hidden=!touchOn;$('uiRow').hidden=!touchOn;showLog();
+  if(tod!==opts.tod||!applyOpts.done)setTOD(opts.tod);applyOpts.done=true;$('touch').dataset.big=opts.ui==='large'?'1':'';$('app').dataset.big=opts.ui==='large'&&touchOn?'1':'';$('tiltRow').hidden=!touchOn;$('voiceRow').hidden=!voice.ok;$('uiRow').hidden=!touchOn;showLog();
   {/* take-off weight for the chosen configuration */
     const pl=R.PLANES[opts.plane],T0=R.TYPES[pl.type],mx=pl.maxTanks||0;if(+opts.tanks>mx)opts.tanks=String(mx);for(const b of document.querySelectorAll('[data-opt="tanks"]')){b.disabled=+b.dataset.val>mx;b.setAttribute('aria-pressed',String(opts.tanks===b.dataset.val));}
-    const k=opts.aam==='light'?0.5:1,m=opts.mission,bombs=m==='strike'||m==='convoy'||m==='sead'?pl.spice+(opts.bomb==='lgb'&&!pl.internal&&m!=='sead'?2:0):0,bm=m==='sead'&&!pl.internal?360:opts.bomb==='lgb'&&!pl.internal?230:pl.bomb.mass;
-    const fuel=T0.fuelMax*opts.fuelPct/100+opts.tanks*(pl.tankKg||0),stores=Math.ceil(pl.aim120*k)*157+Math.ceil(pl.python*k)*105+bombs*bm+pl.base+opts.tanks*140,tow=T0.mEmpty+fuel+stores,tw=T0.Tab/(tow*9.81);
+    const TW=new R.World({plane:opts.plane,mission:opts.mission,bomb:opts.bomb,start:'runway',fuelPct:+opts.fuelPct,tanks:+opts.tanks,aam:opts.aam}),fuel=TW.player.fuel,tow=TW.player.mass,tw=T0.Tab/(tow*9.81);
     $('towLine').innerHTML=`משקל המראה <b dir="ltr">${Math.round(tow).toLocaleString('en')} kg</b> מתוך <span dir="ltr">${pl.mtow.toLocaleString('en')}</span> · דלק <b dir="ltr">${Math.round(fuel).toLocaleString('en')} kg</b> · יחס דחף למשקל <b dir="ltr">${tw.toFixed(2)}</b>`+(tow>pl.mtow?' · <b style="color:var(--red)">מעל המשקל המרבי: ריצת ההמראה תתארך מאוד</b>':'');}
 showCamp();showDaily();showAch();{const B=readBest(),k=opts.mission+(opts.mission==='duel'?'-'+opts.foe:''),b=B[k];$('bestLine').textContent=b?`שיא אישי במשימה: ${Math.floor(b.t/60)}:${String(b.t%60).padStart(2,'0')} · ${b.plane}`:'';}eco=opts.q==='eco';cloudSp.forEach((c,i)=>c.visible=opts.q==='high'||i%(eco?4:2)===0);landLight.visible=tod!=='day'&&!eco;resize();
   try{localStorage.setItem('haniaflight-opts',JSON.stringify(opts));}catch(e){}}
@@ -2777,6 +2956,7 @@ applyOpts();newGame('runway',true);requestAnimationFrame(frame);
 try{if(localStorage.getItem('haniaflight-pend')==='camp2'){localStorage.removeItem('haniaflight-pend');setTimeout(()=>openBrief(2),400);}}catch(e){}
 {const n=$('loadMs');if(n)n.textContent=(performance.now()/1000).toFixed(1);}
 window.__raam={dbg:()=>({ll:landLight.visible,li:landLight.intensity,glow:nightGlow.map(g=>g.visible),tod,eco}),get W(){return W;},start,keys,setTOD,get cockpit(){return cockpit;},camera,act,opts,get state(){return state;},ready:true};
+if(demFail){opts.theatre='south';try{localStorage.setItem('haniaflight-opts',JSON.stringify(opts));}catch(e){}toast('מפת ישראל לא נטענה (אין חיבור?). חזרתי לזירת הדרום.');}
 $('loading').hidden=true;$('guide2').innerHTML=$('guide').innerHTML;
 /* a start button tapped while the world was still loading starts the flight now */
 {const q=window.__hfQueue&&window.__hfQueue();if(q&&!$(q).hidden)start(lastMode={startAir:'air',startRwy:'runway',startCold:'cold'}[q]);}

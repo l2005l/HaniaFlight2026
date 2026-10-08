@@ -1,8 +1,8 @@
 # HaniaFlight
 
-סימולטור טיסה תלת־ממדי של מטוסי קרב ישראליים, שרץ בדפדפן. גרסה 1.6: ארבעה מטוסים (F-15I רעם, F-16I סופה, F-35I אדיר, F-15 בז), אחת־עשרה משימות, שתי מערכות, אתגר יומי וטיסת לילה עם תאורת שדה.
+סימולטור טיסה תלת־ממדי של מטוסי קרב ישראליים, שרץ בדפדפן. גרסה 1.7: ארבעה מטוסים (F-15I רעם, F-16I סופה, F-35I אדיר, F-15 בז), שתים־עשרה משימות, ארבע זירות ובהן מפה אמיתית של ישראל, שתי מערכות, אתגר יומי, פקודות קוליות ומציאות מדומה.
 
-A browser flight simulator of Israeli fighter jets. Version 1.6: four aircraft (F-15I Ra'am, F-16I Sufa, F-35I Adir, F-15 Baz), eleven missions, two campaigns, a daily challenge and night flying with airfield lighting.
+A browser flight simulator of Israeli fighter jets. Version 1.7: four aircraft (F-15I Ra'am, F-16I Sufa, F-35I Adir, F-15 Baz), twelve missions, four theatres including a real map of Israel, two campaigns, a daily challenge, voice commands and VR.
 
 ## לשחק / Play
 
@@ -59,6 +59,10 @@ The game is a PWA: open the link, then use the in-game install button or the bro
 - 1.6, אויב: סוללה נסתרת שמדליקה מכ"ם רק מקרוב, מיג שמחכה נמוך מאחורי ההרים, זוג שמנסה פיתיון, מיגים שחוזרים הביתה בבינגו, משגר שבורח מהעמדה, ספינת טילים בזירה הרחוקה
 - 1.6, לילה: אורות מסלול, תאורת גישה עם הבזק רץ, PAPI, מסלולי הסעה כחולים, יישובים ופנסי רחוב, פנס נחיתה ואורות ניווט
 - 1.6, תוכן: משימות חילוץ (ליווי מסוק), צילום מודיעין בפוד ויירוט כטב"ם חמקן; מערכה שנייה מעבר לים עם צי מטוסים ומלאי חימוש; אתגר יומי עם ניקוד
+- 1.7, מפה אמיתית של ישראל: גבהים אמיתיים (SRTM) מאילת עד החרמון ברזולוציה של 700 מטר, ים המלח והכנרת מתחת לפני הים, ערים במקומן, בסיס רמת דוד. הנתונים נבנים ב-GitHub Actions (`tools/terrain/`) ונשמרים ב-`data/israel-dem.bin`
+- 1.7, תדלוק: נוריות הכוונה מתחת למתדלק, הוראות ב-HUD במטרים, התקרבות אוטומטית עד 40 מטר, משבצת רחבה יותר ברמות קל ורגיל
+- 1.7, חימוש: JDAM מונחה לוויין, טיל שיוט דלילה (עד 230 ק"מ, עם מצלמת טיל בחלון הפוד), טילי ים AGM-84 ו-JSM, ומשימת תקיפה ימית
+- 1.7: פקודות קוליות בעברית (בדפדפן ובאפליקציה) ומצב מציאות מדומה (WebXR) עם HUD בקוקפיט ושליטה בבקרי היד
 - 1.6, אפליקציה: מצב חיסכון סוללה, שלט משחק גם באפליקציית האנדרואיד, יעד Android 16 וחבילה ל-Google Play
 
 ## מבנה / Layout
@@ -73,6 +77,7 @@ The game is a PWA: open the link, then use the in-game install button or the bro
 | `vendor/three.min.js` | three.js r128 (MIT), bundled so the app works offline. |
 | `manifest.webmanifest`, `icons/` | App name, icons and display mode for installation. |
 | `tests/` | Node scripts that exercise the core. |
+| `data/israel-dem.bin`, `tools/terrain/` | Real heights of Israel (SRTM, 700 m grid) and the script and workflow that build them. |
 
 ## פיתוח / Develop
 

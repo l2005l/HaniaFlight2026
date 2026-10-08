@@ -168,7 +168,7 @@ details[open] summary{margin-bottom:10px}
   <div id="radio" aria-live="polite"></div>
   <div id="toast" role="status" aria-live="polite"></div>
   <button id="lookBack" hidden>חזרה למבט קדימה</button>
-  <div id="chips" hidden><button id="mapBtn">מפה</button><button id="ecmBtn">שיבוש</button><button id="wingBtn" hidden>שתיים</button><button id="padBtn">מבט למטרה</button><button id="nvgBtn" hidden>משקפת לילה</button><button id="hookBtn" hidden>וו בלימה</button><button id="relightBtn" class="warn" hidden>התנעה באוויר</button></div>
+  <div id="chips" hidden><button id="mapBtn">מפה</button><button id="ecmBtn">שיבוש</button><button id="wingBtn" hidden>שתיים</button><button id="padBtn">מבט למטרה</button><button id="nvgBtn" hidden>משקפת לילה</button><button id="micBtn" hidden>פקודה קולית</button><button id="joinBtn" hidden>התקרבות אוטומטית</button><button id="hookBtn" hidden>וו בלימה</button><button id="relightBtn" class="warn" hidden>התנעה באוויר</button></div>
   <div id="check" hidden>
     <div class="chead"><b>רשימת תיוג להתנעה</b><button id="autoStart">התנעה אוטומטית</button></div>
     <ol id="checkList"></ol>
@@ -213,6 +213,7 @@ details[open] summary{margin-bottom:10px}
       <button id="mCsar" data-opt="mission" data-val="csar">חילוץ</button>
       <button id="mRecon" data-opt="mission" data-val="recon">צילום</button>
       <button id="mStealth" data-opt="mission" data-val="stealth">כטב"ם חמקן</button>
+      <button id="mNaval" data-opt="mission" data-val="naval">תקיפה ימית</button>
       <button id="mDuel" data-opt="mission" data-val="duel">קרב אוויר</button>
       <button id="mTanker" data-opt="mission" data-val="tanker">תדלוק אווירי</button>
       <button id="mTrain" data-opt="mission" data-val="train">הדרכה</button>
@@ -222,6 +223,7 @@ details[open] summary{margin-bottom:10px}
       <button data-opt="theatre" data-val="south">דרום · מדבר</button>
       <button data-opt="theatre" data-val="north">צפון · הרים</button>
       <button data-opt="theatre" data-val="far">רחוק · מעבר לים</button>
+      <button data-opt="theatre" data-val="israel">ישראל · מפה אמיתית</button>
     </div>
     <div class="seg" role="group" aria-label="מטוס">
       <span>מטוס</span>
@@ -301,6 +303,15 @@ details[open] summary{margin-bottom:10px}
         <li>אל תבזבז את כל הטילים על ההטעיות. המשימה תלויה רק בחמקן.</li>
         <li>רד נמוך כדי שהמכ"ם יראה אותו על רקע השמיים, או התקרב לטווח תותח.</li>
         <li>אם הוא עובר את קו ההגנה, המשימה נכשלת.</li>
+      </ol>
+    </div>
+    <div id="briefNaval" class="brief" hidden>
+      <h2>תקיפה ימית</h2>
+      <p>שלוש ספינות טילים משייטות בים. לכל אחת נ"מ קצר טווח ותותח קרוב שיכול ליירט טיל. אתה נושא טילי ים (AGM-84, ובאדיר JSM) שטסים נמוך מעל המים. ברמה קשה שומר על הספינות זוג מיג-29.</p>
+      <ol class="steps">
+        <li>בחר 4, נעל על ספינה (T) ושגר מ-10 עד 115 ק"מ. הטיל מוצא את הספינה גם כשהיא זזה.</li>
+        <li>אל תתקרב מתחת ל-15 ק"מ: שם הנ"מ של הספינות מגיע אליך.</li>
+        <li>טיל אחד יכול להיעצר בתותח הקרוב. שמור טיל רזרבי.</li>
       </ol>
     </div>
     <div id="briefTrain" class="brief" hidden>
@@ -402,6 +413,8 @@ details[open] summary{margin-bottom:10px}
       <span>חימוש לקרקע</span>
       <button data-opt="bomb" data-val="spice">דאייה (SPICE)</button>
       <button data-opt="bomb" data-val="lgb">לייזר (GBU-12)</button>
+      <button data-opt="bomb" data-val="jdam">לוויין (JDAM)</button>
+      <button data-opt="bomb" data-val="delilah">טיל שיוט (דלילה)</button>
     </div>
     <div class="seg" role="group" aria-label="איכות גרפיקה">
       <span>גרפיקה</span>
@@ -429,6 +442,17 @@ details[open] summary{margin-bottom:10px}
       <span>כפתורי מגע</span>
       <button data-opt="ui" data-val="normal">רגילים</button>
       <button data-opt="ui" data-val="large">גדולים</button>
+    </div>
+    <div class="seg" id="vrRow" hidden>
+      <span>מציאות מדומה</span>
+      <button id="vrGo">טוס במשקפי VR</button>
+      <span class="note">מוט ימני: היגוי. מוט שמאלי: מצערת והגה. הדק ימני: תותח, A: שיגור, B: נעילה. הדק שמאלי: נורים, X: חימוש, Y: כן נסע.</span>
+    </div>
+    <div class="seg" id="voiceRow" role="group" aria-label="פקודות קוליות" hidden>
+      <span>פקודות קוליות</span>
+      <button data-opt="voice" data-val="off">כבוי</button>
+      <button data-opt="voice" data-val="button">בלחיצה</button>
+      <button data-opt="voice" data-val="always">מקשיב תמיד</button>
     </div>
     <div class="seg">
       <span>קול הבקר</span>
@@ -491,6 +515,8 @@ details[open] summary{margin-bottom:10px}
         <div><h4>תדלוק אווירי</h4><ul>
           <li>פותחים את דלת התדלוק ב־<b>K</b> או במתג <b>AR DOOR</b>. ה־HUD מראה את המרחק למתדלק וחץ אליו.</li>
           <li>מתקרבים לאט מאחורי הזנב ומתחתיו. מקרוב מופיעה משבצת: הנקודה מראה לאן לזוז ימינה, שמאלה, למעלה ולמטה, והפס שלידה מראה קדימה ואחורה. כשהנקודה במרכז ומחזיקים שם, מתקבל <b>CONTACT</b> והדלק זורם.</li>
+          <li>מתחת לבטן המתדלק יש שני פסי נוריות הכוונה. בפס השמאלי הנורית הדולקת מראה אם לעלות (קדימה בפס) או לרדת (אחורה בפס), ובפס הימני אם להתקדם או לסגת. ירוק באמצע פירושו שאתה בעמדה. ב־HUD מופיעות אותן הוראות במטרים, למשל <b>UP 3  FWD 6</b>.</li>
+          <li>כפתור "התקרבות אוטומטית" (או מקש \) מביא אותך עד 40 מטר מאחורי הזרוע. משם ממשיכים לבד. ברמות קל ורגיל המשבצת רחבה יותר והמשחק מושך אותך לעמדה.</li>
           <li>בסיום סוגרים את הדלת ומתרחקים למטה ואחורה.</li>
         </ul></div>
         <div><h4>השורות שמתחת למסכים</h4><ul>
@@ -515,6 +541,8 @@ details[open] summary{margin-bottom:10px}
         <kbd>H · J</kbd><span>טייס אוטומטי (שומר גובה וכיוון) · השלכת חימוש קרקע</span>
         <kbd>Y · , .</kbd><span>מצב מכ"ם (חיפוש או קרב צמוד) · טווח המכ"ם קטן וגדול</span>
         <kbd>K</kbd><span>דלת תדלוק. כשהיא פתוחה ה־HUD מכוון אל המתדלק.</span>
+        <kbd>[</kbd><span>פקודה קולית: לחץ ואמור, למשל "שתיים תקוף", "כן נסע", "נעל", "נורים", "מגדל, בקשה לנחיתה". צריך להפעיל בתפריט.</span>
+        <kbd>\</kbd><span>התקרבות אוטומטית למתדלק, עד 40 מטר מאחורי הזרוע. הזזת המוט מבטלת.</span>
         <kbd>6 · ;</kbd><span>וו בלימה (נתפס בכבל 300 מטר לפני סוף המסלול) · התנעת מנוע באוויר אחרי כבייה, מעל 215 קשר</span>
         <kbd>X</kbd><span>מבט אל לוח המתגים. לוחצים על מתג כדי להפעיל אותו.</span>
         <kbd>גרירת עכבר</kbd><span>הזזת הראש בקוקפיט. הראש חוזר למרכז כשמשחררים.</span>
@@ -522,7 +550,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט. לחיצה על המוט השמאלי: וו בלימה, על הימני: מבט למטרה. Start מתחיל טיסה מהתפריט. באפליקציית האנדרואיד השלט עובד דרך האפליקציה עצמה.</p>
     </details>
-    <p class="note">גרסה 1.6 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
+    <p class="note">גרסה 1.7 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
   </section>
 
   <div id="photoBar" hidden><span>גרור כדי לסובב</span><button id="phIn" aria-label="התקרב">+</button><button id="phOut" aria-label="התרחק">−</button><button id="phSave">שמור תמונה</button><button id="phBack" class="go">חזרה</button></div>

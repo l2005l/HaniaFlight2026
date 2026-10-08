@@ -1,7 +1,12 @@
 package com.hania360.flight;
 
 import android.app.Activity;
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.speech.RecognitionListener;
+import android.speech.RecognizerIntent;
+import android.speech.SpeechRecognizer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -22,7 +27,9 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.window.OnBackInvokedDispatcher;
 
+import java.util.ArrayList;
 import java.util.Locale;
+import org.json.JSONObject;
 
 /**
  * Native shell for HaniaFlight. It shows the game from flight.hania360.com in a full-screen WebView, so the app
@@ -41,6 +48,10 @@ public class MainActivity extends Activity {
     private final float[] pad = new float[6];
     private int padButtons;
     private long padSent;
+
+    /* voice commands: the phone's speech recogniser, in Hebrew; results go back to the page as text */
+    private SpeechRecognizer recognizer;
+    private boolean listenAfterGrant;
 
     @Override
     protected void onCreate(Bundle state) {
@@ -202,6 +213,51 @@ public class MainActivity extends Activity {
         return super.dispatchKeyEvent(e);
     }
 
+    private void heard(String text) {
+        String js = "window.__hfHeard&&window.__hfHeard(" + JSONObject.quote(text == null ? "" : text) + ")";
+        runOnUiThread(() -> web.evaluateJavascript(js, null));
+    }
+
+    private void startListening() {
+        if (Build.VERSION.SDK_INT >= 23 && checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            listenAfterGrant = true;
+            requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, 7);
+            return;
+        }
+        if (recognizer == null) {
+            recognizer = SpeechRecognizer.createSpeechRecognizer(this);
+            recognizer.setRecognitionListener(new RecognitionListener() {
+                @Override public void onResults(Bundle b) {
+                    ArrayList<String> r = b.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                    heard(r == null ? "" : String.join("\n", r));
+                }
+                @Override public void onError(int error) { heard(""); }
+                @Override public void onReadyForSpeech(Bundle b) { }
+                @Override public void onBeginningOfSpeech() { }
+                @Override public void onRmsChanged(float v) { }
+                @Override public void onBufferReceived(byte[] bytes) { }
+                @Override public void onEndOfSpeech() { }
+                @Override public void onPartialResults(Bundle b) { }
+                @Override public void onEvent(int t, Bundle b) { }
+            });
+        }
+        Intent i = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        i.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        i.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "he-IL");
+        i.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3);
+        recognizer.startListening(i);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int code, String[] perms, int[] results) {
+        super.onRequestPermissionsResult(code, perms, results);
+        if (code != 7) return;
+        boolean ok = results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED;
+        if (ok && listenAfterGrant) startListening();
+        else heard("");
+        listenAfterGrant = false;
+    }
+
     /** Back pauses a flight (the page handles it); from the briefing it leaves the app. */
     @Override
     public void onBackPressed() {
@@ -237,6 +293,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         if (tts != null) tts.shutdown();
+        if (recognizer != null) recognizer.destroy();
         web.destroy();
         super.onDestroy();
     }
@@ -254,6 +311,21 @@ public class MainActivity extends Activity {
             tts.setPitch(pitch);
             tts.setSpeechRate(rate);
             tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "radio");
+        }
+
+        @JavascriptInterface
+        public boolean canListen() {
+            return SpeechRecognizer.isRecognitionAvailable(MainActivity.this);
+        }
+
+        @JavascriptInterface
+        public void listen() {
+            runOnUiThread(MainActivity.this::startListening);
+        }
+
+        @JavascriptInterface
+        public void stopListening() {
+            runOnUiThread(() -> { if (recognizer != null) recognizer.cancel(); });
         }
 
         @JavascriptInterface
