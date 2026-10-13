@@ -184,7 +184,7 @@ details[open] summary{margin-bottom:10px}
   #chips{top:6px;left:124px;transform:none;flex-direction:column;gap:4px}
   #chips button{padding:3px 9px;font-size:.72rem}
   #app[data-fly="1"] #obj{display:none}
-  #radio{top:50px;bottom:auto;inset-inline:auto;left:50%;transform:translateX(-50%);width:max-content;max-width:min(26rem,calc(100% - 300px));font-size:.78rem;line-height:1.3;text-align:center;padding:3px 8px}
+  #radio{top:50px;bottom:auto;inset-inline:auto;left:50%;transform:translateX(-50%);width:max-content;max-width:min(26rem,calc(100% - 470px));font-size:.78rem;line-height:1.3;text-align:center;padding:3px 8px}
 }
 @media (pointer:coarse) and (max-width:620px){
   #app[data-fly="1"] #touch[data-on="1"]{grid-template-columns:92px auto 1fr auto 40px;gap:4px;inset-inline:8px}
@@ -203,7 +203,7 @@ details[open] summary{margin-bottom:10px}
   <div id="radio" aria-live="polite"></div>
   <div id="toast" role="status" aria-live="polite"></div>
   <button id="lookBack" hidden>חזרה למבט קדימה</button>
-  <div id="chips" hidden><button id="moreBtn" aria-expanded="false">עוד</button><button class="gen" id="mapBtn">מפה</button><button class="gen" id="ecmBtn">שיבוש</button><button class="gen" id="wingBtn" hidden>שתיים</button><button class="gen" id="padBtn">מבט למטרה</button><button class="gen" id="nvgBtn" hidden>משקפת לילה</button><button class="gen" id="micBtn" hidden>פקודה קולית</button><button id="wcamBtn" hidden>מצלמת החימוש</button><button id="joinBtn" hidden>התקרבות אוטומטית</button><button id="hookBtn" hidden>וו בלימה</button><button id="relightBtn" class="warn" hidden>התנעה באוויר</button></div>
+  <div id="chips" hidden><button id="moreBtn" aria-expanded="false">עוד</button><button class="gen" id="mapBtn">מפה</button><button class="gen" id="ecmBtn">שיבוש</button><button class="gen" id="wingBtn" hidden>שתיים</button><button class="gen" id="padBtn">מבט למטרה</button><button class="gen" id="nvgBtn" hidden>משקפת לילה</button><button class="gen" id="micBtn" hidden>פקודה קולית</button><button id="wcamBtn" hidden>מצלמת החימוש</button><button id="doorBtn" hidden>פתח דלת תדלוק</button><button id="joinBtn" hidden>התקרבות אוטומטית</button><button id="hookBtn" hidden>וו בלימה</button><button id="relightBtn" class="warn" hidden>התנעה באוויר</button></div>
   <div id="check" hidden>
     <div class="chead"><b>רשימת תיוג להתנעה</b><button id="autoStart">התנעה אוטומטית</button></div>
     <ol id="checkList"></ol>
@@ -601,7 +601,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט. לחיצה על המוט השמאלי: וו בלימה, על הימני: מבט למטרה. Start מתחיל טיסה מהתפריט. באפליקציית האנדרואיד השלט עובד דרך האפליקציה עצמה.</p>
     </details>
-    <p class="note">גרסה 1.9 (88a4c4d, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
+    <p class="note">גרסה 1.9.1 (e081ef2, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
     </div>
     <div id="dock">
     <div id="update" role="status" aria-live="polite" hidden>
@@ -2546,7 +2546,7 @@ for(const ev of['pointerup','pointercancel'])glc.addEventListener(ev,e=>{if(e.po
     ray.setFromCamera(rayV,camera);const h=ray.intersectObjects(cockpit.userData.hits,false)[0];if(h){doSwitch(h.object.userData.sw);buzz(12);}return;}
   /* looking well down at the panel holds the view there; looking back up releases it */
   if(!look.panel&&look.pitch<-0.36)look.panel=true;else if(look.panel&&look.pitch>(touchOn?-0.55:-0.3))look.panel=false;});
-$('lookBack').onclick=()=>{look.panel=false;};$('nvgBtn').onclick=()=>act('nvg');$('mapBtn').onclick=()=>act('map');$('ecmBtn').onclick=()=>act('ecm');$('wingBtn').onclick=()=>act('wing');$('padBtn').onclick=()=>act('padlock');$('hookBtn').onclick=()=>act('hook');$('micBtn').onclick=()=>{if(voice.busy)micStop();else listen();};$('joinBtn').onclick=()=>act('join');const chipsOpen=o=>{const c=$('chips');c.dataset.open=o?'1':'';$('moreBtn').textContent=o?'סגור':'עוד';$('moreBtn').setAttribute('aria-expanded',o?'true':'false');clearTimeout(chipsOpen.t);if(o)chipsOpen.t=setTimeout(()=>chipsOpen(false),10000);};
+$('lookBack').onclick=()=>{look.panel=false;};$('nvgBtn').onclick=()=>act('nvg');$('mapBtn').onclick=()=>act('map');$('ecmBtn').onclick=()=>act('ecm');$('wingBtn').onclick=()=>act('wing');$('padBtn').onclick=()=>act('padlock');$('hookBtn').onclick=()=>act('hook');$('micBtn').onclick=()=>{if(voice.busy)micStop();else listen();};$('joinBtn').onclick=()=>act('join');$('doorBtn').onclick=()=>act('ardoor');const chipsOpen=o=>{const c=$('chips');c.dataset.open=o?'1':'';$('moreBtn').textContent=o?'סגור':'עוד';$('moreBtn').setAttribute('aria-expanded',o?'true':'false');clearTimeout(chipsOpen.t);if(o)chipsOpen.t=setTimeout(()=>chipsOpen(false),10000);};
 $('moreBtn').onclick=()=>chipsOpen($('chips').dataset.open!=='1');for(const e of document.querySelectorAll('#chips .gen'))e.addEventListener('click',()=>setTimeout(()=>chipsOpen(false),150));
 $('wcamBtn').onclick=()=>act('wcam');$('relightBtn').onclick=()=>act('relight');
 addEventListener('keydown',e=>{
@@ -2749,7 +2749,7 @@ $('checkList').addEventListener('pointerdown',e=>{const b=e.target.closest('butt
 $('autoStart').onclick=()=>{if(W){W.autoStart=!W.autoStart;checkSig='';}};
 function goImmersive(){if(touchOn&&!window.HFNative&&!document.fullscreenElement&&!matchMedia('(display-mode: fullscreen)').matches){try{const el=document.documentElement,pr=el.requestFullscreen&&el.requestFullscreen();if(pr&&pr.then)pr.then(()=>{try{const o=screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape');if(o&&o.catch)o.catch(()=>{});}catch(e){}}).catch(()=>{});}catch(e){}}
   try{if(navigator.wakeLock){const w=navigator.wakeLock.request('screen');if(w&&w.catch)w.catch(()=>{});}}catch(e){}}
-function start(mode){if(opts.voice==='always')setTimeout(listen,1500);tilt.p0=null;mapOn=false;padlock=false;startedAt=performance.now();goImmersive();hush();Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();newGame(mode);view=0;state='fly';show('menu',false);show('pause',false);show('debrief',false);$('app').dataset.fly='1';}
+function start(mode){lowT=-99;if(opts.voice==='always')setTimeout(listen,1500);tilt.p0=null;mapOn=false;padlock=false;startedAt=performance.now();goImmersive();hush();Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();newGame(mode);view=0;state='fly';show('menu',false);show('pause',false);show('debrief',false);$('app').dataset.fly='1';}
 const photo={az:0.9,el:0.2,dist:38,drag:false,px:0,py:0};
 function startPhoto(){if(state!=='pause')return;state='photo';show('pause',false);show('photoBar',true);photo.az=0.9;photo.el=0.2;photo.dist=38;$('app').dataset.photo='1';}
 function endPhoto(){if(state!=='photo')return;show('photoBar',false);$('app').dataset.photo='';state='pause';show('pause',true);}
@@ -3017,11 +3017,12 @@ function syncScene(dt){
     const hb=$('hookBtn'),hh=!(p.gear&&p.alive&&(p.brakeK<1||W.flags.airborne||p.hook)&&(p.agl<1500||p.onGround));if(hb.hidden!==hh)hb.hidden=hh;if(!hh){const t=p.hook?'וו: למטה':'וו בלימה';if(hb.textContent!==t)hb.textContent=t;hb.dataset.on=p.hook?'1':'';}
     {const pb=$('padBtn'),pc=!!(W.lock&&W.lock.alive!==false);if(pb.classList.contains('ctx')!==pc)pb.classList.toggle('ctx',pc);
       /* touch: landing switches only near the ground or when set up for landing; weapon buttons only in the air */
-      const low=p.onGround||p.gearPos>0.05||!!p.flaps||p.brakePos>0.5||p.agl<1200||p.V<110;
-      for(const id of['tbGear','tbFlaps','tbBrk']){const e=$(id);if(e.classList.contains('off')===low)e.classList.toggle('off',!low);}
+      /* gear and flaps: near the ground, slow, or already out; once shown they stay 8 s so they do not flicker. The brake (speed brake in the air) always stays. */
+      if(p.onGround||p.gearPos>0.05||!!p.flaps||p.agl<1200||p.V<110)lowT=clock;const low=clock-lowT<8;
+      for(const id of['tbGear','tbFlaps']){const e=$(id);if(e.classList.contains('off')===low)e.classList.toggle('off',!low);}
       for(const id of['tbPickle','tbGun','tbTgt','tbWpn','tbCm']){const e=$(id);if(e.classList.contains('off')!==p.onGround)e.classList.toggle('off',p.onGround);}
       const st=(id,v)=>{const e=$(id),x=v?'1':'';if(e.dataset.st!==x)e.dataset.st=x;};st('tbGear',p.gearPos>0.5);st('tbFlaps',!!p.flaps);st('tbBrk',p.brakePos>0.5);}
-    {const mb=$('micBtn'),mh=!(opts.voice!=='off'&&voice.ok);if(mb.hidden!==mh)mb.hidden=mh;}{const cb=$('wcamBtn'),ch=!(p.alive&&!!camWpn());if(ch)wcam=null;if(cb.hidden!==ch)cb.hidden=ch;if(!ch){const t=wpnOn(podTgt())?'תעל: מהמטוס':'מצלמת החימוש';if(cb.textContent!==t)cb.textContent=t;}}const jb=$('joinBtn'),jh=!(W.tanker&&W.sys.arDoor&&p.alive&&!p.onGround&&W.ar.state!=='contact'&&(W.arJoin||W.ar.dist>45));if(jb.hidden!==jh)jb.hidden=jh;if(!jh){const t=W.arJoin?'מתקרב… (ביטול)':'התקרבות אוטומטית';if(jb.textContent!==t)jb.textContent=t;}
+    {const mb=$('micBtn'),mh=!(opts.voice!=='off'&&voice.ok);if(mb.hidden!==mh)mb.hidden=mh;}{const cb=$('wcamBtn'),ch=!(p.alive&&!!camWpn());if(ch)wcam=null;if(cb.hidden!==ch)cb.hidden=ch;if(!ch){const t=wpnOn(podTgt())?'תעל: מהמטוס':'מצלמת החימוש';if(cb.textContent!==t)cb.textContent=t;}}{const db=$('doorBtn'),dh=!(W.tanker&&p.alive&&!p.onGround&&!W.sys.arDoor);if(db.hidden!==dh)db.hidden=dh;}const jb=$('joinBtn'),jh=!(W.tanker&&W.sys.arDoor&&p.alive&&!p.onGround&&W.ar.state!=='contact'&&(W.arJoin||W.ar.dist>45));if(jb.hidden!==jh)jb.hidden=jh;if(!jh){const t=W.arJoin?'מתקרב… (ביטול)':'התקרבות אוטומטית';if(jb.textContent!==t)jb.textContent=t;}
     const rb=$('relightBtn'),rh=!(p.alive&&!p.onGround&&p.flame&&p.flame.some(Boolean));if(rb.hidden!==rh)rb.hidden=rh;const ch=$('chips'),hc=state!=='fly'||cm===2;if(ch.hidden!==hc)ch.hidden=hc;{const wb=$('wingBtn'),hw=!(W&&W.wing);if(wb.hidden!==hw)wb.hidden=hw;if(!hw){const t='שתיים: '+{form:'במבנה',attack:'תוקף',cover:'ציד חופשי'}[W.wing.mode];if(wb.textContent!==t)wb.textContent=t;}}if(W&&(!!W.ecm)!==($('ecmBtn').dataset.on==='1'))$('ecmBtn').dataset.on=W.ecm?'1':'';if(padlock!==($('padBtn').dataset.on==='1'))$('padBtn').dataset.on=padlock?'1':'';if(state!=='fly'&&nvg)setNVG(false);}
   if(inPit){const cs=cockpit.userData.sw;for(const id in cs){const v=swState(id),o=cs[id],k=o.kind,ease=Math.min(1,Math.max(dt,0.016)*14),since=clock-o.clickT;
       if(k==='push'||k==='tap'){const tz=(k==='push'&&v)||since<0.18?0.006:0.012;o.lev.position.z+=(tz-o.lev.position.z)*ease*1.6;}
@@ -3112,7 +3113,7 @@ function drawMap(p,e){const{nx,nz,cell,x0,z0}=TER,WX=(nx-1)*cell,WZ=(nz-1)*cell;
 let tgpR=null;const tgpCam=new T.PerspectiveCamera(3,1,20,260000),tgpFx=document.createElement('div');
 tgpFx.style.cssText='position:absolute;pointer-events:none;display:none;backdrop-filter:grayscale(1) contrast(1.3) brightness(0.82);-webkit-backdrop-filter:grayscale(1) contrast(1.3) brightness(0.82)';hudc.parentNode.insertBefore(tgpFx,hudc);
 /* what the targeting pod shows: the live target, or for a few seconds after it dies the spot where it was, so the hit can be seen */
-let tgpHold=null,podLast=null,wcam=null;
+let tgpHold=null,podLast=null,wcam=null,lowT=-99;
 function camWpn(){const p=W.player;for(const b of W.bombs)if(b.alive&&b.owner===p&&!b.lgb&&!b.gps)return b;for(const m of W.missiles)if(m.alive&&m.cruise&&m.owner===p)return m;return null;}
 function podTgt(){if(tgpHold&&(tgpHold.w!==W||clock>tgpHold.until))tgpHold=null;if(tgpHold)return tgpHold;const g=W.gtgt;return g&&g.alive?g:null;}
 /* which picture the pod window shows: wcam null = automatic (the weapon's camera only when the jet's own pod cannot see the target), true = weapon, false = jet */

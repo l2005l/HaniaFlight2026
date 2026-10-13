@@ -172,7 +172,7 @@ details[open] summary{margin-bottom:10px}
   #chips{top:6px;left:124px;transform:none;flex-direction:column;gap:4px}
   #chips button{padding:3px 9px;font-size:.72rem}
   #app[data-fly="1"] #obj{display:none}
-  #radio{top:50px;bottom:auto;inset-inline:auto;left:50%;transform:translateX(-50%);width:max-content;max-width:min(26rem,calc(100% - 300px));font-size:.78rem;line-height:1.3;text-align:center;padding:3px 8px}
+  #radio{top:50px;bottom:auto;inset-inline:auto;left:50%;transform:translateX(-50%);width:max-content;max-width:min(26rem,calc(100% - 470px));font-size:.78rem;line-height:1.3;text-align:center;padding:3px 8px}
 }
 @media (pointer:coarse) and (max-width:620px){
   #app[data-fly="1"] #touch[data-on="1"]{grid-template-columns:92px auto 1fr auto 40px;gap:4px;inset-inline:8px}
@@ -189,7 +189,7 @@ details[open] summary{margin-bottom:10px}
   <div id="radio" aria-live="polite"></div>
   <div id="toast" role="status" aria-live="polite"></div>
   <button id="lookBack" hidden>חזרה למבט קדימה</button>
-  <div id="chips" hidden><button id="moreBtn" aria-expanded="false">עוד</button><button class="gen" id="mapBtn">מפה</button><button class="gen" id="ecmBtn">שיבוש</button><button class="gen" id="wingBtn" hidden>שתיים</button><button class="gen" id="padBtn">מבט למטרה</button><button class="gen" id="nvgBtn" hidden>משקפת לילה</button><button class="gen" id="micBtn" hidden>פקודה קולית</button><button id="wcamBtn" hidden>מצלמת החימוש</button><button id="joinBtn" hidden>התקרבות אוטומטית</button><button id="hookBtn" hidden>וו בלימה</button><button id="relightBtn" class="warn" hidden>התנעה באוויר</button></div>
+  <div id="chips" hidden><button id="moreBtn" aria-expanded="false">עוד</button><button class="gen" id="mapBtn">מפה</button><button class="gen" id="ecmBtn">שיבוש</button><button class="gen" id="wingBtn" hidden>שתיים</button><button class="gen" id="padBtn">מבט למטרה</button><button class="gen" id="nvgBtn" hidden>משקפת לילה</button><button class="gen" id="micBtn" hidden>פקודה קולית</button><button id="wcamBtn" hidden>מצלמת החימוש</button><button id="doorBtn" hidden>פתח דלת תדלוק</button><button id="joinBtn" hidden>התקרבות אוטומטית</button><button id="hookBtn" hidden>וו בלימה</button><button id="relightBtn" class="warn" hidden>התנעה באוויר</button></div>
   <div id="check" hidden>
     <div class="chead"><b>רשימת תיוג להתנעה</b><button id="autoStart">התנעה אוטומטית</button></div>
     <ol id="checkList"></ol>
@@ -587,7 +587,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט. לחיצה על המוט השמאלי: וו בלימה, על הימני: מבט למטרה. Start מתחיל טיסה מהתפריט. באפליקציית האנדרואיד השלט עובד דרך האפליקציה עצמה.</p>
     </details>
-    <p class="note">גרסה 1.9 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
+    <p class="note">גרסה 1.9.1 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
     </div>
     <div id="dock">
     <div id="update" role="status" aria-live="polite" hidden>
