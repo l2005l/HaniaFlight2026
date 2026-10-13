@@ -76,6 +76,17 @@ details.more[open] summary{margin-bottom:6px}
 @media (max-height:500px){#menu header{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-direction:row-reverse}#menu header h1{font-size:1.5rem;margin:0}}
 #menu .seg button{padding:5px 12px}
 #menu .seg{gap:6px}
+#mpBtn{border-color:var(--sand);color:var(--sand);padding:8px 14px}
+@media (max-height:560px){.modal{place-items:start center}.modal .card{gap:10px;padding:14px 16px}#mpBox h2{font-size:1.1rem}.mpcode b{font-size:1.5rem}}
+.mpcode{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.mpcode b{font-family:var(--mono);font-size:1.9rem;letter-spacing:.18em;color:var(--sand)}
+#mpPeers{margin:0;padding-inline-start:1.1em;display:flex;flex-direction:column;gap:4px}
+.mpjoin input{flex:1;min-width:6rem;background:rgba(8,12,14,.6);border:1px solid var(--line);color:inherit;padding:9px 10px;font:inherit;font-family:var(--mono);letter-spacing:.2em;text-transform:uppercase}
+#mpWait{align-self:center}
+#chips button.radio{border-color:#7fb8ff;color:#cfe4ff}#pttBtn[data-on="1"]{background:rgba(127,184,255,.45);color:#fff}
+#quickBox{position:absolute;z-index:6;top:50%;left:50%;transform:translate(-50%,-50%);display:grid;grid-template-columns:1fr 1fr;gap:6px;background:rgba(8,12,14,.9);border:1px solid #7fb8ff;padding:10px;width:min(30rem,calc(100% - 32px))}
+#quickBox[hidden]{display:none}#quickBox button{padding:8px 10px;font-size:.9rem;text-align:start}
+#talkers{position:absolute;z-index:4;bottom:132px;left:50%;transform:translateX(-50%);background:rgba(8,12,14,.8);border:1px solid #7fb8ff;color:#cfe4ff;padding:4px 12px;font-weight:700}
+#talkers[hidden]{display:none}
 .keys{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:.93rem;align-items:baseline}
 .keys kbd{font-family:var(--mono);font-size:.82rem;direction:ltr;text-align:start;color:var(--hud);white-space:nowrap}
 details summary{cursor:pointer;font-weight:700;padding-block:4px}
@@ -189,7 +200,7 @@ details[open] summary{margin-bottom:10px}
   <div id="radio" aria-live="polite"></div>
   <div id="toast" role="status" aria-live="polite"></div>
   <button id="lookBack" hidden>חזרה למבט קדימה</button>
-  <div id="chips" hidden><button id="moreBtn" aria-expanded="false">עוד</button><button class="gen" id="mapBtn">מפה</button><button class="gen" id="ecmBtn">שיבוש</button><button class="gen" id="wingBtn" hidden>שתיים</button><button class="gen" id="padBtn">מבט למטרה</button><button class="gen" id="nvgBtn" hidden>משקפת לילה</button><button class="gen" id="micBtn" hidden>פקודה קולית</button><button id="wcamBtn" hidden>מצלמת החימוש</button><button id="doorBtn" hidden>פתח דלת תדלוק</button><button id="joinBtn" hidden>התקרבות אוטומטית</button><button id="hookBtn" hidden>וו בלימה</button><button id="relightBtn" class="warn" hidden>התנעה באוויר</button></div>
+  <div id="chips" hidden><button id="moreBtn" aria-expanded="false">עוד</button><button class="gen" id="mapBtn">מפה</button><button class="gen" id="ecmBtn">שיבוש</button><button class="gen" id="wingBtn" hidden>שתיים</button><button class="gen" id="padBtn">מבט למטרה</button><button class="gen" id="nvgBtn" hidden>משקפת לילה</button><button class="gen" id="micBtn" hidden>פקודה קולית</button><button id="wcamBtn" hidden>מצלמת החימוש</button><button id="pttBtn" class="radio" hidden>לחץ לדבר</button><button id="quickBtn" class="radio" hidden>הודעה</button><button id="doorBtn" hidden>פתח דלת תדלוק</button><button id="joinBtn" hidden>התקרבות אוטומטית</button><button id="hookBtn" hidden>וו בלימה</button><button id="relightBtn" class="warn" hidden>התנעה באוויר</button></div>
   <div id="check" hidden>
     <div class="chead"><b>רשימת תיוג להתנעה</b><button id="autoStart">התנעה אוטומטית</button></div>
     <ol id="checkList"></ol>
@@ -220,6 +231,7 @@ details[open] summary{margin-bottom:10px}
       <button role="tab" data-tab="fly">טיסה</button><button role="tab" data-tab="camp">מערכה</button><button role="tab" data-tab="prep">הכנה</button><button role="tab" data-tab="set">הגדרות</button><button role="tab" data-tab="pilot">טייס</button><button role="tab" data-tab="help">מדריך</button>
     </nav>
     <div class="tab" data-tab="fly">
+      <button id="mpBtn" class="mpbtn">משחק עם חברים</button>
     <div class="seg" role="group" aria-label="משימה">
       <span>משימה</span>
       <button id="mStrike" data-opt="mission" data-val="strike">פטיש ברזל</button>
@@ -473,6 +485,12 @@ details[open] summary{margin-bottom:10px}
       <button data-opt="voice" data-val="button">בלחיצה</button>
       <button data-opt="voice" data-val="always">מקשיב תמיד</button>
     </div>
+    <div class="seg" role="group" aria-label="התרעות קוליות">
+      <span>התרעות קוליות</span>
+      <button data-opt="betty" data-val="on">פועלות</button>
+      <button data-opt="betty" data-val="off">כבויות</button>
+      <button id="bettyTest">השמע דוגמה</button>
+    </div>
     <div class="seg">
       <span>קול הבקר</span>
       <button id="voiceTest">השמע בדיקה</button>
@@ -544,6 +562,20 @@ details[open] summary{margin-bottom:10px}
           <li>ב"התנעה מהדת"ק" המטוס כבוי בתוך הדת"ק, וצוות קרקע מלווה אותך: ראש הצוות מאשר כל מנוע, המכונאים מוציאים סדים, והמכווין מסמן לצאת. הסדר: מצבר, מתנע עזר, מנוע ימין, מנוע שמאל, יישור מערכת הניווט, מכ"ם, סגירת חופה, שחרור בלם חניה. רשימת התיוג שעל המסך מסמנת את השלב הבא, וכל שורה בה היא גם כפתור. אפשר גם "התנעה אוטומטית".</li>
           <li>עד שיש מתח, ה־HUD והמסכים כבויים. עד שמערכת הניווט מיושרת, אין הכוונה לנקודות הציון, ואסור לזוז בזמן היישור.</li>
         </ul></div>
+        <div><h4>משחק עם חברים</h4><ul>
+          <li>בלשונית "טיסה": "משחק עם חברים". אחד פותח חדר ושולח את הקוד (או את הקישור), השאר מצטרפים. עד 4 שחקנים.</li>
+          <li><b>יחד</b>: כולם באותה משימה של המארח, מול אותו אויב. <b>אחד נגד השני</b>: קרב אוויר, כל אחד מתחיל 22 ק"מ מהמרכז.</li>
+          <li>קשר: "לחץ לדבר" (או מקש <b>`</b>) כל עוד מדברים. תדר 1 שומעים כולם, תדר 2 רק מי שבחר בו. "הודעה" (או <b>'</b>) שולח הודעה מוכנה.</li>
+          <li>כשאין חיבור ישיר בין המכשירים, המשחק עובר דרך השרת. במצב כזה הקול לא עובר, וההודעות המוכנות כן.</li>
+          <li>במשחק רשת אין האצת זמן. השהיה עוצרת רק אצלך.</li>
+        </ul></div>
+        <div><h4>התרעות קוליות</h4><ul>
+          <li><b>PULL UP</b>: אם תמשיך כך, תפגע בקרקע בתוך 5 שניות. מושכים ומוסיפים כוח. ההתרעה מחשבת קדימה, ולכן היא נשמעת גם כשבסוף יוצאים בזמן.</li>
+          <li><b>COLLISION</b>: מטוס אחר יעבור קרוב מ-35 מטר בתוך 4 שניות. פונים או משנים גובה.</li>
+          <li><b>MISSILE</b>: טיל שוגר אליך. <b>ENGINE FIRE</b>, <b>ENGINE OUT</b>: שריפה או כבייה במנוע. <b>OVER G</b>: עומס מעל המותר.</li>
+          <li><b>LANDING GEAR</b>: נמוך ואיטי בירידה בלי כן נסע. <b>BINGO FUEL</b>: דלק מספיק רק לחזרה הביתה. <b>FUEL LOW</b>: חצי מזה.</li>
+          <li>כיבוי ההתרעות הקוליות: בלשונית "הגדרות". הכיתוב ב-HUD נשאר.</li>
+        </ul></div>
         <div><h4>נזק</h4><ul>
           <li>פגיעה לא תמיד מפילה. היא יכולה להשבית מנוע, לגרום לדליפת דלק, להפיל את המכ"ם או את מסך האיומים, או לפגוע בהידראוליקה, ואז ההגאים כבדים, המעצור לא עובד וכן הנסע יורד לאט.</li>
           <li><b>FIRE</b> אדום מהבהב פירושו אש במנוע. היא אוכלת את המטוס עד שמושכים את ידית האש של אותו מנוע (<b>FIRE L</b> או <b>FIRE R</b> בלוח), וזה מכבה גם את המנוע.</li>
@@ -579,6 +611,8 @@ details[open] summary{margin-bottom:10px}
         <kbd>K</kbd><span>דלת תדלוק. כשהיא פתוחה ה־HUD מכוון אל המתדלק.</span>
         <kbd>[</kbd><span>פקודה קולית: לחץ ואמור, למשל "שתיים תקוף", "כן נסע", "נעל", "נורים", "מגדל, בקשה לנחיתה". צריך להפעיל בתפריט.</span>
         <kbd>\</kbd><span>התקרבות אוטומטית למתדלק, עד 40 מטר מאחורי הזרוע. הזזת המוט מבטלת.</span>
+        <kbd>`</kbd><span>במשחק רשת: לחוץ כדי לדבר בקשר (המקש שמשמאל ל-1).</span>
+        <kbd>'</kbd><span>במשחק רשת: הודעות מוכנות. בוחרים במספר.</span>
         <kbd>/</kbd><span>מצלמת החימוש: מעביר את חלון הפוד למצלמה של פצצת SPICE או של טיל שיוט שבאוויר, ובחזרה. ל-JDAM ולפצצת לייזר אין מצלמה. בחלון הפוד מופיע TOF, הזמן עד הפגיעה, ואחרי פגיעה הפוד נשאר על המטרה 8 שניות כדי לראות את הפיצוץ.</span>
         <kbd>6 · ;</kbd><span>וו בלימה (נתפס בכבל 300 מטר לפני סוף המסלול) · התנעת מנוע באוויר אחרי כבייה, מעל 215 קשר</span>
         <kbd>X</kbd><span>מבט אל לוח המתגים. לוחצים על מתג כדי להפעיל אותו.</span>
@@ -587,7 +621,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט. לחיצה על המוט השמאלי: וו בלימה, על הימני: מבט למטרה. Start מתחיל טיסה מהתפריט. באפליקציית האנדרואיד השלט עובד דרך האפליקציה עצמה.</p>
     </details>
-    <p class="note">גרסה 1.9.1 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
+    <p class="note">גרסה 2.0 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
     </div>
     <div id="dock">
     <div id="update" role="status" aria-live="polite" hidden>
@@ -610,6 +644,30 @@ details[open] summary{margin-bottom:10px}
     <button id="rpPlay">השהה</button><input id="rpSeek" type="range" min="0" max="1000" value="0" aria-label="מיקום בהקלטה"><span id="rpTime" dir="ltr">0:00</span>
     <button id="rpCam">מצלמה: סיבוב</button><button id="rpRec" hidden>הקלט קטע</button><button id="rpSpeed">×1</button><button id="rpIn" aria-label="התקרב">+</button><button id="rpOut" aria-label="התרחק">−</button><button id="rpExit">סיום</button>
   </div>
+  <div id="quickBox" hidden></div>
+  <div id="talkers" hidden></div>
+  <section id="mpBox" class="modal" hidden>
+    <div class="card">
+      <h2>משחק עם חברים</h2>
+      <div id="mpJoinPane">
+        <p class="note">פותחים חדר ושולחים את הקוד לחבר, או מקלידים קוד שקיבלתם. עד 4 שחקנים בחדר.</p>
+        <div class="acts"><button id="mpCreate" class="go">פתח חדר</button></div>
+        <div class="prow mpjoin"><input id="mpCode" maxlength="6" placeholder="קוד חדר" aria-label="קוד חדר" autocomplete="off" autocapitalize="characters" dir="ltr"><button id="mpJoin">הצטרף</button></div>
+        <label class="note"><input type="checkbox" id="mpVoice" checked> קשר קולי (יבקש אישור למיקרופון)</label>
+      </div>
+      <div id="mpRoomPane" hidden>
+        <div class="mpcode"><span>קוד החדר</span><b id="mpCodeShow" dir="ltr"></b><button id="mpShare">שלח לחבר</button></div>
+        <ul id="mpPeers"></ul>
+        <div class="seg" role="group" aria-label="מצב"><span>מצב</span><button data-mp="coop">יחד</button><button data-mp="pvp">אחד נגד השני</button></div>
+        <div class="seg" role="group" aria-label="התחלה"><span>התחלה</span><button data-mps="air">באוויר</button><button data-mps="runway">מהמסלול</button></div>
+        <div class="seg" role="group" aria-label="תדר קשר"><span>תדר קשר</span><button data-ch="1">1 · כולם</button><button data-ch="2">2</button></div>
+        <p id="mpInfo" class="note"></p>
+        <div class="acts"><button id="mpGo" class="go">התחל לכולם</button><p id="mpWait" class="note">ממתין שהמארח יתחיל…</p><button id="mpLeave">צא מהחדר</button></div>
+      </div>
+      <p id="mpStatus" class="note" aria-live="polite" hidden></p>
+      <div class="acts"><button id="mpClose">סגור</button></div>
+    </div>
+  </section>
   <section id="pause" class="modal" hidden>
     <div class="card">
       <h2>הטיסה מושהית</h2>

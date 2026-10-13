@@ -4,6 +4,7 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <!-- voice commands, only when the player turns them on -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <!-- lets the app find the device's text-to-speech engine for the radio calls -->
     <queries>
         <intent><action android:name="android.intent.action.TTS_SERVICE" /></intent>

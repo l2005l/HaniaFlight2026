@@ -482,7 +482,7 @@ class SamSite{
   get alive(){return this.radar.alive;}
   update(dt,W){
     if(!this.alive){this.tracking=this.search=false;return;}
-    const pl=W.player,rp=vadd(this.pos,v3(0,18,0)),R=vdist(pl.pos,rp);
+    const rp=vadd(this.pos,v3(0,18,0)),pl=W.samTarget(rp),R=vdist(pl.pos,rp);
     /* a silent battery keeps its radar off until the target is close, then lights up and fires almost at once */
     if(this.silent&&!this.awake){this.radar.hid=true;if(pl.alive&&R<this.silent&&W.los(rp,pl.pos)){this.awake=true;this.radar.hid=false;this.acq=4.2;this.cd=Math.min(this.cd,1.5);W.events.push({type:'fail'});W.msg('בקר: סוללה נסתרת הדליקה מכ"ם, קרוב אליך! שבור ושחרר מוץ!');}else{this.tracking=this.search=false;return;}}
     const vis=pl.alive&&R<60000*W.sig*Math.min(1.25,this.rk+0.25)*(W.ecm?0.7:1)&&W.los(rp,pl.pos)&&!W.notched(rp,pl,true);
@@ -515,6 +515,8 @@ class World{
         :o.bomb==='delilah'&&pl0.spice&&!pl0.internal&&!sead?Object.assign({},pl0,{spice:pl0.type==='F15I'?4:2,bomb:{name:'DELILAH',mass:187,soft:0,hard:0,cruise:'DELILAH'}}):sead&&!pl0.internal?Object.assign({},pl0,{spice:4,bomb:{name:'AGM-88',mass:360,soft:0,hard:0,arm:true}}):o.bomb==='lgb'&&pl0.spice&&!pl0.internal?Object.assign({},pl0,{spice:pl0.spice+2,bomb:{name:'GBU-12',mass:230,soft:30,hard:9,lgb:true,ld:3.4}}):pl0,
       air=o.start==='air'||duel||tank||train||esc,cold=o.start==='cold'&&!air,quiet=duel||tank||train||icpt||esc||csar||recon||stl,TH=THEATRE;
     this.mrm=MSL[pl.mrm||'AIM120'];this.srm=MSL[pl.srm||'PYTHON5'];this.ecm=false;this.failOpt=!!o.fail;this.foeJam=false;
+    /* network play: remote players (versus: enemies in this.air, co-op: friends), this machine's role, and whether hits are decided here */
+    this.remotes=[];this.net=o.net||null;this.pvp=!!o.pvp;this.coop=!!o.coop;
     this.missionId=naval?'naval':duel?'duel':tank?'tanker':train?'train':icpt?'intercept':esc?'escort':sead?'sead':conv?'convoy':csar?'csar':recon?'recon':stl?'stealth':'strike';this.call=pl.call;
     this.player=new Aircraft(pl.type,air?{x:duel?20000:9000,y:duel?6500:5500,z:0,hdg:Math.PI/2,pitch:0.055,speed:250,throttle:0.9,fuel:pl.fuelAir}
       :cold?{x:PARK.x,y:SITES.base.h+TYPES[pl.type].gearH,z:PARK.z,hdg:0,speed:0,throttle:0,gear:true,flaps:true,onGround:true,fuel:pl.fuelRwy}
@@ -601,7 +603,7 @@ class World{
   los(a,b){for(let i=1;i<16;i++){const t=i/16;if(terrainH(lerp(a.x,b.x,t),lerp(a.z,b.z,t))>lerp(a.y,b.y,t))return false;}return true;}
   notched(obs,tgt,ground){if(!(ground||obs.y>tgt.pos.y+200))return false;const l=vnorm(vsub(tgt.pos,obs));
     return Math.abs(vdot(tgt.vel,l))<(this.time-(tgt.lastCM??-99)<4?85:30);}
-  supports(owner,T){if(owner===this.player)return this.lock===T;if(owner===this.sam)return this.sam.alive&&this.sam.tracking;
+  supports(owner,T){if(owner&&owner.remote)return owner.alive;if(owner===this.player)return this.lock===T;if(owner===this.sam)return this.sam.alive&&this.sam.tracking;
     if(this.wing&&owner===this.wing.ac)return owner.alive;if(owner!==this.sam&&this.sams.includes(owner))return owner.alive&&owner.tracking;const ai=this.migAI.find(a=>a.ac===owner);return !!(ai&&owner.alive&&ai.track);}
   launch(spec,owner,target,pos,vel){
     const m=new Missile(spec,owner,target,pos||vadd(owner.pos,vmul(qrot(owner.q,UP),-1.6)),vel||vadd(owner.vel,vmul(qrot(owner.q,UP),-4)));
@@ -610,26 +612,27 @@ class World{
     this.bullets.push({pos:vadd(owner.pos,vmul(f,8)),vel:vadd(owner.vel,vmul(vnorm(v3(f.x+j(),f.y+j(),f.z+j())),mv)),t:0,owner});}
   dispense(ac){
     if(ac===this.player){const w=this.w;if(w.chaff<=0&&w.flare<=0)return;w.chaff=Math.max(0,w.chaff-1);w.flare=Math.max(0,w.flare-1);}
-    ac.lastCM=this.time;this.events.push({type:'cm',pos:ac.pos,vel:ac.vel});
+    ac.lastCM=this.time;this.events.push({type:'cm',pos:ac.pos,vel:ac.vel,ac});
     for(const m of this.missiles){if(!m.alive||m.target!==ac||m.decoy||m.lost)continue;const r=vsub(ac.pos,m.pos),R=vlen(r);if(R>12000)continue;
       let p;const good=m.owner===this.player;
       if(m.s.seeker==='ir')p=(good?0.05:0.22)*(ac.eng>1.02?0.5:1.2);
       else p=(good?0.03:0.06)+(good?0.22:0.42)*sstep(1-Math.abs(vdot(vnorm(ac.vel),vmul(r,1/R))),0.6,0.97);
       if(ac.type==='HELO')p*=0.3;if(ac===this.player){p*=this.d.decoy;if(this.ecm&&m.s.seeker!=='ir')p*=1.35;}if(Math.random()<p)m.decoy={pos:{...ac.pos},vel:vmul(ac.vel,0.3)};}}
   onHit(m,T){
-    this.events.push({type:'boom',pos:T.pos,size:1});
-    if(T===this.player){this.hurt(m.s===MSL.SAM?'sam':'msl',m.s.name);return;}
+    this.events.push({type:'boom',pos:T.pos,size:1});if(m.ghost||T.remote)return;
+    if(T===this.player){this.lastHitBy=m.owner;this.hurt(m.s===MSL.SAM?'sam':'msl',m.s.name);return;}
     if(this.ground.includes(T)){this.killGround(T);return;}
     if(T.side===0){this.hitFriend(T,'msl');return;}
     this.killAir(T);}
   /* friendly aircraft: number two survives one hit, a strike aircraft does not */
+  samTarget(rp){let b=this.player;if(this.coop){let bd=this.player.alive?vdist(this.player.pos,rp):1e12;for(const r of this.remotes)if(r.alive&&!r.onGround){const d=vdist(r.pos,rp);if(d<bd){bd=d;b=r;}}}return b;}
   targetsFor(){const L=[{ac:this.player,w:this.missionId==='escort'?1.15:0.8}];if(this.wing&&this.wing.ac.alive)L.push({ac:this.wing.ac,w:1});
-    for(const k of this.strikers)if(k.ac.alive)L.push({ac:k.ac,w:0.6});if(this.helo&&this.helo.alive)L.push({ac:this.helo,w:0.5});return L.filter(c=>c.ac.alive);}
-  hitFriend(T,how){if(!T.alive||T.type==='TANKER')return;T.hits=(T.hits||0)+1;const two=this.wing&&T===this.wing.ac,helo=T.type==='HELO',name=two?'שתיים':helo?'המסוק':T.label==='S1'?'מוביל אחת':'מוביל שתיים';
+    for(const k of this.strikers)if(k.ac.alive)L.push({ac:k.ac,w:0.6});if(this.coop)for(const r of this.remotes)if(r.alive&&!r.onGround)L.push({ac:r,w:0.8});if(this.helo&&this.helo.alive)L.push({ac:this.helo,w:0.5});return L.filter(c=>c.ac.alive);}
+  hitFriend(T,how){if(!T.alive||T.type==='TANKER'||T.remote)return;if(this.net==='guest'){this.events.push({type:'net',k:'hitf',T,how});return;}T.hits=(T.hits||0)+1;const two=this.wing&&T===this.wing.ac,helo=T.type==='HELO',name=two?'שתיים':helo?'המסוק':T.label==='S1'?'מוביל אחת':'מוביל שתיים';
     if(two&&T.hits<2){this.msg('שתיים: נפגעתי! המטוס עוד טס, ממשיך.');return;}if(helo&&T.hits<2){this.msg('מסוק: נפגענו! עוד באוויר, מאבדים שמן. תוריד אותם ממני!');return;}
     T.alive=false;T.crash='shot';this.events.push({type:'boom',pos:T.pos,size:1.4});this.events.push({type:'kill',e:T});this.stats.lost=(this.stats.lost||0)+1;
     this.msg(two?'שתיים: נפגעתי קשה, נוטש!':`בקר: ${name} הופל.`);if(this.lock===T)this.lock=null;}
-  killAir(T){if(!T.alive)return;T.alive=false;T.crash='shot';this.events.push({type:'kill',e:T});
+  killAir(T){if(!T.alive)return;if(this.net==='guest'&&!T.remote){this.events.push({type:'net',k:'kill',T});return;}T.alive=false;T.crash='shot';this.events.push({type:'kill',e:T});
     if(this.missionId==='train'){this.stats.uav++;}
     else if(T.type==='CM'){this.stats.uav++;this.msg('בקר: טיל שיוט הופל. עבודה יפה.');}
     else if(this.missionId==='stealth'){this.stats.uav++;this.msg(T.stealth?'בקר: הכטב"ם החמקן הופל! עבודה מצוינת.':'בקר: כטב"ם הטעיה הופל. המטרה האמיתית עדיין באוויר, נמוכה.');}
@@ -637,7 +640,7 @@ class World{
     else if(T.type==='UAV'){this.stats.uav++;const left=this.drones.filter(d=>d.alive).length;this.msg(left?`בקר: פגיעה. כטב"ם הופל, נותרו ${left}.`:'בקר: כל הכטב"מים טופלו. המשך לנקודת הכניסה.');}
     else{this.stats.mig++;const n=this.migs.filter(x=>x.alive).length;this.msg(n?`בקר: הפלה! ${this.foeName} ירד. ${n===1?'אחד עדיין':n+' עדיין'} באוויר.`:'בקר: כל מטוסי האויב הופלו. השמיים נקיים.');}
     if(this.lock===T)this.lock=null;}
-  killGround(g){if(!g.alive)return;g.alive=false;this.events.push({type:'gkill',g});const left=this.ground.filter(x=>x.primary&&x.alive).length,id=this.missionId;
+  killGround(g){if(!g.alive)return;if(this.net==='guest'){this.events.push({type:'net',k:'gkill',g});return;}g.alive=false;this.events.push({type:'gkill',g});const left=this.ground.filter(x=>x.primary&&x.alive).length,id=this.missionId;
     if(g.kind==='radar')this.stats.sam=true;
     if(g.primary){this.stats.tgt++;
       if(id==='sead'){this.msg(left?`בקר: מכ"ם הושמד. נותרו ${left} סוללות.`:'בקר: כל הסוללות שותקו. השמיים פתוחים למבנה התקיפה.');if(!this.migsActive&&this.migs.length){this.migsActive=true;this.msg(`בקר: זהירות, זוג ${this.foeName} הוזנק לעברך.`);}}
@@ -647,7 +650,7 @@ class World{
     else if(g.kind==='ship'){this.stats.ship=true;this.msg('בקר: ספינת הטילים נפגעה ושותקה.');}
     else if(g.kind==='radar')this.msg('בקר: מכ"ם הסוללה הושמד. איום הנ"מ הוסר.');
     if(this.gtgt===g)this.gtgt=null;}
-  onBomb(b){
+  onBomb(b){if(b.ghost){this.events.push({type:'boom',pos:b.pos,size:5,ground:true});return;}
     this.events.push({type:'boom',pos:b.pos,size:5,ground:true});const bs=b.owner&&b.owner!==this.player?{soft:45,hard:12}:this.plane.bomb;
     for(const g of this.ground){if(!g.alive)continue;if(vdist(g.pos,b.pos)<(g.kind==='bunker'?bs.hard:bs.soft))this.killGround(g);}}
   /* player actions */
@@ -845,6 +848,7 @@ class World{
     const th=[];const rel=(pos)=>{const d=qrotInv(p.q,vsub(pos,p.pos));return Math.atan2(d.x,-d.z);};
     for(const ai of this.migAI)if(ai.ac.alive&&ai.track&&ai.tgt===p)th.push({sym:ai.sym,brg:rel(ai.ac.pos),lvl:ai.launching?2:1,R:vdist(ai.ac.pos,p.pos)});
     for(const q of this.sams)if(q.alive&&q.search)th.push({sym:q.sym,brg:rel(q.pos),lvl:q.inFlight.length?2:q.tracking?1:0,R:vdist(q.pos,p.pos)});
+    for(const t of this.netThreats||[])th.push({sym:t.sym,brg:rel(t.pos),lvl:t.lvl,R:vdist(t.pos,p.pos)});
     let mw=null;
     for(const m of this.missiles)if(m.alive&&m.target===p&&!m.lost){const R=vdist(m.pos,p.pos);if(R<25000){th.push({sym:'M',brg:rel(m.pos),lvl:3,R});if(!mw||R<mw.R)mw={R,brg:rel(m.pos),decoy:!!m.decoy};}}
     this.threats=this.dmgRwr||!this.power?[]:th;this.mwarn=mw;
@@ -856,6 +860,8 @@ class World{
       this.msg(head+({intercept:'פנה מזרחה לנקודה 1, הכטב"מים נמוכים, חפש אותם במכ"ם.',sead:'פנה לנקודה 1. שלוש סוללות לפניך, הטיל ננעל רק על מכ"ם שמשדר.',convoy:'השיירה על הציר מזרחה לך. פצצת לייזר או תותח.',csar:'המסוק לפניך, נמוך. הדבק אותו ושמור עליו.',recon:'פנה לאתר הצילום הראשון.',stealth:'הכטב"ם החמקן נמוך מאוד. אתן לך כיוון אליו.'}[id]||'פנה לנקודה 1, ארבעה כטב"מי תקיפה נעים מערבה בגובה נמוך. רשאי אש.'));}
     if(this.missionId==='train'){this.train();return;}
     const lost=()=>{if(!p.alive){if(!this.over)this.over={win:false,title:'המטוס אבד',reason:p.crash};return true;}if(!f.bingo&&p.fuel<this.bingo){f.bingo=true;this.msg('בינגו דלק.');}return false;};
+    if(this.net==='guest'&&!this.pvp){lost();return;}
+    if(this.pvp){if(lost())return;if(this.remotes.length&&this.remotes.every(r=>!r.alive)){this.stopT+=0.5;if(this.stopT>2&&!this.over)this.over={win:true,title:'ניצחת בקרב',reason:this.remotes.length>1?'כל היריבים הופלו.':`${this.remotes[0].name||'היריב'} הופל.`};}return;}
     if(this.missionId==='naval'){if(lost())return;const left=this.ground.filter(g=>g.primary&&g.alive).length;
       if(!this.migsActive&&this.migs.length&&Math.hypot(p.pos.x-this.fleet.x,p.pos.z-this.fleet.z)<60000){this.migsActive=true;this.msg(`בקר: זוג ${this.foeName} שומר על הספינות, פונה אליך.`);}
       if(!left){this.wp=1;if(Math.hypot(p.pos.x,p.pos.z)<25000||p.onGround){this.stopT+=0.5;if(this.stopT>2&&!this.over)this.over={win:true,title:'הצי הושמד',reason:`שלוש ספינות הטילים טובעו, ${S.shots} טילים שוגרו.`};}return;}
@@ -996,21 +1002,23 @@ class World{
     if(f.done){this.stopT+=0.5;if(this.stopT>5&&!this.over)this.over=L==='basic'?{win:true,title:'ההדרכה הושלמה',reason:'טיפוס, פנייה, נעילה, שיגור טיל, תותח ונצירה.'}:{win:true,title:LES[L].win,reason:LES[L].why};}}
   step(dt){
     this.time+=dt;const p=this.player;
-    this.systems(dt);this.joinStep(dt);p.step(dt);for(const k of this.friends)if(k.type==='TANKER')k.step(dt);if(this.helo)this.helo.step(dt,this);
+    this.systems(dt);this.joinStep(dt);p.step(dt);for(const k of this.friends)if(k.type==='TANKER')k.step(dt);if(this.helo&&this.net!=='guest')this.helo.step(dt,this);
+    if(this.net==='guest'){for(const L of[this.migs,this.drones,this.strikers.map(k=>k.ac)])for(const m of L)if(m.alive&&m.vel)m.pos=vadd(m.pos,vmul(m.vel,dt));if(this.helo&&this.helo.vel)this.helo.pos=vadd(this.helo.pos,vmul(this.helo.vel,dt));}
+    else{
     for(const ai of this.migAI)ai.update(dt,this);
     for(const m of this.migs){m.step(dt);if(!m.alive&&m.crash&&m.crash!=='shot'&&m.crash!=='rtb'){m.crash='shot';this.killAir(Object.assign(m,{alive:true}));}}
     for(const d of this.drones)d.step(dt);
-    for(const q of this.sams)q.update(dt,this);if(this.wing)this.wing.update(dt,this);for(const k of this.strikers)k.update(dt,this);
+    for(const q of this.sams)q.update(dt,this);for(const k of this.strikers)k.update(dt,this);}if(this.wing)this.wing.update(dt,this);
     for(const g of this.ground)if(g.alive&&(g.kind==='truck'||g.mob)){g.pos.x+=g.vel.x*dt;g.pos.z+=g.vel.z*dt;g.pos.y=terrainH(g.pos.x,g.pos.z);if(g.kind==='ship'){const z0=g.z0??0,amp=g.amp??15000;if(Math.abs(g.pos.z-z0)>amp&&(g.pos.z-z0)*g.vel.z>0)g.vel.z=-g.vel.z;}}
     for(const m of this.missiles)if(m.alive)m.step(dt,this);
     for(const b of this.bombs)if(b.alive)b.step(dt,this);
     for(const b of this.bullets){b.t+=dt;const np=vadd(b.pos,vmul(b.vel,dt));b.vel.y-=G0*dt;
-      const tg=b.owner===p?this.air:[p];
+      const tg=b.ghost?[]:b.owner===p?this.air:this.coop&&this.net==='host'?[p,...this.remotes]:[p];
       for(const e of tg){if(!e.alive)continue;const r=vsub(e.pos,b.pos);if(Math.abs(r.x)+Math.abs(r.y)+Math.abs(r.z)>120)continue;
         const sv=vsub(np,b.pos),tt=clamp(vdot(r,sv)/vdot(sv,sv),0,1);
         if(vdist(vadd(b.pos,vmul(sv,tt)),e.pos)<(e.type==='UAV'?5:8)){b.t=9;this.events.push({type:'spark',pos:e.pos});
-          if(e===p)this.hurt('gun');else{e.hp-=e.type==='UAV'?1:10;if(e.hp<=0){this.stats.gunKill=(this.stats.gunKill||0)+1;this.events.push({type:'boom',pos:e.pos,size:1});this.killAir(e);}}}}
-      if(b.owner===p&&b.t<9)for(const g of this.ground){if(!g.alive||(g.kind!=='truck'&&g.kind!=='ship'))continue;const r=vsub(g.pos,b.pos);if(Math.abs(r.x)+Math.abs(r.y)+Math.abs(r.z)>140)continue;
+          if(e===p)this.hurt('gun');else if(e.remote)this.events.push({type:'net',k:'hit',T:e,how:'gun'});else{e.hp-=e.type==='UAV'?1:10;if(e.hp<=0){this.stats.gunKill=(this.stats.gunKill||0)+1;this.events.push({type:'boom',pos:e.pos,size:1});this.killAir(e);}}}}
+      if(b.owner===p&&b.t<9&&!b.ghost)for(const g of this.ground){if(!g.alive||(g.kind!=='truck'&&g.kind!=='ship'))continue;const r=vsub(g.pos,b.pos);if(Math.abs(r.x)+Math.abs(r.y)+Math.abs(r.z)>140)continue;
         const sv=vsub(np,b.pos),tt=clamp(vdot(r,sv)/vdot(sv,sv),0,1);if(vdist(vadd(b.pos,vmul(sv,tt)),vadd(g.pos,v3(0,1.5,0)))<(g.kind==='ship'?16:7)){b.t=9;this.events.push({type:'spark',pos:g.pos});if(--g.hp<=0){this.events.push({type:'boom',pos:g.pos,size:1.5,ground:true});this.killGround(g);}}}
       b.pos=np;if(b.t<9&&np.y<terrainH(np.x,np.z))b.t=9;}
     if(this.bullets.length&&this.bullets[0].t>2.2)this.bullets=this.bullets.filter(b=>b.t<=2.2);

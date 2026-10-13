@@ -20,6 +20,8 @@ import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
+import android.webkit.PermissionRequest;
+import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
@@ -52,6 +54,7 @@ public class MainActivity extends Activity {
     /* voice commands: the phone's speech recogniser, in Hebrew; results go back to the page as text */
     private SpeechRecognizer recognizer;
     private boolean listenAfterGrant;
+    private PermissionRequest pendingMic;
 
     @Override
     protected void onCreate(Bundle state) {
@@ -70,6 +73,21 @@ public class MainActivity extends Activity {
         s.setUserAgentString(s.getUserAgentString() + " HaniaFlightApp");
 
         web.addJavascriptInterface(new Bridge(), "HFNative");
+        /* the in-game radio (multiplayer push-to-talk) asks the page for the microphone; pass that through to Android */
+        web.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public void onPermissionRequest(final PermissionRequest request) {
+                runOnUiThread(() -> {
+                    boolean audio = false;
+                    for (String r : request.getResources()) if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(r)) audio = true;
+                    if (!audio) { request.deny(); return; }
+                    if (Build.VERSION.SDK_INT >= 23 && checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                        pendingMic = request;
+                        requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, 8);
+                    } else request.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE});
+                });
+            }
+        });
         web.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
@@ -251,6 +269,12 @@ public class MainActivity extends Activity {
     @Override
     public void onRequestPermissionsResult(int code, String[] perms, int[] results) {
         super.onRequestPermissionsResult(code, perms, results);
+        if (code == 8) {
+            boolean ok8 = results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED;
+            if (pendingMic != null) { if (ok8) pendingMic.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE}); else pendingMic.deny(); }
+            pendingMic = null;
+            return;
+        }
         if (code != 7) return;
         boolean ok = results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED;
         if (ok && listenAfterGrant) startListening();

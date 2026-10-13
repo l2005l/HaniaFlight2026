@@ -1,0 +1,48 @@
+# Deploys the multiplayer room server (server/) to Cloudflare Workers and publishes its address in mp.json.
+# Needs two repository secrets: CLOUDFLARE_API_TOKEN (template "Edit Cloudflare Workers") and CLOUDFLARE_ACCOUNT_ID.
+name: Multiplayer server
+on:
+  push:
+    branches: [main]
+    paths: ['server/**', '.github/workflows/mp-server.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check secrets
+        id: s
+        env:
+          T: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          A: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -n "$T" ] && [ -n "$A" ]; then echo "ok=1" >> "$GITHUB_OUTPUT"
+          else echo "::warning::Add the CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID secrets to deploy the multiplayer server"; fi
+      - uses: actions/setup-node@v4
+        if: steps.s.outputs.ok
+        with:
+          node-version: 22
+      - name: Deploy
+        if: steps.s.outputs.ok
+        working-directory: server
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npm install --no-audit --no-fund
+          npx wrangler deploy 2>&1 | tee deploy.log
+          URL=$(grep -oE 'https://[a-z0-9.-]+\.workers\.dev' deploy.log | head -1)
+          if [ -z "$URL" ]; then echo "::error::No workers.dev address in the deploy output"; exit 1; fi
+          curl -fsS "$URL/health"
+          printf '{"url":"%s"}\n' "${URL/https:/wss:}" > ../mp.json
+          cat ../mp.json
+      - name: Publish the server address
+        if: steps.s.outputs.ok
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add mp.json
+          if git diff --cached --quiet; then echo "mp.json unchanged"; else git commit -m "mp.json: multiplayer server address" && git push; fi
