@@ -670,7 +670,9 @@ for(const ev of['pointerup','pointercancel'])glc.addEventListener(ev,e=>{if(e.po
     ray.setFromCamera(rayV,camera);const h=ray.intersectObjects(cockpit.userData.hits,false)[0];if(h){doSwitch(h.object.userData.sw);buzz(12);}return;}
   /* looking well down at the panel holds the view there; looking back up releases it */
   if(!look.panel&&look.pitch<-0.36)look.panel=true;else if(look.panel&&look.pitch>(touchOn?-0.55:-0.3))look.panel=false;});
-$('lookBack').onclick=()=>{look.panel=false;};$('nvgBtn').onclick=()=>act('nvg');$('mapBtn').onclick=()=>act('map');$('ecmBtn').onclick=()=>act('ecm');$('wingBtn').onclick=()=>act('wing');$('padBtn').onclick=()=>act('padlock');$('hookBtn').onclick=()=>act('hook');$('micBtn').onclick=()=>{if(voice.busy)micStop();else listen();};$('joinBtn').onclick=()=>act('join');$('wcamBtn').onclick=()=>act('wcam');$('relightBtn').onclick=()=>act('relight');
+$('lookBack').onclick=()=>{look.panel=false;};$('nvgBtn').onclick=()=>act('nvg');$('mapBtn').onclick=()=>act('map');$('ecmBtn').onclick=()=>act('ecm');$('wingBtn').onclick=()=>act('wing');$('padBtn').onclick=()=>act('padlock');$('hookBtn').onclick=()=>act('hook');$('micBtn').onclick=()=>{if(voice.busy)micStop();else listen();};$('joinBtn').onclick=()=>act('join');const chipsOpen=o=>{const c=$('chips');c.dataset.open=o?'1':'';$('moreBtn').textContent=o?'סגור':'עוד';$('moreBtn').setAttribute('aria-expanded',o?'true':'false');clearTimeout(chipsOpen.t);if(o)chipsOpen.t=setTimeout(()=>chipsOpen(false),10000);};
+$('moreBtn').onclick=()=>chipsOpen($('chips').dataset.open!=='1');for(const e of document.querySelectorAll('#chips .gen'))e.addEventListener('click',()=>setTimeout(()=>chipsOpen(false),150));
+$('wcamBtn').onclick=()=>act('wcam');$('relightBtn').onclick=()=>act('relight');
 addEventListener('keydown',e=>{
   if(state==='photo'&&(e.code==='Escape'||e.code==='KeyP')){endPhoto();return;}
   if(state==='pause'&&(e.code==='Escape'||e.code==='KeyP')){resume();return;}
@@ -885,6 +887,12 @@ function pause(){if(state!=='fly'||xr.on)return;hush();micStop();state='pause';s
 function resume(){tilt.p0=null;state='fly';show('pause',false);last=performance.now();if(opts.voice==='always')setTimeout(listen,400);}
 function toMenu(){if(window.__hfPending){location.reload();return;}hush();state='menu';dailyEnd();show('pause',false);show('debrief',false);show('menu',true);$('app').dataset.fly='';newGame('runway',true);}
 let lastMode='runway';
+/* menu tabs: one kind of choice per screen; the menu always opens on the flight tab */
+const menuTab=t=>{for(const b of document.querySelectorAll('#tabs button'))b.setAttribute('aria-selected',b.dataset.tab===t?'true':'false');for(const d of document.querySelectorAll('#menu .tab'))d.hidden=d.dataset.tab!==t;$('menu').scrollTop=0;};
+for(const b of document.querySelectorAll('#tabs button'))b.onclick=()=>menuTab(b.dataset.tab);
+menuTab('fly');
+/* mission briefs show the story; the how-to steps open on request */
+for(const ol of document.querySelectorAll('#menu .brief ol.steps')){const d=document.createElement('details');d.className='more';d.innerHTML='<summary>איך עושים את זה</summary>';ol.replaceWith(d);d.appendChild(ol);}
 $('startRwy').onclick=()=>{camp.on=false;dailyEnd();start(lastMode='runway');};$('startAir').onclick=()=>{camp.on=false;dailyEnd();start(lastMode='air');};$('startCold').onclick=()=>{camp.on=false;dailyEnd();start(lastMode='cold');};
 $('ejectBtn').onclick=()=>{resume();if(W.eject()){look.panel=false;mapOn=false;}};$('resume').onclick=resume;$('restart').onclick=()=>start(lastMode);$('quit').onclick=toMenu;$('again').onclick=()=>start(lastMode);$('back').onclick=toMenu;
 /* pilot logbook, kept on this device */
@@ -1131,6 +1139,12 @@ function syncScene(dt){
   cockpit.visible=inPit;const cm=inPit?(look.panel?2:0):1;if(cm!==camMode){camMode=cm;layout();$('touch').dataset.panel=cm===2?'1':'';$('lookBack').hidden=cm!==2;}
   {const nb=$('nvgBtn'),h=!(state==='fly'&&tod==='night');if(nb.hidden!==h)nb.hidden=h;
     const hb=$('hookBtn'),hh=!(p.gear&&p.alive&&(p.brakeK<1||W.flags.airborne||p.hook)&&(p.agl<1500||p.onGround));if(hb.hidden!==hh)hb.hidden=hh;if(!hh){const t=p.hook?'וו: למטה':'וו בלימה';if(hb.textContent!==t)hb.textContent=t;hb.dataset.on=p.hook?'1':'';}
+    {const pb=$('padBtn'),pc=!!(W.lock&&W.lock.alive!==false);if(pb.classList.contains('ctx')!==pc)pb.classList.toggle('ctx',pc);
+      /* touch: landing switches only near the ground or when set up for landing; weapon buttons only in the air */
+      const low=p.onGround||p.gearPos>0.05||!!p.flaps||p.brakePos>0.5||p.agl<1200||p.V<110;
+      for(const id of['tbGear','tbFlaps','tbBrk']){const e=$(id);if(e.classList.contains('off')===low)e.classList.toggle('off',!low);}
+      for(const id of['tbPickle','tbGun','tbTgt','tbWpn','tbCm']){const e=$(id);if(e.classList.contains('off')!==p.onGround)e.classList.toggle('off',p.onGround);}
+      const st=(id,v)=>{const e=$(id),x=v?'1':'';if(e.dataset.st!==x)e.dataset.st=x;};st('tbGear',p.gearPos>0.5);st('tbFlaps',!!p.flaps);st('tbBrk',p.brakePos>0.5);}
     {const mb=$('micBtn'),mh=!(opts.voice!=='off'&&voice.ok);if(mb.hidden!==mh)mb.hidden=mh;}{const cb=$('wcamBtn'),ch=!(p.alive&&!!camWpn());if(ch)wcam=null;if(cb.hidden!==ch)cb.hidden=ch;if(!ch){const t=wpnOn(podTgt())?'תעל: מהמטוס':'מצלמת החימוש';if(cb.textContent!==t)cb.textContent=t;}}const jb=$('joinBtn'),jh=!(W.tanker&&W.sys.arDoor&&p.alive&&!p.onGround&&W.ar.state!=='contact'&&(W.arJoin||W.ar.dist>45));if(jb.hidden!==jh)jb.hidden=jh;if(!jh){const t=W.arJoin?'מתקרב… (ביטול)':'התקרבות אוטומטית';if(jb.textContent!==t)jb.textContent=t;}
     const rb=$('relightBtn'),rh=!(p.alive&&!p.onGround&&p.flame&&p.flame.some(Boolean));if(rb.hidden!==rh)rb.hidden=rh;const ch=$('chips'),hc=state!=='fly'||cm===2;if(ch.hidden!==hc)ch.hidden=hc;{const wb=$('wingBtn'),hw=!(W&&W.wing);if(wb.hidden!==hw)wb.hidden=hw;if(!hw){const t='שתיים: '+{form:'במבנה',attack:'תוקף',cover:'ציד חופשי'}[W.wing.mode];if(wb.textContent!==t)wb.textContent=t;}}if(W&&(!!W.ecm)!==($('ecmBtn').dataset.on==='1'))$('ecmBtn').dataset.on=W.ecm?'1':'';if(padlock!==($('padBtn').dataset.on==='1'))$('padBtn').dataset.on=padlock?'1':'';if(state!=='fly'&&nvg)setNVG(false);}
   if(inPit){const cs=cockpit.userData.sw;for(const id in cs){const v=swState(id),o=cs[id],k=o.kind,ease=Math.min(1,Math.max(dt,0.016)*14),since=clock-o.clickT;
@@ -1396,10 +1410,10 @@ function drawHUD(){tgpR=null;if(W.gtgt)podLast=W.gtgt;
     else{ctx=cv.r.ctx;mfdRadar(0,0,256);cv.r.tex.needsUpdate=true;ctx=cv.t.ctx;mfdRwr(0,0,256);cv.t.tex.needsUpdate=true;ctx=cv.e.ctx;mfdEng(0,0,256,160);cv.e.tex.needsUpdate=true;}
     ctx=main;u=su;mfdSolid=false;}
   if(view===1||touchOn){const pad=10*u,y0=touchOn?pad+2+(document.fullscreenElement||fsMode?0:22):vh-ms-pad;(ag?mfdTgp:mfdRadar)(pad,y0,ms);mfdRwr(vw-ms-pad,y0,ms);
-    if(touchOn){const ty2=y0+ms+16*u;ctx.fillStyle='rgba(4,14,9,0.62)';ctx.fillRect(pad-4*u,ty2-10*u,ms+8*u,36*u);ctx.fillRect(vw-pad-ms-4*u,ty2-10*u,ms+8*u,36*u);
-      txt('THR '+thr,pad,ty2,'left',13,p.eng>1.01?AMB:HUDC);let tx=pad;
-      for(const q of[['GEAR',p.gearPos>0.9,p.gearPos>0.05&&p.gearPos<=0.9],['FLAP',p.flaps],['BRK',p.brakePos>0.5]]){txt(q[0],tx,ty2+17*u,'left',12,q[2]?AMB:q[1]?HUDC:'rgba(116,255,150,0.3)');tx+=46*u;}
-      txt('FUEL '+Math.round(p.fuel),vw-pad,ty2,'right',13,p.fuel<W.bingo?AMB:HUDC);txt(`120:${w.aim120} PY:${w.python} SP:${w.spice}`,vw-pad,ty2+17*u,'right',12);}
+    if(touchOn){const ty2=y0+ms+16*u;ctx.fillStyle='rgba(4,14,9,0.62)';ctx.fillRect(pad-4*u,ty2-10*u,ms+8*u,19*u);ctx.fillRect(vw-pad-ms-4*u,ty2-10*u,ms+8*u,19*u);
+      /* one line under each screen: throttle, and fuel; gear, flaps and brake show on their own buttons */
+      txt('THR '+thr+(p.gearPos>0.05&&p.gearPos<0.9?'  GEAR':''),pad,ty2,'left',13,p.eng>1.01||(p.gearPos>0.05&&p.gearPos<0.9)?AMB:HUDC);
+      txt('FUEL '+Math.round(p.fuel),vw-pad,ty2,'right',13,p.fuel<W.bingo?AMB:HUDC);}
     else{const bw=Math.min(340*u,vw-2*(ms+pad)-16*u);if(bw>150*u)mfdEng(cx-bw/2,vh-pad-80*u,bw,80*u);}}
   if(touchOn&&(clock*4|0)!==drawHUD.a){drawHUD.a=clock*4|0;$('tbArm').dataset.on=W.arm?'1':'';}
   /* sun glare: looking towards the sun washes the view out */

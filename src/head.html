@@ -16,8 +16,8 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16p
 #gl,#hud{position:absolute;inset:0;width:100%;height:100%;display:block}
 #hud{pointer-events:none}
 .sheet{z-index:5;position:absolute;inset-block:0;inset-inline-start:0;width:min(30rem,100%);overflow-y:auto;touch-action:pan-y;
-  padding-block:28px;padding-inline:22px;background:var(--panel);border-inline-end:1px solid var(--line);
-  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);display:flex;flex-direction:column;gap:22px}
+  padding-block:18px;padding-inline:20px;background:var(--panel);border-inline-end:1px solid var(--line);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);display:flex;flex-direction:column;gap:16px}
 .eyebrow{font-size:.82rem;letter-spacing:.08em;color:var(--sand);font-weight:700}
 h1{font-family:var(--display);font-weight:400;font-size:clamp(2.3rem,8vw,3.5rem);line-height:1;margin:0 0 8px;text-align:end;letter-spacing:-.01em}
 h2{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:0;text-wrap:balance}
@@ -61,6 +61,21 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .seg span{color:var(--dim);font-size:.9rem;margin-inline-end:6px;min-width:4.6rem}
 .seg button{padding:6px 18px}
 .seg button[aria-pressed="true"]{border-color:var(--sand);color:var(--sand);background:rgba(210,180,124,.1)}
+/* menu: tabs on top, start buttons docked at the bottom, so each screen holds one kind of choice */
+#tabs{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;position:sticky;top:-18px;z-index:2;background:#11181b;padding-block:6px;margin-block:-6px;border-bottom:1px solid var(--line)}
+#tabs button{padding:7px 0;font-size:.86rem;font-weight:600;border-color:transparent;color:var(--dim);white-space:nowrap}
+#tabs button[aria-selected="true"]{color:var(--sand);border-color:var(--sand);background:rgba(210,180,124,.08)}
+.tab{display:flex;flex-direction:column;gap:16px}
+.tab[hidden]{display:none}
+#dock{position:sticky;bottom:-18px;margin-top:auto;margin-bottom:-18px;background:#11181b;padding-block:10px 14px;display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);z-index:2}
+#dock .acts{flex-wrap:nowrap}#dock .acts button{padding:10px 12px;white-space:nowrap}#dock .acts button.go{flex:1 1 auto}
+#dock #loading,#dock #update{margin:0}
+details.more summary{font-weight:600;font-size:.88rem;color:var(--sand);padding-block:0}
+details.more[open] summary{margin-bottom:6px}
+#menu header h1{font-size:clamp(1.9rem,6vw,2.6rem);margin-bottom:4px}
+@media (max-height:500px){#menu header{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-direction:row-reverse}#menu header h1{font-size:1.5rem;margin:0}}
+#menu .seg button{padding:5px 12px}
+#menu .seg{gap:6px}
 .keys{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:.93rem;align-items:baseline}
 .keys kbd{font-family:var(--mono);font-size:.82rem;direction:ltr;text-align:start;color:var(--hud);white-space:nowrap}
 details summary{cursor:pointer;font-weight:700;padding-block:4px}
@@ -105,6 +120,13 @@ details[open] summary{margin-bottom:10px}
 #chips button{background:rgba(8,12,14,.6);padding:4px 12px;font-size:.78rem;white-space:nowrap}
 #chips button[data-on="1"]{border-color:var(--sand);color:var(--sand)}
 #chips button.warn{border-color:#ff5c4f;color:#ffd0c8;animation:blinkw 1s steps(2) infinite}@keyframes blinkw{50%{background:rgba(120,20,10,.7)}}
+#chips:not([data-open="1"]) .gen:not(.ctx){display:none}
+#chips button.gen[hidden]{display:none}
+#moreBtn{color:var(--dim)}#chips[data-open="1"] #moreBtn{border-color:var(--sand);color:var(--sand)}
+@media (pointer:fine){#chips{top:44px;left:auto;transform:none;inset-inline-start:16px;flex-direction:column;align-items:flex-start;gap:4px}}
+.tb button[data-st="1"]{border-color:var(--sand);color:var(--sand)}
+.tb button.off{display:none}
+#radio{font-size:.9rem;line-height:1.35}
 #touch[data-big="1"] .tb{grid-template-columns:repeat(2,66px)}
 #touch[data-big="1"] .tb button{font-size:.9rem}
 #app[data-fly="1"] #touch[data-on="1"][data-big="1"]{height:150px;grid-template-columns:140px auto 1fr auto 56px}
@@ -149,15 +171,14 @@ details[open] summary{margin-bottom:10px}
   #lookBack{top:8px;bottom:auto}
   #chips{top:6px;left:124px;transform:none;flex-direction:column;gap:4px}
   #chips button{padding:3px 9px;font-size:.72rem}
-  #app[data-big="1"] #radio{bottom:164px;max-width:calc(100% - 24px)}
   #app[data-fly="1"] #obj{display:none}
-  #radio{top:auto;bottom:8px;inset-inline:auto;left:50%;transform:translateX(-50%);width:max-content;max-width:calc(100% - 440px);font-size:.78rem;line-height:1.3;text-align:center;padding:3px 8px}
+  #radio{top:50px;bottom:auto;inset-inline:auto;left:50%;transform:translateX(-50%);width:max-content;max-width:min(26rem,calc(100% - 300px));font-size:.78rem;line-height:1.3;text-align:center;padding:3px 8px}
 }
 @media (pointer:coarse) and (max-width:620px){
   #app[data-fly="1"] #touch[data-on="1"]{grid-template-columns:92px auto 1fr auto 40px;gap:4px;inset-inline:8px}
   .tb{grid-template-columns:repeat(2,44px)}
   .tb button{font-size:.68rem}
-  #radio{bottom:136px;max-width:calc(100% - 24px)}
+  #radio{max-width:calc(100% - 24px);top:150px}
 }
 @media (prefers-reduced-motion:reduce){#radio{transition:none}}
 </style>
@@ -168,7 +189,7 @@ details[open] summary{margin-bottom:10px}
   <div id="radio" aria-live="polite"></div>
   <div id="toast" role="status" aria-live="polite"></div>
   <button id="lookBack" hidden>חזרה למבט קדימה</button>
-  <div id="chips" hidden><button id="mapBtn">מפה</button><button id="ecmBtn">שיבוש</button><button id="wingBtn" hidden>שתיים</button><button id="padBtn">מבט למטרה</button><button id="nvgBtn" hidden>משקפת לילה</button><button id="micBtn" hidden>פקודה קולית</button><button id="wcamBtn" hidden>מצלמת החימוש</button><button id="joinBtn" hidden>התקרבות אוטומטית</button><button id="hookBtn" hidden>וו בלימה</button><button id="relightBtn" class="warn" hidden>התנעה באוויר</button></div>
+  <div id="chips" hidden><button id="moreBtn" aria-expanded="false">עוד</button><button class="gen" id="mapBtn">מפה</button><button class="gen" id="ecmBtn">שיבוש</button><button class="gen" id="wingBtn" hidden>שתיים</button><button class="gen" id="padBtn">מבט למטרה</button><button class="gen" id="nvgBtn" hidden>משקפת לילה</button><button class="gen" id="micBtn" hidden>פקודה קולית</button><button id="wcamBtn" hidden>מצלמת החימוש</button><button id="joinBtn" hidden>התקרבות אוטומטית</button><button id="hookBtn" hidden>וו בלימה</button><button id="relightBtn" class="warn" hidden>התנעה באוויר</button></div>
   <div id="check" hidden>
     <div class="chead"><b>רשימת תיוג להתנעה</b><button id="autoStart">התנעה אוטומטית</button></div>
     <ol id="checkList"></ol>
@@ -195,14 +216,10 @@ details[open] summary{margin-bottom:10px}
       <h1 dir="ltr">HaniaFlight</h1>
       <div id="unit" class="eyebrow">F-15I רעם · טייסת 69 · הפטישים</div>
     </header>
-    <div id="pilotBox">
-      <canvas id="pEmblem" width="96" height="96" aria-hidden="true"></canvas>
-      <div class="pcol">
-        <div id="pRank"></div>
-        <div class="prow"><input id="pName" maxlength="18" placeholder="שם הטייס" aria-label="שם הטייס"><input id="pCall" maxlength="10" placeholder="אות קריאה, למשל ברק" aria-label="אות קריאה"></div>
-        <div class="prow" id="pEmb" role="group" aria-label="סמל הזנב"></div>
-      </div>
-    </div>
+    <nav id="tabs" role="tablist" aria-label="תפריט">
+      <button role="tab" data-tab="fly">טיסה</button><button role="tab" data-tab="camp">מערכה</button><button role="tab" data-tab="prep">הכנה</button><button role="tab" data-tab="set">הגדרות</button><button role="tab" data-tab="pilot">טייס</button><button role="tab" data-tab="help">מדריך</button>
+    </nav>
+    <div class="tab" data-tab="fly">
     <div class="seg" role="group" aria-label="משימה">
       <span>משימה</span>
       <button id="mStrike" data-opt="mission" data-val="strike">פטיש ברזל</button>
@@ -217,6 +234,13 @@ details[open] summary{margin-bottom:10px}
       <button id="mDuel" data-opt="mission" data-val="duel">קרב אוויר</button>
       <button id="mTanker" data-opt="mission" data-val="tanker">תדלוק אווירי</button>
       <button id="mTrain" data-opt="mission" data-val="train">הדרכה</button>
+    </div>
+    <div class="seg" role="group" aria-label="מטוס">
+      <span>מטוס</span>
+      <button id="pF15" data-opt="plane" data-val="F15I">F-15I רעם</button>
+      <button id="pF16" data-opt="plane" data-val="F16I">F-16I סופה</button>
+      <button id="pF35" data-opt="plane" data-val="F35I">F-35I אדיר</button>
+      <button id="pF15C" data-opt="plane" data-val="F15C">F-15 בז</button>
     </div>
     <div class="seg" role="group" aria-label="זירה">
       <span>זירה</span>
@@ -235,13 +259,6 @@ details[open] summary{margin-bottom:10px}
       <button data-opt="isrBase" data-val="nevatim">נבטים</button>
       <button data-opt="isrBase" data-val="ramon">רמון</button>
       <button data-opt="isrBase" data-val="ovda">עובדה</button>
-    </div>
-    <div class="seg" role="group" aria-label="מטוס">
-      <span>מטוס</span>
-      <button id="pF15" data-opt="plane" data-val="F15I">F-15I רעם</button>
-      <button id="pF16" data-opt="plane" data-val="F16I">F-16I סופה</button>
-      <button id="pF35" data-opt="plane" data-val="F35I">F-35I אדיר</button>
-      <button id="pF15C" data-opt="plane" data-val="F15C">F-15 בז</button>
     </div>
     <div id="briefStrike" class="brief">
       <h2>מבצע פטיש ברזל</h2>
@@ -345,20 +362,6 @@ details[open] summary{margin-bottom:10px}
       <h2>קרב אוויר</h2>
       <p>אתה באוויר, בגובה 21,000 רגל. זוג מיג-29 מולך במרחק 45 ק"מ, חמוש בטילי מכ"ם וטילים תרמיים. בלי נ"מ ובלי מטרות קרקע: הפל את שניהם לפני שיפילו אותך.</p>
     </div>
-    <div id="update" role="status" aria-live="polite" hidden>
-      <span id="updText">מוריד עדכון חדש…</span>
-      <div class="bar"><i id="updBar"></i></div>
-      <button id="updNow" hidden>עדכן עכשיו</button>
-    </div>
-    <p id="loading" aria-live="polite"><span id="loadText">טוען את הזירה…</span><span class="bar"><i></i></span></p>
-    <p id="loadErr" class="err" hidden>לא ניתן להפעיל את מנוע התלת־ממד. נדרש דפדפן עם WebGL וחיבור לרשת.</p>
-    <div class="acts">
-      <button id="startRwy" class="go">המראה מהמסלול</button>
-      <button id="startCold">התנעה מהדת"ק</button>
-      <button id="startAir">התחלה באוויר</button>
-      <button id="install" hidden>התקנה כאפליקציה</button>
-      <a id="apk" class="btn" href="https://github.com/l2005l/HaniaFlight2026/releases/download/android-latest/HaniaFlight.apk" hidden>הורדת האפליקציה לאנדרואיד</a>
-    </div>
     <div class="seg" id="foeRow" role="group" aria-label="מטוסי האויב" hidden>
       <span>יריב</span>
       <button data-opt="foe" data-val="mig29">2 × מיג-29</button>
@@ -370,6 +373,8 @@ details[open] summary{margin-bottom:10px}
       <button data-opt="wing" data-val="on">טס איתך</button>
       <button data-opt="wing" data-val="off">לבד</button>
     </div>
+    </div>
+    <div class="tab" data-tab="camp" hidden>
     <div id="campBox" class="brief">
       <h2>מערכה</h2>
       <p><b id="campStage"></b> <span id="campText"></span></p>
@@ -388,6 +393,8 @@ details[open] summary{margin-bottom:10px}
       <p class="note" id="dailyBest"></p>
       <div class="acts"><button id="dailyGo" class="go">לאתגר של היום</button></div>
     </div>
+    </div>
+    <div class="tab" data-tab="prep" hidden>
     <div class="seg" role="group" aria-label="רמת קושי">
       <span>רמת קושי</span>
       <button id="dEasy" data-opt="diff" data-val="easy">קל</button>
@@ -399,14 +406,6 @@ details[open] summary{margin-bottom:10px}
       <button id="todDay" data-opt="tod" data-val="day">יום</button>
       <button id="todDusk" data-opt="tod" data-val="dusk">שקיעה</button>
       <button id="todNight" data-opt="tod" data-val="night">לילה</button>
-    </div>
-    <div id="prepBox" class="brief">
-      <h2>הכנת המטוס</h2>
-      <div class="seg" role="group" aria-label="דלק פנימי"><span>דלק פנימי</span><button data-opt="fuelPct" data-val="60">60%</button><button data-opt="fuelPct" data-val="80">80%</button><button data-opt="fuelPct" data-val="100">מלא</button></div>
-      <div class="seg" role="group" aria-label="מכלים נתיקים"><span>מכלים נתיקים</span><button data-opt="tanks" data-val="0">בלי</button><button data-opt="tanks" data-val="1">1</button><button data-opt="tanks" data-val="2">2</button><button data-opt="tanks" data-val="3">3</button></div>
-      <div class="seg" role="group" aria-label="טילי אוויר־אוויר"><span>טילי אוויר־אוויר</span><button data-opt="aam" data-val="full">תצורה מלאה</button><button data-opt="aam" data-val="light">חצי, קל יותר</button></div>
-      <p id="towLine" class="note"></p>
-      <p class="note">מכל נתיק מוסיף דלק, משקל וגרר. משליכים אותו במקש J (לפני הפצצות). במשימות תדלוק והדרכה אין מכלים.</p>
     </div>
     <div class="seg" role="group" aria-label="מזג אוויר">
       <span>מזג אוויר</span>
@@ -427,6 +426,20 @@ details[open] summary{margin-bottom:10px}
       <button data-opt="bomb" data-val="jdam">לוויין (JDAM)</button>
       <button data-opt="bomb" data-val="delilah">טיל שיוט (דלילה)</button>
     </div>
+    <div id="prepBox" class="brief">
+      <h2>הכנת המטוס</h2>
+      <div class="seg" role="group" aria-label="דלק פנימי"><span>דלק פנימי</span><button data-opt="fuelPct" data-val="60">60%</button><button data-opt="fuelPct" data-val="80">80%</button><button data-opt="fuelPct" data-val="100">מלא</button></div>
+      <div class="seg" role="group" aria-label="מכלים נתיקים"><span>מכלים נתיקים</span><button data-opt="tanks" data-val="0">בלי</button><button data-opt="tanks" data-val="1">1</button><button data-opt="tanks" data-val="2">2</button><button data-opt="tanks" data-val="3">3</button></div>
+      <div class="seg" role="group" aria-label="טילי אוויר־אוויר"><span>טילי אוויר־אוויר</span><button data-opt="aam" data-val="full">תצורה מלאה</button><button data-opt="aam" data-val="light">חצי, קל יותר</button></div>
+      <p id="towLine" class="note"></p>
+      <p class="note">מכל נתיק מוסיף דלק, משקל וגרר. משליכים אותו במקש J (לפני הפצצות). במשימות תדלוק והדרכה אין מכלים.</p>
+    </div>
+    <div>
+      <h3>תצורת חימוש</h3>
+      <dl id="loadout"></dl>
+    </div>
+    </div>
+    <div class="tab" data-tab="set" hidden>
     <div class="seg" role="group" aria-label="איכות גרפיקה">
       <span>גרפיקה</span>
       <button id="qHigh" data-opt="q" data-val="high">מלאה</button>
@@ -454,11 +467,6 @@ details[open] summary{margin-bottom:10px}
       <button data-opt="ui" data-val="normal">רגילים</button>
       <button data-opt="ui" data-val="large">גדולים</button>
     </div>
-    <div class="seg" id="vrRow" hidden>
-      <span>מציאות מדומה</span>
-      <button id="vrGo">טוס במשקפי VR</button>
-      <span class="note">מוט ימני: היגוי. מוט שמאלי: מצערת והגה. הדק ימני: תותח, A: שיגור, B: נעילה. הדק שמאלי: נורים, X: חימוש, Y: כן נסע.</span>
-    </div>
     <div class="seg" id="voiceRow" role="group" aria-label="פקודות קוליות" hidden>
       <span>פקודות קוליות</span>
       <button data-opt="voice" data-val="off">כבוי</button>
@@ -470,9 +478,24 @@ details[open] summary{margin-bottom:10px}
       <button id="voiceTest">השמע בדיקה</button>
       <span id="voiceState" class="note" aria-live="polite"></span>
     </div>
-    <div>
-      <h3>תצורת חימוש</h3>
-      <dl id="loadout"></dl>
+    <div class="seg" id="vrRow" hidden>
+      <span>מציאות מדומה</span>
+      <button id="vrGo">טוס במשקפי VR</button>
+      <span class="note">מוט ימני: היגוי. מוט שמאלי: מצערת והגה. הדק ימני: תותח, A: שיגור, B: נעילה. הדק שמאלי: נורים, X: חימוש, Y: כן נסע.</span>
+    </div>
+    <div class="acts">
+      <button id="install" hidden>התקנה כאפליקציה</button>
+      <a id="apk" class="btn" href="https://github.com/l2005l/HaniaFlight2026/releases/download/android-latest/HaniaFlight.apk" hidden>הורדת האפליקציה לאנדרואיד</a>
+    </div>
+    </div>
+    <div class="tab" data-tab="pilot" hidden>
+    <div id="pilotBox">
+      <canvas id="pEmblem" width="96" height="96" aria-hidden="true"></canvas>
+      <div class="pcol">
+        <div id="pRank"></div>
+        <div class="prow"><input id="pName" maxlength="18" placeholder="שם הטייס" aria-label="שם הטייס"><input id="pCall" maxlength="10" placeholder="אות קריאה, למשל ברק" aria-label="אות קריאה"></div>
+        <div class="prow" id="pEmb" role="group" aria-label="סמל הזנב"></div>
+      </div>
     </div>
     <p id="bestLine" class="note"></p>
     <div>
@@ -483,7 +506,9 @@ details[open] summary{margin-bottom:10px}
       <h3>הישגים <span id="achCount" class="note"></span></h3>
       <div id="achList"></div>
     </div>
-    <details>
+    </div>
+    <div class="tab" data-tab="help" hidden>
+    <details open>
       <summary>מדריך תצוגות: HUD, מכ"ם ומסך איומים</summary>
       <div id="guide"><div class="guide">
         <div><h4>ה־HUD, התצוגה שמול העיניים</h4><ul>
@@ -562,7 +587,22 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט. לחיצה על המוט השמאלי: וו בלימה, על הימני: מבט למטרה. Start מתחיל טיסה מהתפריט. באפליקציית האנדרואיד השלט עובד דרך האפליקציה עצמה.</p>
     </details>
-    <p class="note">גרסה 1.8.2 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
+    <p class="note">גרסה 1.9 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
+    </div>
+    <div id="dock">
+    <div id="update" role="status" aria-live="polite" hidden>
+      <span id="updText">מוריד עדכון חדש…</span>
+      <div class="bar"><i id="updBar"></i></div>
+      <button id="updNow" hidden>עדכן עכשיו</button>
+    </div>
+    <p id="loading" aria-live="polite"><span id="loadText">טוען את הזירה…</span><span class="bar"><i></i></span></p>
+    <p id="loadErr" class="err" hidden>לא ניתן להפעיל את מנוע התלת־ממד. נדרש דפדפן עם WebGL וחיבור לרשת.</p>
+    <div class="acts">
+      <button id="startRwy" class="go">המראה מהמסלול</button>
+      <button id="startCold" title="התנעה מהדת&quot;ק">מהדת"ק</button>
+      <button id="startAir">באוויר</button>
+    </div>
+    </div>
   </section>
 
   <div id="photoBar" hidden><span>גרור כדי לסובב</span><button id="phIn" aria-label="התקרב">+</button><button id="phOut" aria-label="התרחק">−</button><button id="phSave">שמור תמונה</button><button id="phBack" class="go">חזרה</button></div>
