@@ -861,7 +861,7 @@ class World{
     if(this.missionId==='train'){this.train();return;}
     const lost=()=>{if(!p.alive){if(!this.over)this.over={win:false,title:'המטוס אבד',reason:p.crash};return true;}if(!f.bingo&&p.fuel<this.bingo){f.bingo=true;this.msg('בינגו דלק.');}return false;};
     if(this.net==='guest'&&!this.pvp){lost();return;}
-    if(this.pvp){if(lost())return;if(this.remotes.length&&this.remotes.every(r=>!r.alive)){this.stopT+=0.5;if(this.stopT>2&&!this.over)this.over={win:true,title:'ניצחת בקרב',reason:this.remotes.length>1?'כל היריבים הופלו.':`${this.remotes[0].name||'היריב'} הופל.`};}return;}
+    if(this.pvp){if(lost())return;const foes=this.remotes.filter(r=>r.side===1);if(foes.length&&foes.every(r=>!r.alive)){this.stopT+=0.5;if(this.stopT>2&&!this.over)this.over={win:true,title:this.remotes.length>foes.length?'הצוות שלך ניצח':'ניצחת בקרב',reason:foes.length>1?'כל היריבים הופלו.':`${foes[0].name||'היריב'} הופל.`};}return;}
     if(this.missionId==='naval'){if(lost())return;const left=this.ground.filter(g=>g.primary&&g.alive).length;
       if(!this.migsActive&&this.migs.length&&Math.hypot(p.pos.x-this.fleet.x,p.pos.z-this.fleet.z)<60000){this.migsActive=true;this.msg(`בקר: זוג ${this.foeName} שומר על הספינות, פונה אליך.`);}
       if(!left){this.wp=1;if(Math.hypot(p.pos.x,p.pos.z)<25000||p.onGround){this.stopT+=0.5;if(this.stopT>2&&!this.over)this.over={win:true,title:'הצי הושמד',reason:`שלוש ספינות הטילים טובעו, ${S.shots} טילים שוגרו.`};}return;}

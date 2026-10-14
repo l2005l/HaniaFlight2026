@@ -76,11 +76,12 @@ const mpVoice={
 
 /* the game over the network */
 const QUICK=['כסה אותי','אני תוקף','פונה ימינה','פונה שמאלה','טיל באוויר!','נפגעתי','בינגו, חוזר הביתה','רואה אותך','מצטרף אליך','כן'];
-const mpg={on:false,cfg:null,room:{mode:'coop',start:'air'},ch:1,sT:0,wT:0,nT:0,netN:0,live:new Set(),sent:false,overSent:false,lostSent:false,
+const mpg={on:false,cfg:null,room:{mode:'coop',start:'air'},ch:1,team:null,
+  vs(m){return m==='pvp'||m==='teams';},teamCh(){return mpg.team==='r'?3:2;},myTeam(){if(!mpg.team)mpg.team=MP.host?'b':'r';return mpg.team;},sT:0,wT:0,nT:0,netN:0,live:new Set(),sent:false,overSent:false,lostSent:false,
   sendRoom(){if(!MP.host)return;const r=mpg.room;MP.send({t:'room',mode:r.mode,start:r.start,mission:opts.mission,theatre:opts.theatre,isrBase:opts.isrBase,diff:opts.diff,tod:opts.tod,wx:opts.wx},true);},
-  hi(P){MP.sendTo(P.id,{t:'me',plane:opts.plane,call:readPilot().call||''},true);if(MP.host)mpg.sendRoom();},
+  hi(P){MP.sendTo(P.id,{t:'me',plane:opts.plane,call:readPilot().call||'',team:mpg.myTeam()},true);if(MP.host)mpg.sendRoom();},
   left(P,wasHost){if(mpg.on&&W){const r=W.remotes.find(x=>x.id===P.id);if(r&&r.alive){r.alive=false;r.gone=true;W.events.push({type:'kill',e:r});}radioQ.push(`רשת: ${P.name} יצא מהמשחק.`);
-      if(!W.over&&((wasHost&&!MP.host)||(mpg.cfg.mode==='pvp'&&!W.remotes.some(x=>!x.gone))))W.over={win:false,title:'החיבור נותק',reason:wasHost?'המארח יצא מהמשחק.':'היריב יצא מהמשחק.'};}
+      if(!W.over&&((wasHost&&!MP.host)||(mpg.vs(mpg.cfg.mode)&&!W.remotes.some(x=>!x.gone&&x.side===1))))W.over={win:false,title:'החיבור נותק',reason:wasHost?'המארח יצא מהמשחק.':'היריב יצא מהמשחק.'};}
     else if(wasHost)MP.status('המארח יצא. החדר נסגר.');},
   end(){if(!mpg.on)return;MP.send({t:'end'},true);mpg.on=false;},
   lost(what){if(mpg.on&&W&&!W.over)W.over={win:false,title:'החיבור נותק',reason:'הקשר עם '+what+' אבד.'};},
@@ -93,22 +94,26 @@ const mpg={on:false,cfg:null,room:{mode:'coop',start:'air'},ch:1,sT:0,wT:0,nT:0,
   mslKey(spec){for(const k in R.MSL)if(R.MSL[k]===spec)return k;return null;},
   /* ---- starting a game ---- */
   begin(cfg){mpg.cfg=cfg;mpg.on=true;mpg.live.clear();mpg.overSent=false;mpg.lostSent=false;
-    Object.assign(opts,{mission:cfg.mode==='pvp'?'duel':cfg.mission,diff:cfg.diff,tod:cfg.tod,wx:cfg.wx});applyOpts();show('mpBox',false);
-    start(cfg.mode==='pvp'?'air':cfg.start==='runway'?'runway':'air');},
+    if(cfg.mode==='teams'&&cfg.teams&&cfg.teams[MP.id]){mpg.team=cfg.teams[MP.id];if(mpg.ch!==1)mpg.ch=mpg.teamCh();}
+    Object.assign(opts,{mission:mpg.vs(cfg.mode)?'duel':cfg.mission,diff:cfg.diff,tod:cfg.tod,wx:cfg.wx});applyOpts();show('mpBox',false);
+    start(mpg.vs(cfg.mode)?'air':cfg.start==='runway'?'runway':'air');},
   /* called by newGame: the extra World options and the seeded random numbers */
-  worldOpts(){const c=mpg.cfg;return{net:MP.host?'host':'guest',coop:c.mode==='coop',pvp:c.mode==='pvp',wing:false,fail:false};},
+  worldOpts(){const c=mpg.cfg;return{net:MP.host?'host':'guest',coop:c.mode==='coop',pvp:mpg.vs(c.mode),wing:false,fail:false};},
   rng(seed){let a=seed>>>0;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};},
   setup(){const c=mpg.cfg,p=W.player,order=c.order,me=order.indexOf(MP.id),n=order.length;W.remotes=[];
-    if(c.mode==='pvp'){for(const m of W.migs){m.alive=false;const g=meshOf.get(m);if(g)g.visible=false;}W.migs=[];W.migAI=[];W.air=[...W.drones];const cx=(R.THEATRE.duelX||60000),a=me/n*Math.PI*2,rad=22000;
-      p.pos=v3(cx+Math.sin(a)*rad,6500,Math.cos(a)*rad);const h=Math.atan2(cx-p.pos.x,-(0-p.pos.z));p.q=R.qeuler(h,0,0);p.vel=vmul(qrot(p.q,FWD),235);}
+    if(mpg.vs(c.mode)){for(const m of W.migs){m.alive=false;const g=meshOf.get(m);if(g)g.visible=false;}W.migs=[];W.migAI=[];W.air=[...W.drones];const cx=(R.THEATRE.duelX||60000),rad=22000,tm=c.teams||{},teams=c.mode==='teams';
+      /* free for all: a circle; teams: blue on one side, red on the other, side by side */
+      let a=me/n*Math.PI*2,side=0;if(teams){const mine=tm[MP.id]||'b',mates=order.filter(id=>(tm[id]||'b')===mine),k=mates.indexOf(MP.id);a=mine==='b'?0:Math.PI;side=(k-(mates.length-1)/2)*400;}
+      p.pos=v3(cx+Math.sin(a)*rad+Math.cos(a)*side,6500,Math.cos(a)*rad-Math.sin(a)*side);const h=Math.atan2(cx-p.pos.x,-(0-p.pos.z));p.q=R.qeuler(h,0,0);p.vel=vmul(qrot(p.q,FWD),235);}
     else if(me>0){const f=qrot(p.q,FWD),r=qrot(p.q,R.RIGHT);
       if(p.onGround){const side=me%2?1:-1,back=Math.floor((me-1)/2)*160;p.pos=vadd(p.pos,vadd(vmul(r,18*side),vmul(f,-back)));}
       else p.pos=vadd(p.pos,vadd(vmul(r,70*me),vmul(f,-45*me)));}
     for(const id of order){if(id===MP.id)continue;const P=MP.peers.get(id),st=P&&P.st,ty=(P&&P.plane)||'F15I';
-      const e={remote:true,id,name:(P&&P.name)||'טייס',kind:'air',type:ty,label:(P&&P.call)||(P&&P.name)||'2',side:c.mode==='pvp'?1:0,alive:true,pos:st?{...st.pos}:v3(p.pos.x,p.pos.y,p.pos.z+400),vel:v3(),q:{x:0,y:0,z:0,w:1},
+      const foe=c.mode==='pvp'||(c.mode==='teams'&&(c.teams||{})[id]!==(c.teams||{})[MP.id]);
+      const e={remote:true,id,name:(P&&P.name)||'טייס',kind:'air',type:ty,label:(P&&P.call)||(P&&P.name)||'2',side:foe?1:0,alive:true,pos:st?{...st.pos}:v3(p.pos.x,p.pos.y,p.pos.z+400),vel:v3(),q:{x:0,y:0,z:0,w:1},
         eng:1,gearPos:0,rcs:ty==='F35I'?0.4:5,hp:100,onGround:false,t:null,tgt:null};
-      W.remotes.push(e);(c.mode==='pvp'?W.air:W.friends).push(e);
-      const m=mkPlayer(ty);m.userData.wing=true;dyn.add(m);meshOf.set(e,m);const lb=labelSprite(e.label,2);lb.position.set(0,7,0);m.add(lb);e.lbl=lb;}
+      W.remotes.push(e);(foe?W.air:W.friends).push(e);
+      const m=mkPlayer(ty);m.userData.wing=true;dyn.add(m);meshOf.set(e,m);const lb=labelSprite(e.label,foe?0:2);lb.position.set(0,7,0);m.add(lb);e.lbl=lb;}
     recObj=[...W.air,...W.friends];
     if(MP.host&&c.mode==='coop'){const orig=W.msg.bind(W);W.msg=t=>{orig(t);if(/^בקר/.test(t))MP.send({t:'msg',x:t},true);};}},
   /* ---- per frame ---- */
@@ -122,7 +127,7 @@ const mpg={on:false,cfg:null,room:{mode:'coop',start:'air'},ch:1,sT:0,wT:0,nT:0,
       e.pos=d>400?tp:vadd(e.pos,vmul(vsub(tp,e.pos),Math.min(1,dt*8)));e.vel=t.vel;const qa=new T.Quaternion(e.q.x,e.q.y,e.q.z,e.q.w),qb=new T.Quaternion(t.q[0],t.q[1],t.q[2],t.q[3]);qa.slerp(qb,Math.min(1,dt*10));e.q={x:qa.x,y:qa.y,z:qa.z,w:qa.w};
       e.eng=t.e;e.gearPos=t.g;e.onGround=!!t.gd;
       if(t.gun&&state==='fly'){e.gunT=(e.gunT||0)-dt;if(e.gunT<=0){e.gunT=1/14;const f=qrot(e.q,FWD);W.bullets.push({pos:vadd(e.pos,vmul(f,8)),vel:vadd(e.vel,vmul(f,1000)),t:0,owner:e,ghost:true});}}
-      if(t.lk===MP.id&&p.alive){const fl=W.missiles.some(m=>m.alive&&m.owner===e&&m.target===p);W.netThreats.push({sym:({F15I:'15',F15C:'15',F16I:'16',F35I:'35'})[e.type]||'F',pos:e.pos,lvl:fl?2:1});}}
+      if(t.lk===MP.id&&p.alive&&e.side===1){const fl=W.missiles.some(m=>m.alive&&m.owner===e&&m.target===p);W.netThreats.push({sym:({F15I:'15',F15C:'15',F16I:'16',F35I:'35'})[e.type]||'F',pos:e.pos,lvl:fl?2:1});}}
     /* my bombs: send a copy so the others see them fall */
     for(const b of W.bombs)if(b.owner===p&&!b.netId&&!b.ghost){b.netId=MP.id+':'+(mpg.netN++);MP.send({t:'b',p:[b.pos.x,b.pos.y,b.pos.z],v:[b.vel.x,b.vel.y,b.vel.z],tg:mpg.ref(b.target),lgb:b.lgb,gps:b.gps,ld:b.ld},true);}
     /* missiles decided here that the others hold as copies */
@@ -153,7 +158,7 @@ const mpg={on:false,cfg:null,room:{mode:'coop',start:'air'},ch:1,sT:0,wT:0,nT:0,
     else if(e.type==='cm'&&e.ac===W.player)MP.send({t:'cm'},true);},
   /* messages from the others */
   recv(o,from,viaRelay){const P=MP.peers.get(from);if(!o||!o.t)return;
-    if(o.t==='me'){if(P){P.plane=o.plane;P.call=o.call;mpUi.room();}return;}
+    if(o.t==='me'){if(P){P.plane=o.plane;P.call=o.call;if(o.team)P.team=o.team;mpUi.room();}return;}
     if(o.t==='room'){if(P&&P.host){mpg.room={mode:o.mode,start:o.start};mpg.hostCfg=o;mpUi.room();mpg.align(o);}return;}
     if(o.t==='start'){mpg.begin(o);return;}
     if(o.t==='ptt'){if(P)mpVoice.ptt(P,o.on,o.ch);return;}
@@ -197,17 +202,20 @@ const mpUi={
   name(){const pl=readPilot();return pl.call||pl.name||'טייס';},
   room(){const inRoom=MP.live;$('mpJoinPane').hidden=inRoom;$('mpRoomPane').hidden=!inRoom;$('mpBtn').textContent=inRoom?`חדר ${MP.code} · ${MP.peers.size+1} שחקנים`:'משחק עם חברים';
     if(!inRoom)return;$('mpCodeShow').textContent=MP.code;
-    const li=[`<li><b>${esc(mpUi.name())}</b> (אתה${MP.host?', מארח':''}) · ${esc(R.PLANES[opts.plane].name)}</li>`];
-    for(const P of MP.peers.values())li.push(`<li><b>${esc(P.call||P.name)}</b>${P.host?' (מארח)':''} · ${P.plane&&R.PLANES[P.plane]?esc(R.PLANES[P.plane].name):'…'} · <span class="note">${P.via==='p2p'?'חיבור ישיר':P.via==='relay'?'דרך השרת':'מתחבר…'}</span></li>`);
+    const TM={b:'<span class="tb-b">כחול</span>',r:'<span class="tb-r">אדום</span>'},tms=mpg.room.mode==='teams';
+    const li=[`<li><b>${esc(mpUi.name())}</b> (אתה${MP.host?', מארח':''}) · ${esc(R.PLANES[opts.plane].name)}${tms?' · '+TM[mpg.myTeam()]:''}</li>`];
+    for(const P of MP.peers.values())li.push(`<li><b>${esc(P.call||P.name)}</b>${P.host?' (מארח)':''} · ${P.plane&&R.PLANES[P.plane]?esc(R.PLANES[P.plane].name):'…'}${tms?' · '+(TM[P.team]||'…'):''} · <span class="note">${P.via==='p2p'?'חיבור ישיר':P.via==='relay'?'דרך השרת':'מתחבר…'}</span></li>`);
     $('mpPeers').innerHTML=li.join('');const r=mpg.room,h=MP.host;
     for(const b of document.querySelectorAll('[data-mp]')){b.setAttribute('aria-pressed',b.dataset.mp===r.mode?'true':'false');b.disabled=!h;}
-    for(const b of document.querySelectorAll('[data-mps]')){b.setAttribute('aria-pressed',b.dataset.mps===r.start?'true':'false');b.disabled=!h||r.mode==='pvp';}
-    for(const b of document.querySelectorAll('[data-ch]'))b.setAttribute('aria-pressed',+b.dataset.ch===mpg.ch?'true':'false');
+    for(const b of document.querySelectorAll('[data-mps]')){b.setAttribute('aria-pressed',b.dataset.mps===r.start?'true':'false');b.disabled=!h||mpg.vs(r.mode);}
+    for(const b of document.querySelectorAll('[data-ch]')){b.setAttribute('aria-pressed',(+b.dataset.ch===1)===(mpg.ch===1)?'true':'false');if(b.dataset.ch==='2')b.textContent=tms?'2 · הצוות':'2';}
+    $('mpTeamRow').hidden=!tms;for(const b of document.querySelectorAll('[data-team]'))b.setAttribute('aria-pressed',b.dataset.team===mpg.myTeam()?'true':'false');
     const hc=mpg.hostCfg,mis=h?opts.mission:hc&&hc.mission,mn=$(({strike:'mStrike',intercept:'mIcpt',sead:'mSead',convoy:'mConvoy',escort:'mEscort',csar:'mCsar',recon:'mRecon',stealth:'mStealth',naval:'mNaval',duel:'mDuel',tanker:'mTanker',train:'mTrain'})[mis]||'mStrike');
-    $('mpInfo').textContent=r.mode==='pvp'?'קרב אוויר: כל אחד מתחיל במרחק 22 ק"מ מהמרכז, פונה פנימה. מנצח מי שנשאר באוויר.':`משימה: ${mn?mn.textContent:''}. ${h?'בוחרים משימה ומטוס בתפריט, הם עוברים לכולם.':'המארח בוחר את המשימה. המטוס שלך לבחירתך.'}`;
-    $('mpGo').hidden=!h;$('mpWait').hidden=h;$('mpGo').disabled=!MP.peers.size||(r.mode==='coop'&&['train','duel'].includes(opts.mission)&&false);},
+    $('mpInfo').textContent=tms?'כחול נגד אדום: כל צוות מתחיל יחד בצד אחר, 44 ק"מ בין הצוותים. בני הצוות מופיעים כידידים. תדר 2 שומע רק הצוות שלך.':r.mode==='pvp'?'קרב אוויר: כל אחד מתחיל במרחק 22 ק"מ מהמרכז, פונה פנימה. מנצח מי שנשאר באוויר.':`משימה: ${mn?mn.textContent:''}. ${h?'בוחרים משימה ומטוס בתפריט, הם עוברים לכולם.':'המארח בוחר את המשימה. המטוס שלך לבחירתך.'}`;
+    $('mpGo').hidden=!h;$('mpWait').hidden=h;const tl=[mpg.myTeam(),...[...MP.peers.values()].map(P=>P.team)];$('mpGo').disabled=!MP.peers.size||(tms&&!(tl.includes('b')&&tl.includes('r')));},
   go(){if(!MP.host||!MP.peers.size)return;const r=mpg.room,order=[MP.id,...MP.peers.keys()];
-    const cfg={t:'start',mode:r.mode,start:r.start,mission:['train'].includes(opts.mission)?'strike':opts.mission,diff:opts.diff,tod:opts.tod,wx:opts.wx,seed:(Math.random()*2**31)|0,order};
+    const teams={[MP.id]:mpg.myTeam()};for(const P of MP.peers.values())teams[P.id]=P.team||'r';
+    const cfg={t:'start',mode:r.mode,teams,start:r.start,mission:['train'].includes(opts.mission)?'strike':opts.mission,diff:opts.diff,tod:opts.tod,wx:opts.wx,seed:(Math.random()*2**31)|0,order};
     MP.send(cfg,true);mpg.begin(cfg);},
   share(){const u=location.origin+location.pathname+'?room='+MP.code,t=`בוא לטוס איתי ב-HaniaFlight. קוד חדר: ${MP.code}\n${u}`;
     if(navigator.share)navigator.share({text:t}).catch(()=>{});else{try{navigator.clipboard.writeText(t);toast('הקישור הועתק');}catch(e){}}}};
@@ -224,4 +232,5 @@ $('mpBtn').onclick=()=>mpUi.open();
 $('mpGo').onclick=()=>mpUi.go();$('mpShare').onclick=()=>mpUi.share();$('mpCode').addEventListener('keydown',e=>{if(e.key==='Enter')mpUi.join();});
 for(const b of document.querySelectorAll('[data-mp]'))b.onclick=()=>{mpg.room.mode=b.dataset.mp;mpg.sendRoom();mpUi.room();};
 for(const b of document.querySelectorAll('[data-mps]'))b.onclick=()=>{mpg.room.start=b.dataset.mps;mpg.sendRoom();mpUi.room();};
-for(const b of document.querySelectorAll('[data-ch]'))b.onclick=()=>{mpg.ch=+b.dataset.ch;for(const P of MP.peers.values())mpVoice.ptt(P,P.talk,P.ch);mpUi.room();};
+for(const b of document.querySelectorAll('[data-ch]'))b.onclick=()=>{mpg.ch=b.dataset.ch==='1'?1:mpg.room.mode==='teams'?mpg.teamCh():2;for(const P of MP.peers.values())mpVoice.ptt(P,P.talk,P.ch);mpUi.room();};
+for(const b of document.querySelectorAll('[data-team]'))b.onclick=()=>{mpg.team=b.dataset.team;if(mpg.ch!==1&&mpg.room.mode==='teams')mpg.ch=mpg.teamCh();MP.send({t:'me',plane:opts.plane,call:readPilot().call||'',team:mpg.team},true);mpUi.room();};

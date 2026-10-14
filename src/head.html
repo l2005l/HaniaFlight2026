@@ -82,6 +82,8 @@ details.more[open] summary{margin-bottom:6px}
 #mpPeers{margin:0;padding-inline-start:1.1em;display:flex;flex-direction:column;gap:4px}
 .mpjoin input{flex:1;min-width:6rem;background:rgba(8,12,14,.6);border:1px solid var(--line);color:inherit;padding:9px 10px;font:inherit;font-family:var(--mono);letter-spacing:.2em;text-transform:uppercase}
 #mpWait{align-self:center}
+.tb-b{color:#8fc4ff;font-weight:700}.tb-r{color:#ff8f80;font-weight:700}
+[data-team="b"][aria-pressed="true"]{border-color:#8fc4ff!important;color:#8fc4ff!important}[data-team="r"][aria-pressed="true"]{border-color:#ff8f80!important;color:#ff8f80!important}
 #chips button.radio{border-color:#7fb8ff;color:#cfe4ff}#pttBtn[data-on="1"]{background:rgba(127,184,255,.45);color:#fff}
 #quickBox{position:absolute;z-index:6;top:50%;left:50%;transform:translate(-50%,-50%);display:grid;grid-template-columns:1fr 1fr;gap:6px;background:rgba(8,12,14,.9);border:1px solid #7fb8ff;padding:10px;width:min(30rem,calc(100% - 32px))}
 #quickBox[hidden]{display:none}#quickBox button{padding:8px 10px;font-size:.9rem;text-align:start}
@@ -564,7 +566,7 @@ details[open] summary{margin-bottom:10px}
         </ul></div>
         <div><h4>משחק עם חברים</h4><ul>
           <li>בלשונית "טיסה": "משחק עם חברים". אחד פותח חדר ושולח את הקוד (או את הקישור), השאר מצטרפים. עד 4 שחקנים.</li>
-          <li><b>יחד</b>: כולם באותה משימה של המארח, מול אותו אויב. <b>אחד נגד השני</b>: קרב אוויר, כל אחד מתחיל 22 ק"מ מהמרכז.</li>
+          <li><b>יחד</b>: כולם באותה משימה של המארח, מול אותו אויב. <b>כל אחד לבד</b>: קרב אוויר, כל אחד מתחיל 22 ק"מ מהמרכז. <b>כחול נגד אדום</b>: שני צוותים, כל צוות מתחיל יחד בצד אחר; בני הצוות מופיעים כידידים, ותדר 2 הוא תדר הצוות.</li>
           <li>קשר: "לחץ לדבר" (או מקש <b>`</b>) כל עוד מדברים. תדר 1 שומעים כולם, תדר 2 רק מי שבחר בו. "הודעה" (או <b>'</b>) שולח הודעה מוכנה.</li>
           <li>כשאין חיבור ישיר בין המכשירים, המשחק עובר דרך השרת. במצב כזה הקול לא עובר, וההודעות המוכנות כן.</li>
           <li>במשחק רשת אין האצת זמן. השהיה עוצרת רק אצלך.</li>
@@ -658,7 +660,8 @@ details[open] summary{margin-bottom:10px}
       <div id="mpRoomPane" hidden>
         <div class="mpcode"><span>קוד החדר</span><b id="mpCodeShow" dir="ltr"></b><button id="mpShare">שלח לחבר</button></div>
         <ul id="mpPeers"></ul>
-        <div class="seg" role="group" aria-label="מצב"><span>מצב</span><button data-mp="coop">יחד</button><button data-mp="pvp">אחד נגד השני</button></div>
+        <div class="seg" role="group" aria-label="מצב"><span>מצב</span><button data-mp="coop">יחד</button><button data-mp="pvp">כל אחד לבד</button><button data-mp="teams">כחול נגד אדום</button></div>
+        <div class="seg" id="mpTeamRow" role="group" aria-label="צוות" hidden><span>הצוות שלך</span><button data-team="b">כחול</button><button data-team="r">אדום</button></div>
         <div class="seg" role="group" aria-label="התחלה"><span>התחלה</span><button data-mps="air">באוויר</button><button data-mps="runway">מהמסלול</button></div>
         <div class="seg" role="group" aria-label="תדר קשר"><span>תדר קשר</span><button data-ch="1">1 · כולם</button><button data-ch="2">2</button></div>
         <p id="mpInfo" class="note"></p>
