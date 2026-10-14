@@ -12,7 +12,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check secrets
         id: s
         env:
@@ -21,7 +21,7 @@ jobs:
         run: |
           if [ -n "$T" ] && [ -n "$A" ]; then echo "ok=1" >> "$GITHUB_OUTPUT"
           else echo "::warning::Add the CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID secrets to deploy the multiplayer server"; fi
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         if: steps.s.outputs.ok
         with:
           node-version: 22
@@ -36,7 +36,8 @@ jobs:
           npx wrangler deploy 2>&1 | tee deploy.log
           URL=$(grep -oE 'https://[a-z0-9.-]+\.workers\.dev' deploy.log | head -1)
           if [ -z "$URL" ]; then echo "::error::No workers.dev address in the deploy output"; exit 1; fi
-          curl -fsS "$URL/health"
+          # a new workers.dev address can take a little while to answer
+          for i in 1 2 3 4 5 6 7 8 9 10; do if curl -fsS "$URL/health"; then echo; break; fi; echo "waiting for $URL ($i)"; sleep 6; done
           printf '{"url":"%s"}\n' "${URL/https:/wss:}" > ../mp.json
           cat ../mp.json
       - name: Publish the server address
