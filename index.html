@@ -637,7 +637,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט. לחיצה על המוט השמאלי: וו בלימה, על הימני: מבט למטרה. Start מתחיל טיסה מהתפריט. באפליקציית האנדרואיד השלט עובד דרך האפליקציה עצמה.</p>
     </details>
-    <p class="note">גרסה 2.0 (2ece932, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
+    <p class="note">גרסה 2.0 (b7b45a5, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
     </div>
     <div id="dock">
     <div id="update" role="status" aria-live="polite" hidden>
@@ -2913,7 +2913,9 @@ const mpg={on:false,cfg:null,room:{mode:'coop',start:'air'},ch:1,team:null,
 /* lobby */
 const mpUi={
   open(){show('mpBox',true);mpUi.room();},
-  status(t){const el=$('mpStatus');el.textContent=t||'';el.hidden=!t;},
+  status(t){const el=$('mpStatus');el.textContent=t||'';el.hidden=!t;
+    /* inside a preview page (such as the Claude artifact) outside connections are blocked: point to the real site */
+    if(t&&/לא עונה|לא ניתן להתחבר|נכשל/.test(t)&&!/hania360\.com$|^localhost$|^127\./.test(location.hostname)){el.innerHTML='בגרסה הזאת של הדף החיבור לרשת חסום. משחק עם חברים עובד באתר <a href="https://flight.hania360.com/" target="_blank" rel="noopener">flight.hania360.com</a> ובאפליקציה.';}},
   code(){const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';const r=new Uint32Array(4);crypto.getRandomValues(r);for(const x of r)s+=A[x%A.length];return s;},
   async create(){mpUi.prep();const ok=await MP.connect(mpUi.code(),mpUi.name());if(ok)mpg.sendRoom();},
   async join(code){code=(code||$('mpCode').value||'').toUpperCase().replace(/[^A-Z0-9]/g,'');if(code.length<4){MP.status('הקוד צריך להיות 4 תווים.');return;}mpUi.prep();await MP.connect(code,mpUi.name());},

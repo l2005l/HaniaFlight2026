@@ -194,7 +194,9 @@ const mpg={on:false,cfg:null,room:{mode:'coop',start:'air'},ch:1,team:null,
 /* lobby */
 const mpUi={
   open(){show('mpBox',true);mpUi.room();},
-  status(t){const el=$('mpStatus');el.textContent=t||'';el.hidden=!t;},
+  status(t){const el=$('mpStatus');el.textContent=t||'';el.hidden=!t;
+    /* inside a preview page (such as the Claude artifact) outside connections are blocked: point to the real site */
+    if(t&&/לא עונה|לא ניתן להתחבר|נכשל/.test(t)&&!/hania360\.com$|^localhost$|^127\./.test(location.hostname)){el.innerHTML='בגרסה הזאת של הדף החיבור לרשת חסום. משחק עם חברים עובד באתר <a href="https://flight.hania360.com/" target="_blank" rel="noopener">flight.hania360.com</a> ובאפליקציה.';}},
   code(){const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';const r=new Uint32Array(4);crypto.getRandomValues(r);for(const x of r)s+=A[x%A.length];return s;},
   async create(){mpUi.prep();const ok=await MP.connect(mpUi.code(),mpUi.name());if(ok)mpg.sendRoom();},
   async join(code){code=(code||$('mpCode').value||'').toUpperCase().replace(/[^A-Z0-9]/g,'');if(code.length<4){MP.status('הקוד צריך להיות 4 תווים.');return;}mpUi.prep();await MP.connect(code,mpUi.name());},
