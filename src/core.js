@@ -767,7 +767,7 @@ class World{
     this.events.push({type:'fail'});if(!C.length)return;let t=Math.random()*C.reduce((a,c)=>a+c[0],0);for(const c of C){t-=c[0];if(t<=0){c[1]();break;}}this.syncDmg();}
   /* a reset takes eight seconds; the first try helps a little over half the time, later ones rarely */
   static get RESETTABLE(){return['radar','ew','ins','mfd','map','fuelq','sms','cmds'];}
-  resetFaults(){const F=this.flt,L=World.RESETTABLE.filter(k=>F[k]&&F[k].rt==null);if(!L.length)return false;for(const k of L)F[k].rt=8;this.msg('ריסט למערכות התקולות. המתן…');this.events.push({type:'sw',id:'reset',on:true});return true;}
+  resetFaults(){const F=this.flt,L=World.RESETTABLE.filter(k=>F[k]&&F[k].rt==null);if(!L.length)return false;for(const k of L)F[k].rt=8;this.syncDmg();this.msg('ריסט למערכות התקולות. המתן…');this.events.push({type:'sw',id:'reset',on:true});return true;}
   faultStep(dt){const F=this.flt,p=this.player;if(F.ins||F.gps){const v=F.ins?F.ins.v:{x:3,z:2};this.insErr.x=clamp(this.insErr.x+v.x*dt,-9000,9000);this.insErr.z=clamp(this.insErr.z+v.z*dt,-9000,9000);}
     for(const k of World.RESETTABLE){const f=F[k];if(!f||f.rt==null)continue;f.rt-=dt;if(f.rt>0)continue;f.rt=null;const ok=Math.random()<((f.tries||0)?0.15:0.55);f.tries=(f.tries||0)+1;
       const nm={radar:'המכ"ם',ew:'מערכת הל"א',ins:'הניווט',mfd:'המסך',map:'המפה',fuelq:'מד הדלק',sms:'מחשב החימוש',cmds:'מערכת הנורים והמוץ'}[k];
