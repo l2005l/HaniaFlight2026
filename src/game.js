@@ -395,6 +395,28 @@ function swState(id){const s=W.sys,p=W.player,i=+id.slice(-1);
     case 'fire0':case 'fire1':return i<p.nEng&&p.fire[i]?3:0;case 'rmode':return +(W.radar.mode==='ACM');}return 0;}
 function doSwitch(id){if(!W||state!=='fly')return;const cs=cockpit.userData.sw[id];if(cs)cs.clickT=clock;if(id==='ecm'){act('ecm');return;}if(id==='jett'){act('jett');return;}if(id==='ap')act('ap');else if(id==='auto'){W.autoStart=!W.autoStart;beep(900,0.04);}else W.sw(id);}
 /* cockpit interior, built around the pilot's eye point (origin). Displays are canvas textures filled by drawHUD. */
+/* cockpit stick: rubber boot, shaft and a moulded grip with trigger, weapon release, trim hat and paddle switch */
+function buildStick(S,side){const rub=stdMat({color:0x161718,roughness:0.95}),grip=stdMat({color:0x2a2c2e,roughness:0.75}),metal=stdMat({color:0x8b9094,roughness:0.35,metalness:0.8}),red=stdMat({color:0xc0302a,roughness:0.5}),blk=stdMat({color:0x0e0f10,roughness:0.6});
+  if(!side){for(let i=0;i<4;i++)part(new T.TorusGeometry(0.06-i*0.009,0.012,6,20),rub,0,0.012+i*0.018,0,S).rotation.x=Math.PI/2;part(new T.CylinderGeometry(0.016,0.02,0.24,10),metal,0,0.17,0,S);}
+  else part(new T.CylinderGeometry(0.03,0.045,0.05,14),rub,0,0.02,0,S);
+  const pr=[[0,0],[0.022,0.004],[0.03,0.03],[0.032,0.07],[0.029,0.1],[0.026,0.122],[0.017,0.135],[0,0.14]].map(q=>new T.Vector2(q[0],q[1])),gg=new T.LatheGeometry(pr,18);gg.scale(1,1,1.25);
+  const g=part(gg,grip,0,side?0.04:0.29,0,S);g.rotation.x=-0.18;
+  const top=new T.Group();top.position.set(0,side?0.17:0.42,0.004);top.rotation.x=-0.18;S.add(top);
+  part(new T.CylinderGeometry(0.008,0.008,0.012,10),red,-0.014,0,-0.006,top);
+  const hat=part(new T.BoxGeometry(0.016,0.01,0.016),blk,0.012,0.002,0.004,top);hat.rotation.y=Math.PI/4;
+  part(new T.BoxGeometry(0.03,0.008,0.012),blk,0,-0.02,0.032,top);
+  const tr=part(new T.TorusGeometry(0.014,0.004,6,12,Math.PI),metal,0,side?0.12:0.37,-0.036,S);tr.rotation.y=Math.PI/2;tr.rotation.z=Math.PI;
+  part(new T.BoxGeometry(0.006,0.03,0.012),blk,0,side?0.115:0.365,-0.04,S);}
+/* throttle quadrant on the left console: a slotted base and the grip (twin levers in the Raam and Baz) */
+function buildThrottle(G,kind){const base=stdMat({color:0x2b2e30,roughness:0.85}),grip=stdMat({color:0x26282a,roughness:0.7}),metal=stdMat({color:0x9aa0a4,roughness:0.35,metalness:0.8}),blk=stdMat({color:0x0d0e0f,roughness:0.6}),amb=stdMat({color:0xb38a2a,roughness:0.5});
+  part(new T.BoxGeometry(0.14,0.04,0.26),base,-0.47,-0.49,-0.33,G);part(new T.BoxGeometry(0.03,0.042,0.2),blk,-0.47,-0.488,-0.33,G);
+  for(const z of[-0.26,-0.3,-0.34,-0.37])part(new T.BoxGeometry(0.1,0.002,0.003),metal,-0.47,-0.468,z,G);
+  const T0=new T.Group();T0.position.set(-0.47,-0.43,-0.3);G.add(T0);const twin=kind==='F15I'||kind==='F15C';
+  for(const x of twin?[-0.012,0.012]:[0])part(new T.BoxGeometry(0.01,0.07,0.012),metal,x,-0.03,0,T0);
+  const h=part(new T.BoxGeometry(twin?0.075:0.06,0.045,0.11),grip,0,0.012,0.005,T0);h.rotation.x=0.12;
+  part(new T.CylinderGeometry(0.008,0.008,0.012,10),blk,0.018,0.04,-0.03,T0);part(new T.BoxGeometry(0.014,0.008,0.014),amb,-0.014,0.04,-0.02,T0);
+  part(new T.BoxGeometry(0.012,0.012,0.02),blk,0.03,0.015,-0.035,T0);for(const z of[0.01,0.03,0.05])part(new T.BoxGeometry(0.078,0.003,0.004),blk,0,-0.006,z,T0);
+  return T0;}
 function buildCockpit(kind){const G=new T.Group(),dk=lam(0x26292b),pn=lam(kind==='F15C'?0x1b2228:kind==='F35I'?0x131517:0x181a1c),blk=lam(0x0d0e0f),ud=G.userData;ud.cv={};ud.kind=kind;ud.helmet=kind==='F35I';
   const scr=(k,w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.textBaseline='middle';x.direction='ltr';x.fillStyle='#020a06';x.fillRect(0,0,w,h);
     const t=new T.CanvasTexture(c);if(renderer.capabilities.isWebGL2||h===w){t.generateMipmaps=true;t.minFilter=T.LinearMipmapLinearFilter;t.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());}else t.minFilter=T.LinearFilter;ud.cv[k]={ctx:x,tex:t};return new T.MeshBasicMaterial({map:t,fog:false});};
@@ -418,8 +440,9 @@ function buildCockpit(kind){const G=new T.Group(),dk=lam(0x26292b),pn=lam(kind==
   if(kind!=='F16I'&&kind!=='F35I')part(new T.TorusGeometry(0.74,0.018,8,48,Math.PI),blk,0,-0.27,-1.1,G);part(new T.TorusGeometry(0.62,0.03,8,40,Math.PI),dk,0,-0.3,0.25,G);
   const fr=lam(0x101213);ud.postL=part(new T.BoxGeometry(0.012,1,0.012),fr,0,0,-0.62,G);ud.postR=part(new T.BoxGeometry(0.012,1,0.012),fr,0,0,-0.62,G);ud.bar=part(new T.BoxGeometry(1,0.012,0.012),fr,0,0,-0.62,G);
   ud.glass=part(new T.PlaneGeometry(1,1),new T.MeshBasicMaterial({color:0x7dffb0,transparent:true,opacity:0.045,depthWrite:false,fog:false}),0,0,-0.62,G);
-  ud.stick=new T.Group();if(kind==='F16I'||kind==='F35I'){ud.stick.position.set(0.47,-0.62,-0.34);ud.stick.scale.setScalar(0.62);}else ud.stick.position.set(0,-0.86,-0.46);G.add(ud.stick);part(new T.CylinderGeometry(0.016,0.02,0.3,8),dk,0,0.15,0,ud.stick);part(new T.BoxGeometry(0.045,0.12,0.05),blk,0,0.34,0,ud.stick);
-  ud.thr=part(new T.BoxGeometry(0.07,0.07,0.13),blk,-0.47,-0.43,-0.3,G);
+  ud.stick=new T.Group();const side=kind==='F16I'||kind==='F35I';if(side){ud.stick.position.set(0.47,-0.62,-0.34);ud.stick.scale.setScalar(0.62);}else ud.stick.position.set(0,-0.86,-0.46);G.add(ud.stick);
+  buildStick(ud.stick,side);if(side)part(new T.BoxGeometry(0.16,0.05,0.34),stdMat({color:0x26292b,roughness:0.85}),0.47,-0.66,-0.3,G);
+  ud.thr=buildThrottle(G,kind);
   /* switch pedestal below the main panel: two rows of working switches, each with a label and a status lamp */
   const ped=new T.Group();ped.position.set(0,-0.81,-0.672);ped.rotation.x=-0.9;G.add(ped);part(new T.BoxGeometry(1.24,0.3,0.03),pn,0,-0.15,-0.016,ped);
   const lab=t=>{const tx=canvasTex(128,32,x=>{x.fillStyle='#17191b';x.fillRect(0,0,128,32);x.fillStyle='#d9dcd6';x.font='700 21px "Share Tech Mono",ui-monospace,Menlo,monospace';x.textAlign='center';x.textBaseline='middle';x.fillText(t,64,17);});tx.minFilter=T.LinearFilter;return new T.MeshBasicMaterial({map:tx,fog:false});};
@@ -674,14 +697,14 @@ for(const ev of['pointerup','pointercancel'])glc.addEventListener(ev,e=>{if(e.po
   /* looking well down at the panel holds the view there; looking back up releases it */
   if(!look.panel&&look.pitch<-0.36)look.panel=true;else if(look.panel&&look.pitch>(touchOn?-0.55:-0.3))look.panel=false;});
 $('lookBack').onclick=()=>{look.panel=false;};$('nvgBtn').onclick=()=>act('nvg');$('mapBtn').onclick=()=>act('map');$('ecmBtn').onclick=()=>act('ecm');$('wingBtn').onclick=()=>act('wing');$('padBtn').onclick=()=>act('padlock');$('hookBtn').onclick=()=>act('hook');$('micBtn').onclick=()=>{if(voice.busy)micStop();else listen();};$('joinBtn').onclick=()=>act('join');
-$('bettyTest').onclick=()=>{Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();Betty.load();const k=['pull','bingo','coll','msl'][(Betty.tn=(Betty.tn||0)+1)%4];setTimeout(()=>{delete Betty.last[k];if(!Betty.say(k,10,0))toast(opts.betty==='off'?'ההתרעות הקוליות כבויות':'הצליל עוד נטען, נסה שוב');},350);};$('doorBtn').onclick=()=>act('ardoor');$('mfdHit').onclick=()=>act('mfd');$('mfdBtn').onclick=()=>act('mfd');$('panelBtn').onclick=()=>act('panel');
+$('bettyTest').onclick=()=>{Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();Betty.load();const k=['pull','bingo','coll','msl'][(Betty.tn=(Betty.tn||0)+1)%4];setTimeout(()=>{delete Betty.last[k];if(!Betty.say(k,10,0))toast(opts.betty==='off'?'ההתרעות הקוליות כבויות':'הצליל עוד נטען, נסה שוב');},350);};$('doorBtn').onclick=()=>act('ardoor');$('mfdHit').onclick=()=>act('mfd');$('mfdBtn').onclick=()=>act('mfd');$('panelBtn').onclick=()=>act('panel');$('tiltBtn').onclick=()=>{if(!tilt.on)tiltOn(true);tilt.p0=tilt.pit??null;toast('הטיה: המצב הנוכחי הוא עכשיו "ישר"');};
 $('wcamBtn').onclick=()=>act('wcam');$('relightBtn').onclick=()=>act('relight');
 addEventListener('keydown',e=>{
   if(state==='photo'&&(e.code==='Escape'||e.code==='KeyP')){endPhoto();return;}
   if(state==='pause'&&(e.code==='Escape'||e.code==='KeyP')){resume();return;}
   if(state!=='fly')return;
   if(/^(Space|Arrow|Tab|Enter|Backspace)/.test(e.code))e.preventDefault();
-  keys[e.code]=true;if(e.repeat)return;if(e.code==='Backquote'&&mpg.on){mpVoice.key(true);return;}if(e.code==='Quote'&&mpg.on){$('quickBox').hidden=!$('quickBox').hidden;return;}if(mpg.on&&!$('quickBox').hidden&&/^Digit\d$/.test(e.code)){mpg.quick((+e.code[5]+9)%10);return;}if(e.code==='Space')tap.gun=true;if(e.code==='Enter'||e.code==='NumpadEnter')tap.pickle=true;if(e.code==='KeyC')tap.cm=true;if(e.code==='KeyQ')tap.ch=true;
+  keys[e.code]=true;if(e.repeat)return;if(e.code==='Backquote'&&mpg.on){mpVoice.key(true);return;}if(e.code==='F2'&&mpg.on){e.preventDefault();$('quickBox').hidden=!$('quickBox').hidden;return;}if(e.code==='Quote')tap.ch=true;if(mpg.on&&!$('quickBox').hidden&&/^Digit\d$/.test(e.code)){mpg.quick((+e.code[5]+9)%10);return;}if(e.code==='Space')tap.gun=true;if(e.code==='Enter'||e.code==='NumpadEnter')tap.pickle=true;if(e.code==='KeyC')tap.cm=true;if(e.code==='Quote'&&!mpg.on)tap.ch=true;
   const m={KeyG:'gear',KeyL:'flaps',KeyV:'view',KeyT:'tgt',KeyU:'unlock',KeyO:'time',KeyM:'arm',Digit0:'mute',KeyN:'wp',KeyH:'ap',KeyJ:'jett',KeyK:'ardoor',KeyY:'rmode',Period:'rrng',Comma:'rrngdn',Digit5:'ecm',Digit7:'w_attack',Digit8:'w_cover',Digit9:'w_form',KeyX:'panel',KeyI:'nvg',Tab:'map',KeyZ:'padlock',Backspace:'eject',Digit6:'hook',Semicolon:'relight',Backslash:'join',BracketLeft:'mic',BracketRight:'mfd',Slash:'wcam'}[e.code];
   if(m)act(m);else if(/^Digit[1-4]$/.test(e.code)){W.select(WSEL[+e.code[5]-1]);beep(900,0.04);}
   else if(e.code==='Escape'||e.code==='KeyP')pause();});
@@ -709,18 +732,18 @@ function readInput(dt){const pad=readXR(dt)||readPad(dt);if(state!=='fly')return
   if(tx||ty||tr)padUsed=false;else if(pad&&(pad.x||pad.y))padUsed=true;
   if(pad&&!look.drag&&(pad.lx||pad.ly)&&!W.player.onGround){look.yaw+=(pad.lx*2.3-look.yaw)*Math.min(1,dt*8);look.pitch+=(-pad.ly*1.0-look.pitch)*Math.min(1,dt*8);look.pad=true;}else look.pad=false;
   if(padUsed&&pad){stick.x=pad.x;stick.y=pad.y;stick.r=W.player.onGround?pad.lx:0;}
-  else{if(opts.tilt==='on'&&tilt.ok&&!touch.held){stick.x=tilt.x;stick.y=tilt.y;}else if(touch.on){stick.x=touch.x;stick.y=touch.y;}else{stick.x=ap(stick.x,tx);stick.y=ap(stick.y,ty);}stick.r=ap(stick.r,tr);}
+  else{if(opts.tilt==='on'&&tilt.ok&&!touch.held){stick.x=tilt.x;stick.y=tilt.y;stick.tilt=true;}else if(touch.on){stick.x=touch.x;stick.y=touch.y;}else{stick.x=ap(stick.x,tx);stick.y=ap(stick.y,ty);}stick.r=ap(stick.r,tr);}
   /* on the ground, left and right on the stick (touch, tilt or arrow keys) steer the nose wheel when no rudder is given */
   if(W.player.onGround&&!tr&&!(padUsed&&pad))stick.r=stick.x;
   const up=k.ShiftLeft||k.ShiftRight||k.Equal||k.KeyR,dn=k.Minus||k.KeyF;
   if(up)lever=Math.min(1.3,lever+0.55*dt);if(dn)lever=Math.max(0,lever-0.55*dt);
   if(W.ejected){stick.x=stick.y=stick.r=0;return;}
   if(W.arJoin&&(Math.abs(stick.x)>0.35||Math.abs(stick.y)>0.35)){W.arJoin=false;toast('התקרבות אוטומטית בוטלה');}if(W.arJoin){lever=W.player.ctl.throttle;trigG=trigP=false;return;}
-  const c=W.player.ctl;c.roll=curve(stick.x);c.pitch=curve(stick.y)*(opts.inv==='on'?-1:1);c.yaw=stick.r;c.throttle=lever;c.brake=!!k.KeyB||touch.brk||!!(pad&&pad.brk);
+  const cv=opts.tilt==='on'&&tilt.ok&&!touch.held&&!(padUsed&&pad)?tcurve:curve,c=W.player.ctl;c.roll=cv(stick.x);c.pitch=cv(stick.y)*(opts.inv==='on'?-1:1);c.yaw=stick.r;c.throttle=lever;c.brake=!!k.KeyB||touch.brk||!!(pad&&pad.brk);
   if(ap.on){if(Math.abs(stick.x)>0.25||Math.abs(stick.y)>0.25||W.player.onGround){ap.on=false;beep(600,0.06);}
     else R.apSteer(W.player,vnorm(v3(Math.sin(ap.hdg),clamp((ap.alt-W.player.pos.y)/1500,-0.2,0.2),-Math.cos(ap.hdg))),0.45);}
   trigG=!!k.Space||touch.gun||tap.gun||!!(pad&&pad.gun);trigP=!!k.Enter||!!k.NumpadEnter||tap.pickle;
-  const fH=!!k.KeyC||touch.cm||tap.cm,cH=!!k.KeyQ||touch.ch||tap.ch,pH=!!(pad&&pad.cm);W.cmHeld=fH||cH||pH;W.cmKind=pH||(fH&&cH)?undefined:fH?'flare':'chaff';}
+  const fH=!!k.KeyC||touch.cm||tap.cm,cH=!!k.Quote||touch.ch||tap.ch,pH=!!(pad&&pad.cm);W.cmHeld=fH||cH||pH;W.cmKind=pH||(fH&&cH)?undefined:fH?'flare':'chaff';}
 /* iPhone Safari ignores "user-scalable=no": a quick second tap or a pinch zooms the page in, and in a full-screen game there is no way back.
    Block the gestures, swallow the second tap of a double tap (re-sending it as a click so the button still works), and if the page did zoom, snap it back. */
 {let lastT=0;const vm=document.querySelector('meta[name=viewport]');
@@ -733,22 +756,24 @@ function readInput(dt){const pad=readXR(dt)||readPad(dt);if(state!=='fly')return
 const tilt={ok:false,on:false,x:0,y:0,p0:null};
 function onTilt(e){if(e.beta==null||e.gamma==null)return;const b=e.beta*D2R,g=e.gamma*D2R,ux=-Math.cos(b)*Math.sin(g),uy=Math.sin(b),uz=Math.cos(b)*Math.cos(g);
   const a=(((screen.orientation&&screen.orientation.angle)||window.orientation||0)+360)%360;let sx=ux,sy=uy;if(a===90){sx=-uy;sy=ux;}else if(a===270){sx=uy;sy=-ux;}else if(a===180){sx=-ux;sy=-uy;}
-  const roll=-Math.atan2(sx,Math.hypot(sy,uz)),pit=Math.atan2(uz,sy);if(tilt.p0==null)tilt.p0=pit;tilt.ok=true;
+  const roll=-Math.atan2(sx,Math.hypot(sy,uz)),pit=Math.atan2(uz,sy);if(tilt.p0==null)tilt.p0=pit;tilt.ok=true;tilt.seen=performance.now();tilt.pit=pit;
   /* gentler than before: full stick at 45 degrees of roll and 32 of pitch, a wider dead zone, and smoothing so hand tremor and sensor noise do not reach the stick */
   const dz=v=>Math.abs(v)<0.1?0:(v-Math.sign(v)*0.1)/0.9,rx=dz(clamp(roll/(45*D2R),-1,1)),ry=dz(clamp((pit-tilt.p0)/(32*D2R),-1,1));
   tilt.x+=(rx-tilt.x)*0.25;tilt.y+=(ry-tilt.y)*0.25;}
 function tiltOn(ask){const add=()=>{if(!tilt.on){tilt.on=true;window.addEventListener('deviceorientation',onTilt);}};
   try{const D=window.DeviceOrientationEvent;if(D&&typeof D.requestPermission==='function'){if(ask)D.requestPermission().then(r=>{if(r==='granted')add();else{opts.tilt='off';applyOpts();}}).catch(()=>{});}else add();}catch(e){}}
 const curve=v=>Math.sign(v)*Math.pow(Math.abs(v),{low:2.2,normal:1.6,high:1.1}[opts.sens]||1.6);
+/* the tilt range is already wide, so its curve is milder than the touch stick's */
+const tcurve=v=>Math.sign(v)*Math.pow(Math.abs(v),{low:1.6,normal:1.3,high:1}[opts.sens]||1.3);
 /* touch controls */
 {const tz=$('touch'),coarse=matchMedia('(pointer:coarse)').matches;if(coarse)tz.dataset.on='1';
   const st=$('tStick'),kn=$('tKnob'),th=$('tThr'),tk=$('tThrK');
-  const mv=e=>{const r=st.getBoundingClientRect(),x=clamp((e.clientX-r.left)/r.width*2-1,-1,1),y=clamp((e.clientY-r.top)/r.height*2-1,-1,1);touch.on=true;touch.held=true;touch.x=x;touch.y=y;kn.style.transform=`translate(${x*36}px,${y*36}px)`;};
+  const mv=e=>{const r=st.getBoundingClientRect(),x=clamp((e.clientX-r.left)/r.width*2-1,-1,1),y=clamp((e.clientY-r.top)/r.height*2-1,-1,1);touch.on=true;touch.held=true;touch.x=x;touch.y=y;kn.style.transform=`translate(${x*30}px,${y*30}px) rotate(${x*14}deg) scale(${1-Math.abs(y)*0.06})`;};
   st.addEventListener('pointerdown',e=>{st.setPointerCapture(e.pointerId);mv(e);});st.addEventListener('pointermove',e=>{if(e.buttons||e.pointerType==='touch')mv(e);});
-  const end=()=>{touch.held=false;touch.x=touch.y=0;kn.style.transform='';};st.addEventListener('pointerup',end);st.addEventListener('pointercancel',end);
-  const tm=e=>{const r=th.getBoundingClientRect(),v=clamp(1-(e.clientY-r.top)/r.height,0,1);lever=v*1.3;};
+  const end=()=>{touch.held=false;touch.x=touch.y=0;kn.style.transform='';};st.addEventListener('pointerup',end);st.addEventListener('pointercancel',end);st.addEventListener('lostpointercapture',end);
+  const tm=e=>{const r=th.getBoundingClientRect(),v=clamp(1-(e.clientY-r.top)/r.height,0,1);let L=v*1.3;if(lever<=1&&L>1&&L<1.06)L=1;lever=L;};
   th.addEventListener('pointerdown',e=>{th.setPointerCapture(e.pointerId);tm(e);});th.addEventListener('pointermove',e=>{if(e.buttons||e.pointerType==='touch')tm(e);});
-  setInterval(()=>{tk.style.bottom=(lever/1.3*100)+'%';},100);
+  setInterval(()=>{tk.style.bottom=(lever/1.3*100)+'%';const ab=lever>1.001?'1':'';if(tk.dataset.ab!==ab)tk.dataset.ab=ab;},100);
   for(const b of tz.querySelectorAll('button')){const a=b.dataset.a;
     /* pointerdown, not click: a second finger does not produce a click while the first one holds the stick */
     const hold=a==='gun'||a==='cm'||a==='ch'||a==='brk';
@@ -916,7 +941,7 @@ $('checkList').addEventListener('pointerdown',e=>{const b=e.target.closest('butt
 $('autoStart').onclick=()=>{if(W){W.autoStart=!W.autoStart;checkSig='';}};
 function goImmersive(){if(touchOn&&!window.HFNative&&!document.fullscreenElement&&!matchMedia('(display-mode: fullscreen)').matches){try{const el=document.documentElement,pr=el.requestFullscreen&&el.requestFullscreen();if(pr&&pr.then)pr.then(()=>{try{const o=screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape');if(o&&o.catch)o.catch(()=>{});}catch(e){}}).catch(()=>{});}catch(e){}}
   try{if(navigator.wakeLock){const w=navigator.wakeLock.request('screen');if(w&&w.catch)w.catch(()=>{});}}catch(e){}}
-function start(mode){lowT=-99;if(opts.voice==='always')setTimeout(listen,1500);tilt.p0=null;mapOn=false;padlock=false;startedAt=performance.now();goImmersive();hush();Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();Betty.load();newGame(mode);view=0;state='fly';show('menu',false);show('pause',false);show('debrief',false);$('app').dataset.fly='1';}
+function start(mode){lowT=-99;tilt.warned=false;if(opts.tilt==='on'&&!tilt.on)tiltOn(true);tilt.seen=0;if(opts.voice==='always')setTimeout(listen,1500);tilt.p0=null;mapOn=false;padlock=false;startedAt=performance.now();goImmersive();hush();Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();Betty.load();newGame(mode);view=0;state='fly';show('menu',false);show('pause',false);show('debrief',false);$('app').dataset.fly='1';}
 const photo={az:0.9,el:0.2,dist:38,drag:false,px:0,py:0};
 function startPhoto(){if(state!=='pause')return;state='photo';show('pause',false);show('photoBar',true);photo.az=0.9;photo.el=0.2;photo.dist=38;$('app').dataset.photo='1';}
 function endPhoto(){if(state!=='photo')return;show('photoBar',false);$('app').dataset.photo='';state='pause';show('pause',true);}
@@ -1184,7 +1209,8 @@ function syncScene(dt){
     const hb=$('hookBtn'),hh=!(p.gear&&p.alive&&(p.brakeK<1||W.flags.airborne||p.hook)&&(p.agl<1500||p.onGround));if(hb.hidden!==hh)hb.hidden=hh;if(!hh){const t=p.hook?'וו: למטה':'וו בלימה';if(hb.textContent!==t)hb.textContent=t;hb.dataset.on=p.hook?'1':'';}
     {const vis=(id,on,t)=>{const b=$(id);if(b.hidden===on)b.hidden=!on;if(on&&t&&b.textContent!==t)b.textContent=t;};
       vis('padBtn',!!(W.lock&&W.lock.alive!==false)||padlock);vis('mapBtn',mfdPage===1||mapOn,mapOn?'סגור מפה':'מפה מלאה');vis('ecmBtn',mfdPage===3,W.ecm?'שיבוש: פועל':'שיבוש: כבוי');
-      vis('panelBtn',view===0&&!look.panel&&p.alive&&!xr.on);
+      vis('panelBtn',view===0&&!look.panel&&p.alive&&!xr.on);vis('tiltBtn',opts.tilt==='on'&&touchOn&&p.alive);
+      if(opts.tilt==='on'&&touchOn&&state==='fly'&&!tilt.warned&&performance.now()-startedAt>4000&&performance.now()-(tilt.seen||0)>3000){tilt.warned=true;toast('היגוי בהטיה לא מקבל נתונים מהחיישן. לחץ "כיול הטיה" כדי לאשר גישה.');}
       /* the left screen: tap it (touch) or the button under it to change page */
       const hb=$('mfdHit'),mb=$('mfdBtn');if(mfdR){hb.hidden=false;const st=hb.style,v=[mfdR.x,mfdR.y,mfdR.s].map(n=>n+'px');if(st.left!==v[0]||st.top!==v[1]||st.width!==v[2]){st.left=v[0];st.top=v[1];st.width=st.height=v[2];}}else if(!hb.hidden)hb.hidden=true;
       const mt='מסך: '+MFDN[mfdPage]+' ‹';if(mb.textContent!==mt)mb.textContent=mt;
@@ -1412,7 +1438,7 @@ function drawHUD(){tgpR=null;mfdR=null;if(W.gtgt)podLast=W.gtgt;
   const ahead=terrainH(p.pos.x+p.vel.x*5,p.pos.z+p.vel.z*5);
   hudWarn.pull=!p.onGround&&p.gearPos<0.5&&p.pos.y+p.vel.y*5<ahead+40;hudWarn.stall=!p.onGround&&(p.alpha>26.5*D2R||kcas<105&&p.gearPos<0.5);
   const wr=[];for(const d of W.dmg)if(d.lvl<2||blink)wr.push([d.t,d.lvl===2?RED:AMB]);if(sy.canopy>0.05&&pw)wr.push(['CANOPY',AMB]);if(sy.pins&&W.arm&&pw)wr.push(['WEAPON PINS IN',AMB]);if(p.dragChute)wr.push(['DRAG CHUTE',HUDC]);if(p.hook)wr.push([p.caught?'CABLE ENGAGED':'HOOK DOWN',HUDC]);if(W.photo!=null)wr.push(['PHOTO '+Math.round(W.photo*100)+'%',HUDC]);if(sy.pbrake&&lever>0.25)wr.push(['PARKING BRAKE',AMB]);
-  if(W.mwarn){const mw=W.mwarn,oc=((Math.round(mw.brg*R2D/30)+12)%12)||12;wr.push([`${mw.name} ${mw.ir?'IR':'RADAR'}  ${oc} O'CLOCK  ${(mw.R/1000).toFixed(1)}KM`,RED]);wr.push([mw.ir?'FLARES! (C)':'CHAFF! (Q)',AMB]);}
+  if(W.mwarn){const mw=W.mwarn,oc=((Math.round(mw.brg*R2D/30)+12)%12)||12;wr.push([`${mw.name} ${mw.ir?'IR':'RADAR'}  ${oc} O'CLOCK  ${(mw.R/1000).toFixed(1)}KM`,RED]);wr.push([mw.ir?'FLARES! (C)':"CHAFF! (')",AMB]);}
   if(hudWarn.pull)wr.push(['PULL UP',RED]);if(hudWarn.coll)wr.push(['COLLISION',RED]);if(hudWarn.stall)wr.push(['STALL',AMB]);
   if(!p.onGround&&p.gearPos<0.5&&p.agl<260&&kcas<210)wr.push(['GEAR',AMB]);if(p.fuel<W.bingo)wr.push(['BINGO FUEL',AMB]);if(p.gearPos>0.5&&kcas>300)wr.push(['GEAR SPEED',AMB]);
   if(clock-safeT<1.8)wr.push(['MASTER ARM SAFE — M',AMB]);
@@ -1543,7 +1569,7 @@ await prog(0.96);
 applyOpts();newGame('runway',true);requestAnimationFrame(frame);
 try{if(localStorage.getItem('haniaflight-pend')==='camp2'){localStorage.removeItem('haniaflight-pend');setTimeout(()=>openBrief(2),400);}}catch(e){}
 {const n=$('loadMs');if(n)n.textContent=(performance.now()/1000).toFixed(1);}
-window.__mpPeers=()=>MP.peers.values();window.__raam={dbgBetty:()=>({bufs:Object.keys(Betty.buf),last:Betty.last,coll:hudWarn.coll,pull:hudWarn.pull}),dbg:()=>({tgp:tgpR,fx:tgpFx.style.display,fov:tgpCam.fov,ll:landLight.visible,li:landLight.intensity,glow:nightGlow.map(g=>g.visible),tod,eco}),get W(){return W;},start,keys,setTOD,get cockpit(){return cockpit;},camera,act,opts,get state(){return state;},ready:true};
+window.__mpPeers=()=>MP.peers.values();window.__raam={look,dbgBetty:()=>({bufs:Object.keys(Betty.buf),last:Betty.last,coll:hudWarn.coll,pull:hudWarn.pull}),dbg:()=>({tgp:tgpR,fx:tgpFx.style.display,fov:tgpCam.fov,ll:landLight.visible,li:landLight.intensity,glow:nightGlow.map(g=>g.visible),tod,eco}),get W(){return W;},start,keys,setTOD,get cockpit(){return cockpit;},camera,act,opts,get state(){return state;},ready:true};
 if(demFail){opts.theatre='south';try{localStorage.setItem('haniaflight-opts',JSON.stringify(opts));}catch(e){}toast('מפת ישראל לא נטענה (אין חיבור?). חזרתי לזירת הדרום.');}
 $('loading').hidden=true;$('guide2').innerHTML=$('guide').innerHTML;
 /* a start button tapped while the world was still loading starts the flight now */

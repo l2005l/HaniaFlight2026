@@ -158,13 +158,19 @@ details[open] summary{margin-bottom:10px}
 #check p{color:var(--hud);font-weight:700;max-width:none}
 #touch[data-panel="1"] .tb{visibility:hidden}
 #touch{display:none}
-#app[data-fly="1"] #touch[data-on="1"]{display:grid;position:absolute;inset-inline:12px;bottom:8px;height:120px;grid-template-columns:112px auto 1fr auto 48px;gap:6px;direction:ltr;pointer-events:none}
+#app[data-fly="1"] #touch[data-on="1"]{display:grid;position:absolute;inset-inline:12px;bottom:8px;height:120px;grid-template-columns:112px auto 1fr auto 54px;gap:6px;direction:ltr;pointer-events:none}
 #touch>*{pointer-events:auto}
 #touch>.tgap{pointer-events:none}
-#tStick{border:1px solid var(--line);border-radius:50%;background:rgba(8,12,14,.5);display:grid;place-items:center}
-#tKnob{width:44px;height:44px;border-radius:50%;background:var(--sand);opacity:.85;pointer-events:none}
-#tThr{border:1px solid var(--line);background:rgba(8,12,14,.5);position:relative;border-radius:3px}
-#tThrK{position:absolute;left:3px;right:3px;height:10px;margin-bottom:-5px;background:var(--amber);bottom:0;pointer-events:none}
+/* touch stick: a rubber boot seen from above, with the grip on top; touch throttle: a lever in a slot with a detent at full military power */
+#tStick{border:1px solid rgba(235,230,214,.12);border-radius:50%;background:radial-gradient(circle at 50% 50%,rgba(20,23,25,.85) 0 30%,rgba(10,12,13,.75) 31% 33%,rgba(26,29,31,.7) 34% 40%,rgba(12,14,15,.7) 41% 47%,rgba(26,29,31,.65) 48% 54%,rgba(8,10,11,.55) 55% 100%);display:grid;place-items:center;box-shadow:inset 0 2px 10px rgba(0,0,0,.6)}
+#tKnob{width:58px;height:58px;background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2060%2060%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22g%22%20cx%3D%2240%25%22%20cy%3D%2235%25%22%20r%3D%2270%25%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%235a5f62%22/%3E%3Cstop%20offset%3D%22.6%22%20stop-color%3D%22%232b2f31%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23121415%22/%3E%3C/radialGradient%3E%3C/defs%3E%20%3Cellipse%20cx%3D%2230%22%20cy%3D%2233%22%20rx%3D%2222%22%20ry%3D%2224%22%20fill%3D%22%230b0c0d%22%20opacity%3D%22.55%22/%3E%20%3Cpath%20d%3D%22M14%2022%20Q14%208%2030%207%20Q46%208%2046%2022%20L45%2040%20Q44%2053%2030%2054%20Q16%2053%2015%2040%20Z%22%20fill%3D%22url%28%23g%29%22%20stroke%3D%22%230d0f10%22%20stroke-width%3D%221.5%22/%3E%20%3Cpath%20d%3D%22M17%2036%20h26%20M17%2040%20h26%20M18%2044%20h24%20M20%2048%20h20%22%20stroke%3D%22%231b1e1f%22%20stroke-width%3D%221.6%22/%3E%20%3Ccircle%20cx%3D%2222%22%20cy%3D%2217%22%20r%3D%224.2%22%20fill%3D%22%23c8312a%22%20stroke%3D%22%235a1410%22%20stroke-width%3D%221%22/%3E%3Ccircle%20cx%3D%2221%22%20cy%3D%2216%22%20r%3D%221.4%22%20fill%3D%22%23ff8a7e%22/%3E%20%3Ccircle%20cx%3D%2238%22%20cy%3D%2217%22%20r%3D%224%22%20fill%3D%22%231a1c1d%22%20stroke%3D%22%236b7073%22/%3E%3Cpath%20d%3D%22M38%2013.5%20v7%20M34.5%2017%20h7%22%20stroke%3D%22%239aa0a3%22%20stroke-width%3D%221.4%22/%3E%20%3Crect%20x%3D%2227%22%20y%3D%2223%22%20width%3D%226%22%20height%3D%225%22%20rx%3D%221.2%22%20fill%3D%22%233a3f42%22%20stroke%3D%22%236b7073%22%20stroke-width%3D%22.8%22/%3E%20%3Cpath%20d%3D%22M22%206%20Q30%201%2038%206%22%20fill%3D%22none%22%20stroke%3D%22%233a3f42%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22/%3E%3C/svg%3E") center/contain no-repeat;pointer-events:none;filter:drop-shadow(0 4px 4px rgba(0,0,0,.55));transition:transform .03s linear}
+#tThr{border:1px solid rgba(235,230,214,.12);background:linear-gradient(90deg,rgba(10,12,13,.75),rgba(24,27,29,.75) 50%,rgba(10,12,13,.75));position:relative;border-radius:6px;box-shadow:inset 0 2px 8px rgba(0,0,0,.6)}
+#tThr .slot{position:absolute;left:50%;top:6px;bottom:6px;width:6px;margin-left:-3px;border-radius:3px;background:#050606;box-shadow:inset 0 0 3px #000}
+#tThr .tick{position:absolute;left:4px;right:4px;height:1px;background:rgba(235,230,214,.22);pointer-events:none}
+#tThr .mil{bottom:76.9%;height:2px;background:rgba(255,190,85,.75)}
+#tThr .lab{position:absolute;right:2px;font:700 8px/1 var(--mono);color:rgba(235,230,214,.55);pointer-events:none}#tThr .lab.ab{bottom:calc(76.9% + 4px);color:#ffbe55}#tThr .lab.idle{bottom:3px}
+#tThrK{position:absolute;left:50%;width:46px;height:29px;margin-left:-23px;margin-bottom:-14px;background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2048%2030%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22t%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%2355595c%22/%3E%3Cstop%20offset%3D%22.5%22%20stop-color%3D%22%232a2d2f%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23111314%22/%3E%3C/linearGradient%3E%3C/defs%3E%20%3Crect%20x%3D%222%22%20y%3D%223%22%20width%3D%2244%22%20height%3D%2224%22%20rx%3D%227%22%20fill%3D%22url%28%23t%29%22%20stroke%3D%22%230b0c0d%22%20stroke-width%3D%221.5%22/%3E%20%3Cpath%20d%3D%22M8%209%20v12%20M12%209%20v12%20M16%209%20v12%22%20stroke%3D%22%231a1c1d%22%20stroke-width%3D%221.6%22/%3E%20%3Ccircle%20cx%3D%2231%22%20cy%3D%2211%22%20r%3D%223.2%22%20fill%3D%22%231a1c1d%22%20stroke%3D%22%238a9093%22%20stroke-width%3D%221%22/%3E%3Cpath%20d%3D%22M31%208.5%20v5%20M28.5%2011%20h5%22%20stroke%3D%22%239aa0a3%22%20stroke-width%3D%221%22/%3E%20%3Crect%20x%3D%2236%22%20y%3D%2216%22%20width%3D%226%22%20height%3D%226%22%20rx%3D%221.5%22%20fill%3D%22%233a3f42%22%20stroke%3D%22%238a9093%22%20stroke-width%3D%22.8%22/%3E%20%3Crect%20x%3D%2224%22%20y%3D%2218%22%20width%3D%227%22%20height%3D%224%22%20rx%3D%221%22%20fill%3D%22%23b38a2a%22/%3E%3C/svg%3E") center/contain no-repeat;bottom:0;pointer-events:none;filter:drop-shadow(0 3px 3px rgba(0,0,0,.6))}
+#tThrK[data-ab="1"]{filter:drop-shadow(0 0 6px #ff9a3c) drop-shadow(0 3px 3px rgba(0,0,0,.6))}
 .tb{display:grid;grid-template-columns:repeat(2,54px);grid-auto-rows:1fr;gap:4px;direction:rtl}
 .tb button{padding:0;font-size:.78rem;background:rgba(8,12,14,.6);min-width:0}
 .tb .wide{grid-column:span 2}
@@ -202,7 +208,7 @@ details[open] summary{margin-bottom:10px}
   <div id="radio" aria-live="polite"></div>
   <div id="toast" role="status" aria-live="polite"></div>
   <button id="lookBack" hidden>חזרה למבט קדימה</button>
-  <div id="chips" hidden><button id="mfdBtn">מסך: מכ"ם ‹</button><button id="panelBtn">לוח מתגים</button><button id="mapBtn" hidden>מפה מלאה</button><button id="ecmBtn" hidden>שיבוש</button><button id="wingBtn" hidden>שתיים</button><button id="padBtn" hidden>מבט למטרה</button><button id="nvgBtn" hidden>משקפת לילה</button><button id="micBtn" hidden>פקודה קולית</button><button id="wcamBtn" hidden>מצלמת החימוש</button><button id="pttBtn" class="radio" hidden>לחץ לדבר</button><button id="quickBtn" class="radio" hidden>הודעה</button><button id="doorBtn" hidden>פתח דלת תדלוק</button><button id="joinBtn" hidden>התקרבות אוטומטית</button><button id="hookBtn" hidden>וו בלימה</button><button id="relightBtn" class="warn" hidden>התנעה באוויר</button></div>
+  <div id="chips" hidden><button id="mfdBtn">מסך: מכ"ם ‹</button><button id="panelBtn">לוח מתגים</button><button id="tiltBtn" hidden>כיול הטיה</button><button id="mapBtn" hidden>מפה מלאה</button><button id="ecmBtn" hidden>שיבוש</button><button id="wingBtn" hidden>שתיים</button><button id="padBtn" hidden>מבט למטרה</button><button id="nvgBtn" hidden>משקפת לילה</button><button id="micBtn" hidden>פקודה קולית</button><button id="wcamBtn" hidden>מצלמת החימוש</button><button id="pttBtn" class="radio" hidden>לחץ לדבר</button><button id="quickBtn" class="radio" hidden>הודעה</button><button id="doorBtn" hidden>פתח דלת תדלוק</button><button id="joinBtn" hidden>התקרבות אוטומטית</button><button id="hookBtn" hidden>וו בלימה</button><button id="relightBtn" class="warn" hidden>התנעה באוויר</button></div>
   <div id="check" hidden>
     <div class="chead"><b>רשימת תיוג להתנעה</b><button id="autoStart">התנעה אוטומטית</button></div>
     <ol id="checkList"></ol>
@@ -221,7 +227,7 @@ details[open] summary{margin-bottom:10px}
       <button id="tbGun" data-a="gun">הדק</button><button id="tbTgt" data-a="tgt">נעילה</button>
       <button id="tbWpn" data-a="wpn">חימוש</button><button id="tbCm" data-a="cm">נורים</button><button id="tbCh" data-a="ch">מוץ</button>
     </div>
-    <div id="tThr"><div id="tThrK"></div></div>
+    <div id="tThr"><div class="slot"></div><i class="tick" style="bottom:19.2%"></i><i class="tick" style="bottom:38.5%"></i><i class="tick" style="bottom:57.7%"></i><i class="tick mil"></i><span class="lab ab">AB</span><span class="lab idle">IDL</span><div id="tThrK"></div></div>
   </div>
 
   <section id="menu" class="sheet">
@@ -567,7 +573,7 @@ details[open] summary{margin-bottom:10px}
         <div><h4>משחק עם חברים</h4><ul>
           <li>בלשונית "טיסה": "משחק עם חברים". אחד פותח חדר ושולח את הקוד (או את הקישור), השאר מצטרפים. עד 4 שחקנים.</li>
           <li><b>יחד</b>: כולם באותה משימה של המארח, מול אותו אויב. <b>כל אחד לבד</b>: קרב אוויר, כל אחד מתחיל 22 ק"מ מהמרכז. <b>כחול נגד אדום</b>: שני צוותים, כל צוות מתחיל יחד בצד אחר; בני הצוות מופיעים כידידים, ותדר 2 הוא תדר הצוות.</li>
-          <li>קשר: "לחץ לדבר" (או מקש <b>`</b>) כל עוד מדברים. תדר 1 שומעים כולם, תדר 2 רק מי שבחר בו. "הודעה" (או <b>'</b>) שולח הודעה מוכנה.</li>
+          <li>קשר: "לחץ לדבר" (או מקש <b>`</b>) כל עוד מדברים. תדר 1 שומעים כולם, תדר 2 רק מי שבחר בו. "הודעה" (או <b>F2</b>) שולח הודעה מוכנה.</li>
           <li>כשאין חיבור ישיר בין המכשירים, המשחק עובר דרך השרת. במצב כזה הקול לא עובר, וההודעות המוכנות כן.</li>
           <li>במשחק רשת אין האצת זמן. השהיה עוצרת רק אצלך.</li>
         </ul></div>
@@ -606,7 +612,7 @@ details[open] summary{margin-bottom:10px}
         <kbd>Enter</kbd><span>פיקל: שיגור הטיל או שחרור הפצצה שנבחרו</span>
         <kbd>1 2 3 4</kbd><span>AIM-120 · פייתון · כוונת תותח · אוויר־קרקע</span>
         <kbd>T · U</kbd><span>נעילה על המטרה הבאה · שחרור נעילה</span>
-        <kbd>C · Q</kbd><span>נורים (נגד טילים מבייתי חום) · מוץ (נגד טילי מכ"ם)</span>
+        <kbd>C · '</kbd><span>נורים (נגד טילים מבייתי חום) · מוץ (נגד טילי מכ"ם, המקש שמשמאל ל-Enter)</span>
         <kbd>G · L · B</kbd><span>כן נסע · מדפים · מעצור אוויר ובלמים (בלחיצה רצופה)</span>
         <kbd>H · J</kbd><span>טייס אוטומטי (שומר גובה וכיוון) · השלכת חימוש קרקע</span>
         <kbd>Y · , .</kbd><span>מצב מכ"ם (חיפוש או קרב צמוד) · טווח המכ"ם קטן וגדול</span>
@@ -614,7 +620,7 @@ details[open] summary{margin-bottom:10px}
         <kbd>[</kbd><span>פקודה קולית: לחץ ואמור, למשל "שתיים תקוף", "כן נסע", "נעל", "נורים", "מגדל, בקשה לנחיתה". צריך להפעיל בתפריט.</span>
         <kbd>\</kbd><span>התקרבות אוטומטית למתדלק, עד 40 מטר מאחורי הזרוע. הזזת המוט מבטלת.</span>
         <kbd>`</kbd><span>במשחק רשת: לחוץ כדי לדבר בקשר (המקש שמשמאל ל-1).</span>
-        <kbd>'</kbd><span>במשחק רשת: הודעות מוכנות. בוחרים במספר.</span>
+        <kbd>F2</kbd><span>במשחק רשת: הודעות מוכנות. בוחרים במספר.</span>
         <kbd>/</kbd><span>מצלמת החימוש: מעביר את חלון הפוד למצלמה של פצצת SPICE או של טיל שיוט שבאוויר, ובחזרה. ל-JDAM ולפצצת לייזר אין מצלמה. בחלון הפוד מופיע TOF, הזמן עד הפגיעה, ואחרי פגיעה הפוד נשאר על המטרה 8 שניות כדי לראות את הפיצוץ.</span>
         <kbd>6 · ;</kbd><span>וו בלימה (נתפס בכבל 300 מטר לפני סוף המסלול) · התנעת מנוע באוויר אחרי כבייה, מעל 215 קשר</span>
         <kbd>X</kbd><span>מבט אל לוח המתגים. לוחצים על מתג כדי להפעיל אותו.</span>
@@ -623,7 +629,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט. לחיצה על המוט השמאלי: וו בלימה, על הימני: מבט למטרה. Start מתחיל טיסה מהתפריט. באפליקציית האנדרואיד השלט עובד דרך האפליקציה עצמה.</p>
     </details>
-    <p class="note">גרסה 2.1.1 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
+    <p class="note">גרסה 2.2 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
     </div>
     <div id="dock">
     <div id="update" role="status" aria-live="polite" hidden>
