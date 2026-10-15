@@ -44,7 +44,7 @@ if('serviceWorker' in navigator){(function(){
 """
 i = head.index('<div id="app"')
 page = ('<!doctype html>\n<html lang="he">\n<head>\n<meta charset="utf-8">\n'
-        '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">\n'
+        '<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no">\n'
         '<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>\n'
         + APP + head[:i] + '</head>\n<body>\n' + head[i:] + scripts('vendor/three.min.js') + SW + '</body>\n</html>\n')
 ver = hashlib.sha1((page + read('vendor/three.min.js') + read('src/sw.js')).encode('utf8')).hexdigest()[:7]

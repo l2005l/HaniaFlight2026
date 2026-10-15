@@ -721,15 +721,25 @@ function readInput(dt){const pad=readXR(dt)||readPad(dt);if(state!=='fly')return
     else R.apSteer(W.player,vnorm(v3(Math.sin(ap.hdg),clamp((ap.alt-W.player.pos.y)/1500,-0.2,0.2),-Math.cos(ap.hdg))),0.45);}
   trigG=!!k.Space||touch.gun||tap.gun||!!(pad&&pad.gun);trigP=!!k.Enter||!!k.NumpadEnter||tap.pickle;
   W.cmHeld=!!k.KeyC||touch.cm||tap.cm||!!(pad&&pad.cm);}
+/* iPhone Safari ignores "user-scalable=no": a quick second tap or a pinch zooms the page in, and in a full-screen game there is no way back.
+   Block the gestures, swallow the second tap of a double tap (re-sending it as a click so the button still works), and if the page did zoom, snap it back. */
+{let lastT=0;const vm=document.querySelector('meta[name=viewport]');
+  for(const ev of['gesturestart','gesturechange','gestureend'])document.addEventListener(ev,e=>e.preventDefault(),{passive:false});
+  document.addEventListener('touchend',e=>{const now=e.timeStamp;if(now-lastT<350&&e.changedTouches.length===1){const t=e.target;if(!(t.closest&&t.closest('input,textarea,select'))){e.preventDefault();if(t.closest&&t.closest('button,a,[data-opt]')&&!(t.closest('#touch')))t.closest('button,a,[data-opt]').click();}}lastT=now;},{passive:false});
+  document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});
+  const unzoom=()=>{if(!window.visualViewport||visualViewport.scale<=1.01||!vm)return;const c=vm.content;vm.content=c.replace(/maximum-scale=[\d.]+/,'maximum-scale=1.01');requestAnimationFrame(()=>{vm.content=c;});};
+  if(window.visualViewport)visualViewport.addEventListener('resize',()=>setTimeout(unzoom,120));}
 /* tilt to fly: the phone is the stick. Roll it like a wheel, tip the top edge towards you to pull. */
 const tilt={ok:false,on:false,x:0,y:0,p0:null};
 function onTilt(e){if(e.beta==null||e.gamma==null)return;const b=e.beta*D2R,g=e.gamma*D2R,ux=-Math.cos(b)*Math.sin(g),uy=Math.sin(b),uz=Math.cos(b)*Math.cos(g);
   const a=(((screen.orientation&&screen.orientation.angle)||window.orientation||0)+360)%360;let sx=ux,sy=uy;if(a===90){sx=-uy;sy=ux;}else if(a===270){sx=uy;sy=-ux;}else if(a===180){sx=-ux;sy=-uy;}
   const roll=-Math.atan2(sx,Math.hypot(sy,uz)),pit=Math.atan2(uz,sy);if(tilt.p0==null)tilt.p0=pit;tilt.ok=true;
-  const dz=v=>Math.abs(v)<0.06?0:(v-Math.sign(v)*0.06)/0.94;tilt.x=dz(clamp(roll/(30*D2R),-1,1));tilt.y=dz(clamp((pit-tilt.p0)/(22*D2R),-1,1));}
+  /* gentler than before: full stick at 45 degrees of roll and 32 of pitch, a wider dead zone, and smoothing so hand tremor and sensor noise do not reach the stick */
+  const dz=v=>Math.abs(v)<0.1?0:(v-Math.sign(v)*0.1)/0.9,rx=dz(clamp(roll/(45*D2R),-1,1)),ry=dz(clamp((pit-tilt.p0)/(32*D2R),-1,1));
+  tilt.x+=(rx-tilt.x)*0.25;tilt.y+=(ry-tilt.y)*0.25;}
 function tiltOn(ask){const add=()=>{if(!tilt.on){tilt.on=true;window.addEventListener('deviceorientation',onTilt);}};
   try{const D=window.DeviceOrientationEvent;if(D&&typeof D.requestPermission==='function'){if(ask)D.requestPermission().then(r=>{if(r==='granted')add();else{opts.tilt='off';applyOpts();}}).catch(()=>{});}else add();}catch(e){}}
-const curve=v=>Math.sign(v)*Math.pow(Math.abs(v),{low:1.9,normal:1.35,high:1}[opts.sens]||1);
+const curve=v=>Math.sign(v)*Math.pow(Math.abs(v),{low:2.2,normal:1.6,high:1.1}[opts.sens]||1.6);
 /* touch controls */
 {const tz=$('touch'),coarse=matchMedia('(pointer:coarse)').matches;if(coarse)tz.dataset.on='1';
   const st=$('tStick'),kn=$('tKnob'),th=$('tThr'),tk=$('tThrK');
