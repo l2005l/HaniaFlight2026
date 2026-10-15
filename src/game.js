@@ -671,6 +671,7 @@ function act(a){if(!W||state!=='fly')return;const p=W.player;
   else if(a==='wing'){const w=W.wing;if(!w){toast('אין מספר שתיים במשימה הזאת');return;}const nx=w.mode==='form'?'attack':w.mode==='attack'?'cover':'form';W.wingCmd(nx==='attack'&&!(W.w.sel==='SPICE'?W.gtgt:(W.lock||W.irTgt))?'cover':nx);beep(1100,0.04);}
   else if(a==='ecm'){W.sw('ecm');toast(W.ecm?'שיבוש פועל: האויב רואה אותך מקרוב יותר, וגם המכ"ם שלך קצר יותר':'שיבוש כבוי');}
   else if(a==='map'){mapOn=!mapOn;beep(800,0.03);}
+  else if(a==='reset'){if(!W.resetFaults())toast('אין מערכת שאפשר לאפס');}
   else if(a==='mfd'){mfdPage=(mfdPage+1)%MFDP.length;beep(1100,0.03);}
   else if(a==='padlock'){if(!padlock&&!(W.lock||W.irTgt)){toast('אין מטרה לעקוב אחריה. נעל מטרה קודם.');}else{padlock=!padlock;if(padlock){view=0;look.panel=false;}beep(1000,0.04);toast(padlock?'מבט נעול על המטרה':'מבט חופשי');}}
   else if(a==='nvg'){if(tod==='night'){setNVG(!nvg);beep(700,0.05);toast(nvg?'משקפת לילה פועלת':'משקפת לילה כבויה');}else toast('משקפת לילה מיועדת לטיסת לילה');}
@@ -697,7 +698,7 @@ for(const ev of['pointerup','pointercancel'])glc.addEventListener(ev,e=>{if(e.po
   /* looking well down at the panel holds the view there; looking back up releases it */
   if(!look.panel&&look.pitch<-0.36)look.panel=true;else if(look.panel&&look.pitch>(touchOn?-0.55:-0.3))look.panel=false;});
 $('lookBack').onclick=()=>{look.panel=false;};$('nvgBtn').onclick=()=>act('nvg');$('mapBtn').onclick=()=>act('map');$('ecmBtn').onclick=()=>act('ecm');$('wingBtn').onclick=()=>act('wing');$('padBtn').onclick=()=>act('padlock');$('hookBtn').onclick=()=>act('hook');$('micBtn').onclick=()=>{if(voice.busy)micStop();else listen();};$('joinBtn').onclick=()=>act('join');
-$('bettyTest').onclick=()=>{Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();Betty.load();const k=['pull','bingo','coll','msl'][(Betty.tn=(Betty.tn||0)+1)%4];setTimeout(()=>{delete Betty.last[k];if(!Betty.say(k,10,0))toast(opts.betty==='off'?'ההתרעות הקוליות כבויות':'הצליל עוד נטען, נסה שוב');},350);};$('doorBtn').onclick=()=>act('ardoor');$('mfdHit').onclick=()=>act('mfd');$('mfdBtn').onclick=()=>act('mfd');$('panelBtn').onclick=()=>act('panel');$('tiltBtn').onclick=()=>{if(!tilt.on)tiltOn(true);tilt.p0=tilt.pit??null;toast('הטיה: המצב הנוכחי הוא עכשיו "ישר"');};
+$('bettyTest').onclick=()=>{Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();Betty.load();const k=['pull','bingo','coll','msl'][(Betty.tn=(Betty.tn||0)+1)%4];setTimeout(()=>{delete Betty.last[k];if(!Betty.say(k,10,0))toast(opts.betty==='off'?'ההתרעות הקוליות כבויות':'הצליל עוד נטען, נסה שוב');},350);};$('doorBtn').onclick=()=>act('ardoor');$('mfdHit').onclick=()=>act('mfd');$('mfdBtn').onclick=()=>act('mfd');$('panelBtn').onclick=()=>act('panel');$('resetBtn').onclick=()=>act('reset');$('tiltBtn').onclick=()=>{if(!tilt.on)tiltOn(true);tilt.p0=tilt.pit??null;toast('הטיה: המצב הנוכחי הוא עכשיו "ישר"');};
 $('wcamBtn').onclick=()=>act('wcam');$('relightBtn').onclick=()=>act('relight');
 addEventListener('keydown',e=>{
   if(state==='photo'&&(e.code==='Escape'||e.code==='KeyP')){endPhoto();return;}
@@ -844,8 +845,8 @@ function updAudio(dt){if(!Snd.ac||!W)return;const p=W.player,fly=state==='fly'&&
   else if(air&&p.flame&&p.flame.some((f,i)=>f&&p.rpm[i]<0.5))Betty.say('eng',5,9);
   else if(air&&p.g>lim)Betty.say('overg',5,3);
   else if(air&&p.gearPos<0.5&&p.agl<260&&kc<210&&p.vel.y<0)Betty.say('gear',4,8);
-  else if(p.fuel<W.bingo*0.5)Betty.say('fuel',3,60);
-  else if(p.fuel<W.bingo)Betty.say('bingo',3,120);
+  else if(W.fuelShown<W.bingo*0.5)Betty.say('fuel',3,60);
+  else if(W.fuelShown<W.bingo)Betty.say('bingo',3,120);
   a2.mw=!!W.mwarn;}
 /* ================= VR (WebXR) ================= */
 /* in a headset the cockpit is all around you: the view follows your head, a HUD panel sits on the combiner glass,
@@ -889,7 +890,7 @@ const VCMD=[[/(שחרר|בטל) נעילה/,'unlock','שחרור נעילה'],[/
   [/מגדל.*נחית|בקשה לנחיתה/,'atc_land','בקשת נחיתה'],[/מגדל.*המרא|בקשה להמראה/,'atc_to','בקשת המראה'],[/כן נסע|גלגלים/,'gear','כן נסע'],[/מדפים/,'flaps','מדפים'],[/נעל|נעילה|מטרה הבאה/,'tgt','נעילה'],
   [/מאסטר|חמש|נצור/,'arm','מאסטר ארם'],[/נורים|פלרים/,'cm','נורים'],[/מוץ/,'chaff','מוץ'],[/מפה/,'map','מפה'],[/טייס אוטומטי/,'ap','טייס אוטומטי'],[/דלת תדלוק/,'ardoor','דלת תדלוק'],[/התקרבות|מתדלק/,'join','התקרבות למתדלק'],
   [/שיבוש/,'ecm','שיבוש'],[/(^|\s)וו(\s|$)|וו בלימה/,'hook','וו בלימה'],[/התנעה|התנע/,'relight','התנעה באוויר'],[/משקפת/,'nvg','משקפת לילה'],[/השלך/,'jett','השלכה'],
-  [/טיל מכ"?ם|אמרם|מכ"ם|מכם/,'s_AIM120','טיל מכ"ם'],[/פייתון|טיל חום|תרמי/,'s_PYTHON','טיל תרמי'],[/תותח/,'s_GUN','תותח'],[/פצצ|קרקע|דלילה|טיל ים|טילי ים/,'s_SPICE','חימוש לקרקע'],[/מבט|מצלמה/,'view','החלפת מבט'],[/השהי|עצור משחק/,'pause','השהיה']];
+  [/טיל מכ"?ם|אמרם|מכ"ם|מכם/,'s_AIM120','טיל מכ"ם'],[/פייתון|טיל חום|תרמי/,'s_PYTHON','טיל תרמי'],[/תותח/,'s_GUN','תותח'],[/פצצ|קרקע|דלילה|טיל ים|טילי ים/,'s_SPICE','חימוש לקרקע'],[/מבט|מצלמה/,'view','החלפת מבט'],[/השהי|עצור משחק/,'pause','השהיה'],[/ריסט|אתחול/,'reset','ריסט מערכות']];
 function heard(alts){if(state!=='fly')return;for(const raw of alts){const t=String(raw).replace(/[\u0591-\u05C7]/g,'').trim();for(const[re,cmd,label]of VCMD)if(re.test(t)){doVoice(cmd);toast(`פקודה קולית: ${label}`);return;}}toast(`פקודה קולית: לא הבנתי: "${alts[0]||''}"`);}
 function doVoice(c){const p=W.player;
   if(c.startsWith('s_')){W.select(c.slice(2));beep(900,0.04);}
@@ -1209,7 +1210,7 @@ function syncScene(dt){
     const hb=$('hookBtn'),hh=!(p.gear&&p.alive&&(p.brakeK<1||W.flags.airborne||p.hook)&&(p.agl<1500||p.onGround));if(hb.hidden!==hh)hb.hidden=hh;if(!hh){const t=p.hook?'וו: למטה':'וו בלימה';if(hb.textContent!==t)hb.textContent=t;hb.dataset.on=p.hook?'1':'';}
     {const vis=(id,on,t)=>{const b=$(id);if(b.hidden===on)b.hidden=!on;if(on&&t&&b.textContent!==t)b.textContent=t;};
       vis('padBtn',!!(W.lock&&W.lock.alive!==false)||padlock);vis('mapBtn',mfdPage===1||mapOn,mapOn?'סגור מפה':'מפה מלאה');vis('ecmBtn',mfdPage===3,W.ecm?'שיבוש: פועל':'שיבוש: כבוי');
-      vis('panelBtn',view===0&&!look.panel&&p.alive&&!xr.on);vis('tiltBtn',opts.tilt==='on'&&touchOn&&p.alive);
+      vis('panelBtn',view===0&&!look.panel&&p.alive&&!xr.on);{const rs=R.World.RESETTABLE.filter(k=>W.flt[k]),busy=rs.some(k=>W.flt[k].rt!=null);vis('resetBtn',rs.length>0&&p.alive,busy?'ריסט…':'ריסט מערכות');$('resetBtn').disabled=busy;}vis('tiltBtn',opts.tilt==='on'&&touchOn&&p.alive);
       if(opts.tilt==='on'&&touchOn&&state==='fly'&&!tilt.warned&&performance.now()-startedAt>4000&&performance.now()-(tilt.seen||0)>3000){tilt.warned=true;toast('היגוי בהטיה לא מקבל נתונים מהחיישן. לחץ "כיול הטיה" כדי לאשר גישה.');}
       /* the left screen: tap it (touch) or the button under it to change page */
       const hb=$('mfdHit'),mb=$('mfdBtn');if(mfdR){hb.hidden=false;const st=hb.style,v=[mfdR.x,mfdR.y,mfdR.s].map(n=>n+'px');if(st.left!==v[0]||st.top!==v[1]||st.width!==v[2]){st.left=v[0];st.top=v[1];st.width=st.height=v[2];}}else if(!hb.hidden)hb.hidden=true;
@@ -1281,7 +1282,7 @@ function getMapBg(){const{nx,nz,cell,x0,z0}=TER,WX=(nx-1)*cell,WZ=(nz-1)*cell;
   if(!mapBg){const BW=WX>=WZ?312:400,BH=WX>=WZ?180:800;mapBg=document.createElement('canvas');mapBg.width=BW;mapBg.height=BH;const x=mapBg.getContext('2d'),im=x.createImageData(BW,BH),d=im.data;
     for(let j=0;j<BH;j++)for(let i=0;i<BW;i++){const px=x0+i/(BW-1)*WX,pz=z0+j/(BH-1)*WZ,h=terrainH(px,pz),hr=terrainH(x0+(i+1)/(BW-1)*WX,pz),k=(j*BW+i)*4,t=clamp(h/1500,0,1),sh=clamp((h-hr)/90,-1,1)*26;
       if(R.isWater(px,pz)){d[k]=20;d[k+1]=46;d[k+2]=66;}else{d[k]=70+t*62+sh;d[k+1]=68+t*44+sh;d[k+2]=50+t*26+sh;}d[k+3]=255;}x.putImageData(im,0,0);}return mapBg;}
-function drawMap(p,e){const{nx,nz,cell,x0,z0}=TER,WX=(nx-1)*cell,WZ=(nz-1)*cell;getMapBg();
+function drawMap(p,e){if(W.flt.map){ctx.save();ctx.fillStyle='rgba(2,6,8,0.7)';ctx.fillRect(0,0,vw,vh);txt('NO MAP DATA',vw/2,vh/2,'center',18,AMB);ctx.restore();return;}const{nx,nz,cell,x0,z0}=TER,WX=(nx-1)*cell,WZ=(nz-1)*cell;getMapBg();
   const top=mapBox?2:touchOn?8:46,bot=mapBox?2:touchOn?(opts.ui==='large'?166:136):20,AW=vw-24,AH=vh-top-bot;
   /* the whole country is too tall for a landscape screen: on the real map, show the area of the mission (you, the route and the threats) */
   let vx0=x0,vz0=z0,VW=WX,VZ=WZ;if(theatre0==='israel'){const P=[[p.pos.x,p.pos.z],[0,0],...W.wps.map(q=>[q.x,q.z]),...W.sams.filter(q=>q.alive&&!(q.silent&&!q.awake)).map(q=>[q.pos.x,q.pos.z])];
@@ -1300,13 +1301,13 @@ function drawMap(p,e){const{nx,nz,cell,x0,z0}=TER,WX=(nx-1)*cell,WZ=(nz-1)*cell;
   for(const q of W.sams){if(!q.alive||(q.silent&&!q.awake))continue;const r=Math.min(W.d.samR*q.rk,60000*W.sig*Math.min(1.25,q.rk+0.25))*s;ctx.strokeStyle=RED;ctx.fillStyle='rgba(255,92,79,0.13)';ctx.beginPath();ctx.arc(X(q.pos.x),Y(q.pos.z),r,0,7);ctx.fill();ctx.stroke();txt(q.sym==='SA'?'SAM':'SA-'+q.sym,X(q.pos.x),Y(q.pos.z)-r-8,'center',10,RED);}
   for(const g of W.ground){if(!g.alive||g.kind==='launcher'||g.hid)continue;ctx.strokeStyle=g.kind==='radar'?RED:AMB;ctx.strokeRect(X(g.pos.x)-3,Y(g.pos.z)-3,6,6);}
 
-  ctx.strokeStyle=SND;ctx.setLineDash([7,5]);ctx.beginPath();ctx.moveTo(X(p.pos.x),Y(p.pos.z));for(let i=W.wp;i<W.wps.length;i++)ctx.lineTo(X(W.wps[i].x),Y(W.wps[i].z));ctx.stroke();ctx.setLineDash([]);
+  ctx.strokeStyle=SND;ctx.setLineDash([7,5]);ctx.beginPath();const NPm=W.navPos();ctx.moveTo(X(NPm.x),Y(NPm.z));for(let i=W.wp;i<W.wps.length;i++)ctx.lineTo(X(W.wps[i].x),Y(W.wps[i].z));ctx.stroke();ctx.setLineDash([]);
   W.wps.forEach((q,i)=>{const cur=i===W.wp;ctx.strokeStyle=cur?HUDC:SND;ctx.lineWidth=cur?2:1.3;ctx.beginPath();ctx.arc(X(q.x),Y(q.z),5,0,7);ctx.stroke();txt(q.n,X(q.x),Y(q.z)-13,'center',11,cur?HUDC:SND);});ctx.lineWidth=1.3;
   ctx.fillStyle=SND;ctx.fillRect(X(RWY.x1),Y(0)-1.5,Math.max(8,(RWY.x2-RWY.x1)*s),3);
   for(const k of W.friends){if(!k.alive)continue;ctx.strokeStyle=HUDC;ctx.beginPath();ctx.arc(X(k.pos.x),Y(k.pos.z),5,0,7);ctx.stroke();if(k.type==='HELO'){ctx.strokeStyle=HUDC;ctx.beginPath();ctx.arc(X(W.csarP.x),Y(W.csarP.z),4,0,7);ctx.stroke();}txt(k.type==='TANKER'?'TANKER':k.label||'2',X(k.pos.x),Y(k.pos.z)+14,'center',10);}
   for(const c of W.contacts){if(c.fr)continue;ctx.fillStyle=RED;ctx.fillRect(X(c.e.pos.x)-4,Y(c.e.pos.z)-2,8,4);if(c.e===W.lock){ctx.strokeStyle=RED;ctx.beginPath();ctx.arc(X(c.e.pos.x),Y(c.e.pos.z),8,0,7);ctx.stroke();}}
   ctx.translate(X(p.pos.x),Y(p.pos.z));ctx.rotate(e.hdg);ctx.fillStyle=HUDC;ctx.strokeStyle='#04140a';ctx.beginPath();ctx.moveTo(0,-11);ctx.lineTo(7,8);ctx.lineTo(0,4);ctx.lineTo(-7,8);ctx.closePath();ctx.fill();ctx.stroke();
-  ctx.restore();ctx.shadowBlur=0;const wp=W.wps[W.wp],dw=Math.hypot(wp.x-p.pos.x,wp.z-p.pos.z),bw=(Math.atan2(wp.x-p.pos.x,-(wp.z-p.pos.z))*R2D+360)%360;
+  ctx.restore();ctx.shadowBlur=0;const wp=W.wps[W.wp],np0=W.navPos(),dw=Math.hypot(wp.x-np0.x,wp.z-np0.z),bw=(Math.atan2(wp.x-np0.x,-(wp.z-np0.z))*R2D+360)%360;
   txt(`MAP · N UP · GRID 50 KM`,ox+6,oy+mh2-10,'left',11,'#ebe6d6');txt(`${wp.n}  ${String(Math.round(bw)%360).padStart(3,'0')}° / ${(dw/NM).toFixed(0)} NM`,ox+mw-6,oy+mh2-10,'right',12,HUDC);u=su;}
 /* targeting pod picture: a second, zoomed camera drawn into a corner of the view */
 let tgpR=null;const tgpCam=new T.PerspectiveCamera(3,1,20,260000),tgpFx=document.createElement('div');
@@ -1372,7 +1373,7 @@ function drawHUD(){tgpR=null;mfdR=null;if(W.gtgt)podLast=W.gtgt;
   ctx.save();ctx.beginPath();ctx.rect(hx-22*ppd,ty-22*u,44*ppd,44*u);ctx.clip();
   for(let d=Math.floor((hd-24)/5)*5;d<=hd+24;d+=5){const x=hx+(d-hd)*ppd,dd=((d%360)+360)%360;line(x,ty,x,ty+(dd%10?5:9)*u);if(dd%10===0)txt(String(dd/10).padStart(2,'0'),x,ty-10*u,'center',14);}
   ctx.restore();line(hx-6*u,ty+20*u,hx,ty+11*u,hx+6*u,ty+20*u);
-  const wp=W.wps[W.wp],wb=Math.atan2(wp.x-p.pos.x,-(wp.z-p.pos.z)),wd=Math.hypot(wp.x-p.pos.x,wp.z-p.pos.z);
+  const wp=W.wps[W.wp],np1=W.navPos(),wb=Math.atan2(wp.x-np1.x,-(wp.z-np1.z)),wd=Math.hypot(wp.x-np1.x,wp.z-np1.z);
   let rb=((wb-e.hdg)*R2D+540)%360-180;const wx=hx+clamp(rb,-21,21)*ppd;ctx.strokeStyle=ctx.fillStyle=HUDC;line(wx,ty+10*u,wx-5*u,ty+19*u,wx+5*u,ty+19*u,wx,ty+10*u);line(wx,ty+19*u,wx,ty+26*u);
   /* speed / altitude */
   const sx=hx-mh*0.33,ax=hx+mh*0.33;
@@ -1440,7 +1441,7 @@ function drawHUD(){tgpR=null;mfdR=null;if(W.gtgt)podLast=W.gtgt;
   const wr=[];for(const d of W.dmg)if(d.lvl<2||blink)wr.push([d.t,d.lvl===2?RED:AMB]);if(sy.canopy>0.05&&pw)wr.push(['CANOPY',AMB]);if(sy.pins&&W.arm&&pw)wr.push(['WEAPON PINS IN',AMB]);if(p.dragChute)wr.push(['DRAG CHUTE',HUDC]);if(p.hook)wr.push([p.caught?'CABLE ENGAGED':'HOOK DOWN',HUDC]);if(W.photo!=null)wr.push(['PHOTO '+Math.round(W.photo*100)+'%',HUDC]);if(sy.pbrake&&lever>0.25)wr.push(['PARKING BRAKE',AMB]);
   if(W.mwarn){const mw=W.mwarn,oc=((Math.round(mw.brg*R2D/30)+12)%12)||12;wr.push([`${mw.name} ${mw.ir?'IR':'RADAR'}  ${oc} O'CLOCK  ${(mw.R/1000).toFixed(1)}KM`,RED]);wr.push([mw.ir?'FLARES! (C)':"CHAFF! (')",AMB]);}
   if(hudWarn.pull)wr.push(['PULL UP',RED]);if(hudWarn.coll)wr.push(['COLLISION',RED]);if(hudWarn.stall)wr.push(['STALL',AMB]);
-  if(!p.onGround&&p.gearPos<0.5&&p.agl<260&&kcas<210)wr.push(['GEAR',AMB]);if(p.fuel<W.bingo)wr.push(['BINGO FUEL',AMB]);if(p.gearPos>0.5&&kcas>300)wr.push(['GEAR SPEED',AMB]);
+  if(!p.onGround&&p.gearPos<0.5&&p.agl<260&&kcas<210)wr.push(['GEAR',AMB]);if(W.fuelShown<W.bingo)wr.push(['BINGO FUEL',AMB]);if(p.gearPos>0.5&&kcas>300)wr.push(['GEAR SPEED',AMB]);
   if(clock-safeT<1.8)wr.push(['MASTER ARM SAFE — M',AMB]);
   if(p.onGround&&W.time<25&&lever<0.05&&W.stats.start==='runway')wr.push(['HOLD SHIFT — THROTTLE UP',HUDC]);
   if(pw||touchOn||view===1)wr.forEach((q,i)=>{if(q[1]!==RED||blink)txt(q[0],cx,cy-m*0.25+i*24*u,'center',19,q[1]);});
@@ -1463,21 +1464,21 @@ function drawHUD(){tgpR=null;mfdR=null;if(W.gtgt)podLast=W.gtgt;
     const gb=(pos)=>{const az=((Math.atan2(pos.x-p.pos.x,-(pos.z-p.pos.z))-e.hdg)+9*Math.PI)%(2*Math.PI)-Math.PI,r=Math.hypot(pos.x-p.pos.x,pos.z-p.pos.z);return Math.abs(az)<60*D2R&&r<Rm?[X(az),Y(r)]:null;};
     for(const g of W.ground){if(!g.alive||g.kind==='launcher'||g.hid)continue;const q=gb(g.pos);if(!q)continue;ctx.strokeStyle=g.kind==='radar'?RED:AMB;const d=4*u;ctx.strokeRect(q[0]-d,q[1]-d,2*d,2*d);if(g===W.gtgt&&w.sel==='SPICE'){ctx.beginPath();ctx.arc(q[0],q[1],8*u,0,7);ctx.stroke();}}
     ctx.strokeStyle=HUDC;const q=gb(wp);if(q&&sy.ins>=1){ctx.beginPath();ctx.arc(q[0],q[1],4*u,0,7);ctx.stroke();}};
-  const mfdRwr=(x,y0,ms)=>{if(!pw)return dark(x,y0,ms,ms);bg(x,y0,ms,ms,W.dmgRwr?'TEWS FAIL':'TEWS');const ox=x+ms/2,oy=y0+ms/2+4*u,rr=ms/2-12*u;ctx.strokeStyle='rgba(116,255,150,0.3)';ctx.beginPath();ctx.arc(ox,oy,rr,0,7);ctx.stroke();ctx.beginPath();ctx.arc(ox,oy,rr*0.5,0,7);ctx.stroke();line(ox,oy-6*u,ox,oy+6*u);line(ox-6*u,oy,ox+6*u,oy);
+  const mfdRwr=(x,y0,ms)=>{if(!pw||(W.flt.mfd&&W.flt.mfd.s==='R'))return dark(x,y0,ms,ms);bg(x,y0,ms,ms,W.dmgRwr?'TEWS FAIL':'TEWS');const ox=x+ms/2,oy=y0+ms/2+4*u,rr=ms/2-12*u;ctx.strokeStyle='rgba(116,255,150,0.3)';ctx.beginPath();ctx.arc(ox,oy,rr,0,7);ctx.stroke();ctx.beginPath();ctx.arc(ox,oy,rr*0.5,0,7);ctx.stroke();line(ox,oy-6*u,ox,oy+6*u);line(ox-6*u,oy,ox+6*u,oy);
     for(const t of W.threats||[]){const r=rr*[0.86,0.66,0.46,0.3][t.lvl],px=ox+Math.sin(t.brg)*r,py=oy-Math.cos(t.brg)*r,col=t.lvl>=3?RED:t.lvl===2?RED:t.lvl===1?AMB:HUDC;
       if(t.lvl>=2&&!blink&&t.sym!=='M')continue;txt(t.sym==='M'?(t.ir?'M·IR':'M·R'):t.sym,px,py,'center',13,col);ctx.strokeStyle=col;if(t.lvl>=1){const d=10*u;line(px,py-d,px+d,py,px,py+d,px-d,py,px,py-d);}}
     txt('CH '+w.chaff,x+5*u,y0+ms-9*u,'left',11);txt('FL '+w.flare,x+ms-5*u,y0+ms-9*u,'right',11);};
-  const mfdEng=(x,y0,bw,bh)=>{if(!pw)return dark(x,y0,bw,bh);bg(x,y0,bw,bh);const xc=x+bw/2,r=bh/5,wide=bw>205*u;
-    txt(`FUEL ${Math.round(p.fuel)} KG`+(wide?`  FF ${(p.ff*3.6).toFixed(1)}`:''),xc,y0+r*0.55,'center',13,p.fuel<W.bingo?AMB:HUDC);txt('THR '+thr+'   RPM '+p.rpm.map(v=>Math.round(v*100)).join('/'),xc,y0+r*1.5,'center',wide?14:12,p.eng>1.01?AMB:HUDC);
+  const mfdEng=(x,y0,bw,bh)=>{if(!pw||(W.flt.mfd&&W.flt.mfd.s==='C'))return dark(x,y0,bw,bh);bg(x,y0,bw,bh);const xc=x+bw/2,r=bh/5,wide=bw>205*u;
+    txt(`FUEL ${Math.round(W.fuelShown)} KG`+(wide?`  FF ${(p.ff*3.6).toFixed(1)}`:''),xc,y0+r*0.55,'center',13,W.fuelShown<W.bingo?AMB:HUDC);txt('THR '+thr+'   RPM '+p.rpm.map(v=>Math.round(v*100)).join('/'),xc,y0+r*1.5,'center',wide?14:12,p.eng>1.01?AMB:HUDC);
     let tx=xc-bw*0.36;for(const q of[['GEAR',p.gearPos>0.9,p.gearPos>0.05&&p.gearPos<=0.9],['FLAPS',p.flaps],['BRK',p.brakePos>0.5]]){txt(q[0],tx,y0+r*2.45,'left',13,q[2]?AMB:q[1]?HUDC:'rgba(116,255,150,0.28)');tx+=bw*0.27;}
     txt('MASTER '+(W.arm?'ARM':'SAFE')+(W.ecm?'  ECM':'')+(ap.on?'  AP':'')+(sy.pbrake?'  PBRK':'')+(sy.arDoor?'  AR':''),xc,y0+r*3.4,'center',13,W.arm?RED:HUDC);
     let s2='';for(const k of WSEL)s2+=(k===w.sel?'>':' ')+{AIM120:'120',PYTHON:'PY5',GUN:'GUN',SPICE:'SPC'}[k]+' '+cnt[k]+' ';if(wide)txt(s2.trim(),xc,y0+r*4.35,'center',12);};
   /* the left screen has four pages: radar, a moving map of the theatre, the stores and the electronic warfare page */
   const tabs=(x,y0,ms)=>{const n=MFDP.length,bw=ms/n;ctx.fillStyle='rgba(0,0,0,0.45)';ctx.fillRect(x+1,y0+ms-15*u,ms-2,14*u);for(let i=0;i<n;i++)txt(MFDP[i],x+bw*(i+0.5),y0+ms-8*u,'center',10,i===mfdPage?'#f2f2ea':'rgba(116,255,150,0.45)');};
-  const mfdMap=(x,y0,ms)=>{if(!pw)return dark(x,y0,ms,ms);const B=getMapBg(),{nx,nz,cell,x0,z0}=TER,WX=(nx-1)*cell,WZ=(nz-1)*cell,Rm=W.radar.rng*NM*0.75,s=(ms-4)/(2*Rm),cxm=x+ms/2,cym=y0+ms/2,X=v=>cxm+(v-p.pos.x)*s,Y=v=>cym+(v-p.pos.z)*s;
+  const mfdMap=(x,y0,ms)=>{if(!pw)return dark(x,y0,ms,ms);if(W.flt.map){bg(x,y0,ms,ms,'MAP');txt('NO MAP DATA',x+ms/2,y0+ms/2,'center',13,AMB);return;}const B=getMapBg(),{nx,nz,cell,x0,z0}=TER,WX=(nx-1)*cell,WZ=(nz-1)*cell,Rm=W.radar.rng*NM*0.75,s=(ms-4)/(2*Rm),cxm=x+ms/2,cym=y0+ms/2,NP=W.navPos(),X=v=>cxm+(v-NP.x)*s,Y=v=>cym+(v-NP.z)*s;
     bg(x,y0,ms,ms,'MAP '+Math.round(Rm/NM)+'NM');ctx.save();ctx.beginPath();ctx.rect(x+1,y0+13*u,ms-2,ms-14*u);ctx.clip();
     /* the source rectangle is clamped to the image: Safari draws nothing when it reaches outside */
-    {const ax=Math.max(x0,p.pos.x-Rm),bx=Math.min(x0+WX,p.pos.x+Rm),az=Math.max(z0,p.pos.z-Rm),bz=Math.min(z0+WZ,p.pos.z+Rm);if(bx>ax&&bz>az){ctx.globalAlpha=0.8;ctx.drawImage(B,(ax-x0)/WX*B.width,(az-z0)/WZ*B.height,(bx-ax)/WX*B.width,(bz-az)/WZ*B.height,X(ax),Y(az),(bx-ax)*s,(bz-az)*s);ctx.globalAlpha=1;}}
+    {const ax=Math.max(x0,NP.x-Rm),bx=Math.min(x0+WX,NP.x+Rm),az=Math.max(z0,NP.z-Rm),bz=Math.min(z0+WZ,NP.z+Rm);if(bx>ax&&bz>az){ctx.globalAlpha=0.8;ctx.drawImage(B,(ax-x0)/WX*B.width,(az-z0)/WZ*B.height,(bx-ax)/WX*B.width,(bz-az)/WZ*B.height,X(ax),Y(az),(bx-ax)*s,(bz-az)*s);ctx.globalAlpha=1;}}
     ctx.fillStyle='rgba(2,10,6,0.25)';ctx.fillRect(x,y0,ms,ms);
     if(theatre0==='israel'){ctx.save();ctx.direction='rtl';ctx.textAlign='center';ctx.font=`600 ${Math.round(9*u)}px Assistant,Arial,sans-serif`;ctx.fillStyle='rgba(246,240,222,0.75)';for(const[n,la,lo,k]of PLACES){if(k!==1)continue;const q=R.ISR.xy(la,lo),px=X(q.x),py=Y(q.z);if(px<x||px>x+ms||py<y0||py>y0+ms)continue;ctx.beginPath();ctx.arc(px,py,1.4,0,7);ctx.fill();ctx.fillText(n,px,py-4);}
       for(const b of R.ISR.alt){const px=X(b.x),py=Y(b.z);ctx.fillStyle='#ffd98a';ctx.fillRect(px-3,py-1,6,2);}ctx.restore();}
@@ -1501,7 +1502,8 @@ function drawHUD(){tgpR=null;mfdR=null;if(W.gtgt)podLast=W.gtgt;
     const th=[...(W.threats||[])].filter(t=>t.sym!=='M').sort((a,b)=>b.lvl-a.lvl||a.R-b.R).slice(0,Math.max(1,Math.floor((y0+ms-yy-18*u)/(15*u))));
     for(const t of th){txt(t.sym,x+10*u,yy,'left',12,t.lvl>=2?RED:t.lvl===1?AMB:HUDC);txt(['SEARCH','TRACK','LAUNCH','LAUNCH'][t.lvl]||'',x+ms*0.42,yy,'center',11,t.lvl>=2?RED:t.lvl===1?AMB:HUDC);txt((t.R/NM).toFixed(0)+' NM',x+ms-10*u,yy,'right',11);yy+=15*u;}
     if(!th.length&&!W.mwarn)txt('NO THREATS',x+ms/2,yy+6*u,'center',11,'rgba(116,255,150,0.5)');};
-  const mfdLeft=(x,y0,ms)=>{[mfdRadar,mfdMap,mfdWpn,mfdEw][mfdPage](x,y0,ms);if(pw)tabs(x,y0,ms);};
+  const deadS=k=>W.flt.mfd&&W.flt.mfd.s===k;
+  const mfdLeft=(x,y0,ms)=>{if(deadS('L'))return dark(x,y0,ms,ms);[mfdRadar,mfdMap,mfdWpn,mfdEw][mfdPage](x,y0,ms);if(pw)tabs(x,y0,ms);};
   const pt=podTgt(),ag=pw&&!!pt&&(w.sel==='SPICE'||!!pt.held||!!wpnOn(pt));
   const mfdTgp=(x,y0,ms)=>{const g=podTgt(),v=podView(g),sees=!!v.wpn||W.podSees(g.held?{alive:true,pos:g.pos}:g),c0=x+ms/2,c1=y0+ms/2,gp=ms*0.07,ln=ms*0.2;if(sees)tgpR={x,y:y0,s:ms};else{ctx.fillStyle='#030504';ctx.fillRect(x,y0,ms,ms);}
     ctx.strokeStyle='rgba(116,255,150,0.6)';ctx.lineWidth=1.2*u;ctx.strokeRect(x+0.5,y0+0.5,ms-1,ms-1);ctx.strokeStyle='#f2f2ea';line(c0-ln,c1,c0-gp,c1);line(c0+gp,c1,c0+ln,c1);line(c0,c1-ln,c0,c1-gp);line(c0,c1+gp,c0,c1+ln);
@@ -1519,7 +1521,7 @@ function drawHUD(){tgpR=null;mfdR=null;if(W.gtgt)podLast=W.gtgt;
     if(touchOn){const ty2=y0+ms+16*u;ctx.fillStyle='rgba(4,14,9,0.62)';ctx.fillRect(pad-4*u,ty2-10*u,ms+8*u,19*u);ctx.fillRect(vw-pad-ms-4*u,ty2-10*u,ms+8*u,19*u);
       /* one line under each screen: throttle, and fuel; gear, flaps and brake show on their own buttons */
       txt('THR '+thr+(p.gearPos>0.05&&p.gearPos<0.9?'  GEAR':''),pad,ty2,'left',13,p.eng>1.01||(p.gearPos>0.05&&p.gearPos<0.9)?AMB:HUDC);
-      txt('FUEL '+Math.round(p.fuel),vw-pad,ty2,'right',13,p.fuel<W.bingo?AMB:HUDC);}
+      txt('FUEL '+Math.round(W.fuelShown),vw-pad,ty2,'right',13,W.fuelShown<W.bingo?AMB:HUDC);}
     else{const bw=Math.min(340*u,vw-2*(ms+pad)-16*u);if(bw>150*u)mfdEng(cx-bw/2,vh-pad-80*u,bw,80*u);}}
   if(touchOn&&(clock*4|0)!==drawHUD.a){drawHUD.a=clock*4|0;$('tbArm').dataset.on=W.arm?'1':'';}
   /* sun glare: looking towards the sun washes the view out */

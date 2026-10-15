@@ -587,7 +587,8 @@ class World{
     this.wing=null;if(o.wing&&(strike||icpt||duel||sead||conv||esc||csar||recon||stl||naval)){const p=this.player,gnd=p.onGround,wa=new Aircraft(pl.type,gnd?{x:RWY.x1+96,y:SITES.base.h+TYPES[pl.type].gearH,z:19,hdg:Math.PI/2,speed:0,throttle:0,gear:true,flaps:true,onGround:true}:{x:p.pos.x-22,y:p.pos.y+6,z:p.pos.z+50,hdg:Math.PI/2,pitch:0.05,speed:250,throttle:0.9});
       this.wing=new WingAI(wa,pl);this.wing.gnd=gnd;this.friends.push(wa);}
     this.wx=o.wx==='wind'||o.wx==='storm'||o.wx==='fog'?o.wx:'clear';this.wind=this.wx==='storm'?v3(-3,0,9):this.wx==='wind'?v3(-2,0,7):null;this.player.wind=this.wind;
-    this.failT=o.fail?150+Math.random()*420:null;this.birdAt=o.fail&&!tank&&!train&&Math.random()<0.35?(air||Math.random()<0.5?'app':'climb'):null;this.sig=Math.min(1,Math.pow(this.player.rcs/5,0.25));this.arm=air&&!train;this.contacts=[];this.lock=null;this.gtgt=null;this.irTgt=null;this.dlz=null;this.migsActive=duel;
+    /* random faults: not every sortie; when there are any, one or two at random times */
+    this.flt={};this.insErr={x:0,z:0};this.fltN=o.fail?(Math.random()<0.4?0:Math.random()<0.7?1:2):0;this.failT=this.fltN?150+Math.random()*420:null;this.birdAt=o.fail&&!tank&&!train&&Math.random()<0.35?(air||Math.random()<0.5?'app':'climb'):null;this.sig=Math.min(1,Math.pow(this.player.rcs/5,0.25));this.arm=air&&!train;this.contacts=[];this.lock=null;this.gtgt=null;this.irTgt=null;this.dlz=null;this.migsActive=duel;
     this.stats={uav:0,leak:0,mig:0,tgt:0,sam:!!this.stats0sam,shots:0,start:air?'air':cold?'cold':'runway'};this.over=null;this.flags={};this.tS=0;this.tM=0;this.tD=0;this.gunT=0;this.cmT=0;this.stopT=0;
     if(this.lesson==='land'){const p=this.player;p.pos=v3(RWY.x1-13000,SITES.base.h+700,0);p.vel=v3(115,0,0);p.q=qeuler(Math.PI/2,0.03,0);p.ctl.throttle=p.eng=0.55;}
     if(this.lesson==='ground'){const p=this.player;this.ground=[G('TEL-1',260,-140,'tel',true,1),G('TEL-2',-310,190,'tel',true,1)];p.pos=v3(tg.x-42000,7000,tg.z);this.w.spice=pl.spice||0;this.syncStores();}
@@ -612,7 +613,7 @@ class World{
     this.bullets.push({pos:vadd(owner.pos,vmul(f,8)),vel:vadd(owner.vel,vmul(vnorm(v3(f.x+j(),f.y+j(),f.z+j())),mv)),t:0,owner});}
   /* countermeasures: flares decoy heat-seeking missiles, chaff decoys radar-guided ones; kind 'flare', 'chaff', or both when left out */
   dispense(ac,kind){let fl=kind!=='chaff',ch=kind!=='flare';
-    if(ac===this.player){const w=this.w;fl=fl&&w.flare>0;ch=ch&&w.chaff>0;if(!fl&&!ch)return;if(fl)w.flare--;if(ch)w.chaff--;}
+    if(ac===this.player){const w=this.w;if(this.flt&&this.flt.cmds){if(this.time-(this.cmdsT??-9)>2){this.cmdsT=this.time;this.events.push({type:'deny'});}return;}fl=fl&&w.flare>0;ch=ch&&w.chaff>0;if(!fl&&!ch)return;if(fl)w.flare--;if(ch)w.chaff--;}
     ac.lastCM=this.time;this.events.push({type:'cm',pos:ac.pos,vel:ac.vel,ac,fl,ch});
     for(const m of this.missiles){if(!m.alive||m.target!==ac||m.decoy||m.lost)continue;if(m.s.seeker==='ir'?!fl:!ch)continue;const r=vsub(ac.pos,m.pos),R=vlen(r);if(R>12000)continue;
       let p;const good=m.owner===this.player;
@@ -651,7 +652,7 @@ class World{
     else if(g.kind==='ship'){this.stats.ship=true;this.msg('בקר: ספינת הטילים נפגעה ושותקה.');}
     else if(g.kind==='radar')this.msg('בקר: מכ"ם הסוללה הושמד. איום הנ"מ הוסר.');
     if(this.gtgt===g)this.gtgt=null;}
-  onBomb(b){if(b.ghost){this.events.push({type:'boom',pos:b.pos,size:5,ground:true});return;}
+  onBomb(b){if(b.dud){this.events.push({type:'boom',pos:b.pos,size:0.4,ground:true});this.msg('פצצה תקולה: הפצצה פגעה ולא התפוצצה. המטרה עדיין שלמה.');return;}if(b.ghost){this.events.push({type:'boom',pos:b.pos,size:5,ground:true});return;}
     this.events.push({type:'boom',pos:b.pos,size:5,ground:true});const bs=b.owner&&b.owner!==this.player?{soft:45,hard:12}:this.plane.bomb;
     for(const g of this.ground){if(!g.alive)continue;if(vdist(g.pos,b.pos)<(g.kind==='bunker'?bs.hard:bs.soft))this.killGround(g);}}
   /* player actions */
@@ -671,7 +672,7 @@ class World{
     if(!p.alive)return false;
     switch(id){
       case 'batt':s.batt=!s.batt;return ev(s.batt);
-      case 'ecm':if(!this.power)return no('אין מתח.');this.ecm=!this.ecm;return ev(this.ecm);
+      case 'ecm':if(!this.power)return no('אין מתח.');if(this.flt.ew)return no('מערכת הל"א תקולה.');this.ecm=!this.ecm;return ev(this.ecm);
       case 'jfs':if(!this.power)return no('אין מתח. הדלק מצבר.');s.jfsOn=!s.jfsOn;return ev(s.jfsOn);
       case 'eng0':case 'eng1':{const i=+id[3];if(i>=p.nEng)return no('אין מנוע כזה במטוס הזה.');
         if(p.rpm[i]>=1||s.start[i]){if(!p.onGround)return no('באוויר מכבים מנוע רק בידית האש.');if(s.hot===i){s.hot=null;s.hotDone=true;this.msg('ראש צוות: כובה בזמן. המתן כמה שניות לניקוז הדלק והתנע שוב.');}s.start[i]=false;s.cut[i]=true;return ev(false);}
@@ -734,19 +735,46 @@ class World{
     p.extraCD=s.arDoor?0.002:0;
     if(this.autoStart){if(this.power&&!s.insOn&&s.ins<1)this.sw('ins');this.autoT-=dt;if(this.autoT<=0){this.autoT=0.8;const n=this.checklist().find(c=>!c.done);if(!n)this.autoStart=false;else if(!n.busy)this.sw(n.id);}}
     if(this.stats.start==='cold'&&!this.flags.ready&&this.checklist().every(c=>c.done)){this.flags.ready=true;this.flags.readyT=this.time;this.msg('מגדל חצרים: פטיש אחת, רשאי להסיע למסלול 09 ולהמריא. רוח שקטה.');}
-    if(this.failT!=null&&this.flags.airborne&&!p.onGround&&!this.ejected){this.failT-=dt;if(this.failT<=0){this.randomFail();this.failT=Math.random()<0.35?240+Math.random()*400:null;}}
+    if(this.failT!=null&&this.flags.airborne&&!p.onGround&&!this.ejected){this.failT-=dt;if(this.failT<=0){this.randomFail();this.fltN--;this.failT=this.fltN>0?200+Math.random()*400:null;}}
+    this.faultStep(dt);
     /* a bird on the climb-out or on short final */
     if(this.birdAt&&!p.onGround&&p.alive&&!this.ejected&&p.V>60&&p.agl>25&&p.agl<320&&(this.birdAt==='climb'?this.time<this.flags.airT+40&&p.vel.y>0:p.gear&&this.time>150)){this.birdAt=null;p.bird=true;
       const ok=p.engOK.map((v,i)=>v===1?i:-1).filter(i=>i>=0),i=ok[Math.random()*ok.length|0];if(i!=null)p.engOK[i]=0.5;this.syncDmg();this.events.push({type:'bird'});this.events.push({type:'fail'});
       this.msg(`פגיעת ציפור! ${i==null?'':'מנוע '+(p.nEng===1?'':i?'ימין ':'שמאל ')+'פגוע, הספק חלקי. '}החופה סדוקה. ${p.gear?'המשך בגישה ונחת.':'טפס, הישאר קרוב לבסיס ושקול נחיתה.'}`.replace('  ',' '));}
     this.refuel(dt);}
   /* random failures: an engine that flames out (restart it in the air), brakes that fail, or one of the battle-damage faults */
-  randomFail(){const p=this.player,r=Math.random(),run=p.rpm.map((v,i)=>v>=1&&p.engOK[i]>0?i:-1).filter(i=>i>=0);this.events.push({type:'fail'});
-    if(r<0.3&&run.length){const i=run[Math.random()*run.length|0];p.rpm[i]=0;this.sys.start[i]=false;(p.flame=p.flame||[])[i]=true;this.syncDmg();
-      this.msg(`אזהרה ראשית: כבייה ${p.nEng===1?'במנוע':'במנוע '+(i?'ימין':'שמאל')}! להתנעה מחדש באוויר: מהירות מעל 215 קשר, ואז מתג המנוע או כפתור "התנעה באוויר".`);return;}
-    if(r<0.45&&p.brakeK===1){p.brakeK=0.12;this.syncDmg();this.msg('אזהרה ראשית: תקלה במערכת הבלמים. בנחיתה הורד את וו הבלימה (6) ותפוס את הכבל שלפני סוף המסלול'+(p.hasChute?', או פתח מצנח.':'.'));return;}
-    const n=this.dmg.length;this.breakSys();
-    if(this.dmg.length>n&&!p.fire.some(Boolean))this.msg('אזהרה ראשית: תקלה ב'+({'ENG':'מנוע','FUEL':'מערכת הדלק','HYD':'הידראוליקה','RADAR':'מכ"ם','RWR':'מערכת ההתרעה'}[this.dmg[this.dmg.length-1].t.split(' ')[0]]||'מערכת')+'. בדוק את לוח האזהרות ושקול חזרה לבסיס.');}
+  /* the fault catalogue: each entry says whether it fits this sortie and what it breaks */
+  randomFail(){const p=this.player,run=p.rpm.map((v,i)=>v>=1&&p.engOK[i]>0?i:-1).filter(i=>i>=0),bomb=this.plane.bomb,ag=this.w.spice>0,F=this.flt,C=[];
+    const add=(w,ok,f)=>{if(ok)C.push([w,f]);};
+    add(3,run.length>0,()=>{const i=run[Math.random()*run.length|0];p.rpm[i]=0;this.sys.start[i]=false;(p.flame=p.flame||[])[i]=true;
+      this.msg(`אזהרה ראשית: כבייה ${p.nEng===1?'במנוע':'במנוע '+(i?'ימין':'שמאל')}! להתנעה מחדש באוויר: מהירות מעל 215 קשר, ואז מתג המנוע או כפתור "התנעה באוויר".`);});
+    add(1.5,p.brakeK===1,()=>{p.brakeK=0.12;this.msg('אזהרה ראשית: תקלה במערכת הבלמים. בנחיתה הורד את וו הבלימה (6) ותפוס את הכבל שלפני סוף המסלול'+(p.hasChute?', או פתח מצנח.':'.'));});
+    add(1,p.engOK.some(v=>v===1),()=>{const i=p.engOK.findIndex(v=>v===1);p.engOK[i]=0.5;this.msg(`אזהרה: ${p.nEng===1?'המנוע':'מנוע '+(i?'ימין':'שמאל')} בהספק חלקי. אין מבער מלא, חסוך בדלק.`);});
+    add(0.6,p.fire.every(f=>!f),()=>{const i=Math.random()*p.nEng|0;p.fire[i]=true;p.engOK[i]=0.5;this.msg('אש במנוע! משוך את ידית האש.');});
+    add(1,!p.leak,()=>{p.leak=2+Math.random()*4;this.msg('אזהרה: דליפת דלק. חשב מחדש את הדלק לחזרה, ושקול תדלוק או חזרה מוקדמת.');});
+    add(1,p.hyd===1,()=>{p.hyd=0.4;this.msg('אזהרה: כשל הידראולי. ההגאים כבדים ואיטיים, ובנחיתה הבלמים חלשים.');});
+    add(1.2,!this.dmgRadar,()=>{F.radar={};this.dmgRadar=true;this.lock=null;this.msg('אזהרה: המכ"ם מת. נסה ריסט.');});
+    add(1,!F.ew,()=>{F.ew={};this.dmgRwr=true;this.ecm=false;this.msg('אזהרה: תקלת ל"א. מסך האיומים והשיבוש לא פועלים. נסה ריסט.');});
+    add(1,!F.ins,()=>{F.ins={};const a=Math.random()*Math.PI*2;F.ins.v={x:Math.cos(a)*22,z:Math.sin(a)*22};this.msg('אזהרה: תקלה במערכת הניווט. המיקום והנקודות במפה ובמסך זזים. נסה ריסט, או נווט לפי המראות.');});
+    add(0.8,!F.gps,()=>{F.gps={};this.msg('אזהרה: אין קליטת לוויינים. הניווט נשען על המערכת האינרציאלית, ופצצות לוויין לא ישוחררו.');});
+    add(1,!F.mfd,()=>{F.mfd={s:['L','R','C'][Math.random()*3|0]};this.msg('אזהרה: אחד המסכים כבה. נסה ריסט.');});
+    add(0.8,!F.map,()=>{F.map={};this.msg('אזהרה: אין נתוני מפה. המפה לא מוצגת. נסה ריסט.');});
+    add(0.8,!F.fuelq,()=>{F.fuelq={v:p.fuel};this.msg('אזהרה: מד הדלק תקוע. הכמות שמוצגת לא מתעדכנת. נסה ריסט, או חשב לפי זמן.');});
+    add(1,!F.sms&&(this.w.aim120+this.w.python+this.w.spice)>0,()=>{F.sms={};this.msg('אזהרה: תקלה במחשב החימוש. חלק מהשיגורים ייכשלו. נסה ריסט.');});
+    add(0.8,!F.cmds,()=>{F.cmds={};this.msg('אזהרה: מערכת הנורים והמוץ לא משחררת. נסה ריסט.');});
+    add(0.8,!F.dud&&ag&&!bomb.cruise&&!bomb.arm,()=>{F.dud={};});
+    add(0.8,!F.n2&&this.w.python>0,()=>{F.n2={};this.msg('אזהרה: אין קירור (חנקן) לראש הביות של הפיתון. הטילים התרמיים לא ננעלים.');});
+    this.events.push({type:'fail'});if(!C.length)return;let t=Math.random()*C.reduce((a,c)=>a+c[0],0);for(const c of C){t-=c[0];if(t<=0){c[1]();break;}}this.syncDmg();}
+  /* a reset takes eight seconds; the first try helps a little over half the time, later ones rarely */
+  static get RESETTABLE(){return['radar','ew','ins','mfd','map','fuelq','sms','cmds'];}
+  resetFaults(){const F=this.flt,L=World.RESETTABLE.filter(k=>F[k]&&F[k].rt==null);if(!L.length)return false;for(const k of L)F[k].rt=8;this.msg('ריסט למערכות התקולות. המתן…');this.events.push({type:'sw',id:'reset',on:true});return true;}
+  faultStep(dt){const F=this.flt,p=this.player;if(F.ins||F.gps){const v=F.ins?F.ins.v:{x:3,z:2};this.insErr.x=clamp(this.insErr.x+v.x*dt,-9000,9000);this.insErr.z=clamp(this.insErr.z+v.z*dt,-9000,9000);}
+    for(const k of World.RESETTABLE){const f=F[k];if(!f||f.rt==null)continue;f.rt-=dt;if(f.rt>0)continue;f.rt=null;const ok=Math.random()<((f.tries||0)?0.15:0.55);f.tries=(f.tries||0)+1;
+      const nm={radar:'המכ"ם',ew:'מערכת הל"א',ins:'הניווט',mfd:'המסך',map:'המפה',fuelq:'מד הדלק',sms:'מחשב החימוש',cmds:'מערכת הנורים והמוץ'}[k];
+      if(ok){delete F[k];if(k==='radar'){this.dmgRadar=false;this.sys.radar=true;}if(k==='ew')this.dmgRwr=false;if(k==='ins'&&!F.gps)this.insErr={x:0,z:0};this.msg(`ריסט הצליח: ${nm} חזר${['המפה','מערכת הל"א','מערכת הנורים והמוץ'].includes(nm)?'ה':''} לעבוד.`);}
+      else this.msg(`ריסט לא עזר: ${nm} עדיין תקול${['המפה','מערכת הל"א','מערכת הנורים והמוץ'].includes(nm)?'ה':''}. ממשיכים ככה.`);this.syncDmg();}}
+  navPos(){const p=this.player;return{x:p.pos.x+this.insErr.x,y:p.pos.y,z:p.pos.z+this.insErr.z};}
+  get fuelShown(){return this.flt&&this.flt.fuelq?this.flt.fuelq.v:this.player.fuel;}
   relight(){const p=this.player;if(!p.alive)return false;for(let i=0;i<p.nEng;i++)if(p.rpm[i]<0.98&&p.engOK[i]>0&&!this.sys.start[i])return this.sw('eng'+i);
     this.events.push({type:'swfail',id:'eng0',why:'אין מנוע כבוי שאפשר להתניע.'});return false;}
   /* battle damage: a hit may destroy the jet or break one or two systems */
@@ -764,7 +792,8 @@ class World{
     if(o.length)o[Math.random()*o.length|0]();this.syncDmg();}
   syncDmg(){const p=this.player,L=[],nm=p.nEng===2?['ENG L','ENG R']:['ENG'];
     for(let i=0;i<p.nEng;i++){if(p.fire[i])L.push({t:nm[i]+' FIRE',lvl:2,id:'fire'+i});else if(p.flame&&p.flame[i]&&p.engOK[i]>0)L.push({t:nm[i]+' FLAMEOUT',lvl:2,id:'eng'+i});else if(p.engOK[i]===0)L.push({t:nm[i]+' OUT',lvl:1});else if(p.engOK[i]<1)L.push({t:nm[i]+' DEGRADED',lvl:1});}
-    if(p.leak)L.push({t:'FUEL LEAK',lvl:1});if(p.hyd<1)L.push({t:'HYD FAIL',lvl:1});if(this.dmgRadar)L.push({t:'RADAR FAIL',lvl:1});if(this.dmgRwr)L.push({t:'RWR FAIL',lvl:1});if(p.brakeK<1)L.push({t:'BRAKE FAIL',lvl:1});if(p.bird)L.push({t:'BIRD STRIKE',lvl:1});this.dmg=L;}
+    if(p.leak)L.push({t:'FUEL LEAK',lvl:1});if(p.hyd<1)L.push({t:'HYD FAIL',lvl:1});if(this.dmgRadar)L.push({t:'RADAR FAIL',lvl:1});if(this.dmgRwr)L.push({t:'RWR FAIL',lvl:1});if(p.brakeK<1)L.push({t:'BRAKE FAIL',lvl:1});if(p.bird)L.push({t:'BIRD STRIKE',lvl:1});
+    const F=this.flt||{},T={ew:'EW FAIL',ins:'INS FAIL',gps:'NO GPS',mfd:'DISPLAY FAIL',map:'MAP FAIL',fuelq:'FUEL QTY FAIL',sms:'SMS FAIL',cmds:'CMDS FAIL',n2:'IR COOLING FAIL'};for(const k in T)if(F[k])L.push({t:T[k]+(F[k].rt!=null?' RST':''),lvl:1});this.dmg=L;}
   /* automatic join-up: flies the jet to a waiting point 32 m behind and a little below the boom, then hands back */
   joinStep(dt){const tk=this.tanker,p=this.player;if(!this.arJoin)return;if(!tk||!p.alive||p.onGround||this.ar.state==='contact'){this.arJoin=false;return;}
     if(!this.sys.arDoor)this.sw('ardoor');
@@ -800,11 +829,13 @@ class World{
     if(!pickle){this.pickHeld=false;return;}
     if(this.pickHeld)return;this.pickHeld=true;
     if(p.onGround||w.sel==='GUN'){this.events.push({type:'deny'});return;}
+    if(this.flt.sms&&w.sel!=='GUN'&&Math.random()<0.45){this.events.push({type:'deny'});this.msg('תקלה בשיגור: החימוש לא עזב את המסילה. נסה שוב או בצע ריסט.');return;}
     if(w.sel==='AIM120'){if(this.lock&&this.lock.side===0)this.events.push({type:'iff'});else if(w.aim120>0&&this.lock){this.launch(this.mrm,p,this.lock);w.aim120--;this.stats.shots++;}else this.events.push({type:'deny'});}
     else if(w.sel==='PYTHON'){if(w.python>0&&this.irTgt){this.launch(this.srm,p,this.irTgt);w.python--;this.stats.shots++;}else this.events.push({type:'deny'});}
     else if(w.sel==='SPICE'&&this.plane.bomb.cruise){const b=this.bombSol();if(w.spice>0&&b&&b.ok){const m=new Cruise(STANDOFF[this.plane.bomb.cruise],p,this.gtgt,vadd(p.pos,vmul(qrot(p.q,UP),-2)),p.vel);this.missiles.push(m);this.events.push({type:'launch',m});w.spice--;this.stats.shots++;this.syncStores();}else this.events.push({type:'deny'});}
     else if(w.sel==='SPICE'&&this.plane.bomb.arm){const b=this.bombSol();if(w.spice>0&&b&&b.ok){this.launch(MSL.ARM,p,this.gtgt);w.spice--;this.stats.shots++;this.syncStores();}else this.events.push({type:'deny'});}
-    else if(w.sel==='SPICE'){const b=this.bombSol();if(w.spice>0&&b&&b.ok){this.bombs.push(new Bomb(p,this.gtgt,vadd(p.pos,vmul(qrot(p.q,UP),-2)),p.vel,this.plane.bomb));w.spice--;this.stats.shots++;this.events.push({type:'release'});}else this.events.push({type:'deny'});}
+    else if(w.sel==='SPICE'&&this.plane.bomb.gps&&this.flt.gps){this.events.push({type:'deny'});this.msg('אין קליטת לוויינים: פצצת הלוויין לא תשוחרר.');}
+    else if(w.sel==='SPICE'){const b=this.bombSol();if(w.spice>0&&b&&b.ok){const bb=new Bomb(p,this.gtgt,vadd(p.pos,vmul(qrot(p.q,UP),-2)),p.vel,this.plane.bomb);if(this.flt.dud){bb.dud=true;delete this.flt.dud;}this.bombs.push(bb);w.spice--;this.stats.shots++;this.events.push({type:'release'});}else this.events.push({type:'deny'});}
     this.syncStores();}
   /* emergency jettison of the air-to-ground stores */
   jettison(){const w=this.w,p=this.player;if(!p.alive||p.onGround)return false;
@@ -842,7 +873,8 @@ class World{
     /* IR seeker */
     let ir=null;const f=qrot(p.q,FWD);
     const cone=(e,lim,rng)=>{const r=vsub(e.pos,p.pos),R=vlen(r);return e.alive&&R<rng&&Math.acos(clamp(vdot(r,f)/R,-1,1))<lim&&this.los(p.pos,e.pos)?R:0;};
-    if(this.lock&&cone(this.lock,60*D2R,this.lock.type==='UAV'?7000:18000))ir=this.lock;
+    if(this.flt&&this.flt.n2)ir=null;
+    else if(this.lock&&cone(this.lock,60*D2R,this.lock.type==='UAV'?7000:18000))ir=this.lock;
     else{let br=1e9;for(const e of this.air){const R=cone(e,22*D2R,e.type==='UAV'?6000:13000);if(R&&R<br){br=R;ir=e;}}}
     this.irTgt=ir;
     /* threats for RWR */
