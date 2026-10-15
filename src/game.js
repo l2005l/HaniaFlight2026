@@ -672,6 +672,7 @@ function act(a){if(!W||state!=='fly')return;const p=W.player;
   else if(a==='ecm'){W.sw('ecm');toast(W.ecm?'שיבוש פועל: האויב רואה אותך מקרוב יותר, וגם המכ"ם שלך קצר יותר':'שיבוש כבוי');}
   else if(a==='map'){mapOn=!mapOn;beep(800,0.03);}
   else if(a==='reset'){if(!W.resetFaults())toast('אין מערכת שאפשר לאפס');}
+  else if(a==='mfdR'){mfdPageR=(mfdPageR+1)%MFDPR.length;beep(1100,0.03);}
   else if(a==='mfd'){mfdPage=(mfdPage+1)%MFDP.length;beep(1100,0.03);}
   else if(a==='padlock'){if(!padlock&&!(W.lock||W.irTgt)){toast('אין מטרה לעקוב אחריה. נעל מטרה קודם.');}else{padlock=!padlock;if(padlock){view=0;look.panel=false;}beep(1000,0.04);toast(padlock?'מבט נעול על המטרה':'מבט חופשי');}}
   else if(a==='nvg'){if(tod==='night'){setNVG(!nvg);beep(700,0.05);toast(nvg?'משקפת לילה פועלת':'משקפת לילה כבויה');}else toast('משקפת לילה מיועדת לטיסת לילה');}
@@ -701,6 +702,7 @@ $('lookBack').onclick=()=>{look.panel=false;};$('nvgBtn').onclick=()=>act('nvg')
 $('bettyTest').onclick=()=>{Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();Betty.load();const k=['pull','bingo','coll','msl'][(Betty.tn=(Betty.tn||0)+1)%4];setTimeout(()=>{delete Betty.last[k];if(!Betty.say(k,10,0))toast(opts.betty==='off'?'ההתרעות הקוליות כבויות':'הצליל עוד נטען, נסה שוב');},350);};$('doorBtn').onclick=()=>act('ardoor');{const hb=$('mfdHit');let st=null;hb.addEventListener('pointerdown',e=>{try{hb.setPointerCapture(e.pointerId);}catch(x){}st={x:e.clientX,y:e.clientY,mv:false};});
   hb.addEventListener('pointermove',e=>{if(!st)return;const dx=e.clientX-st.x,dy=e.clientY-st.y;if(!st.mv&&Math.hypot(dx,dy)<8)return;if(!tgpR&&!pod.free&&!pod.trk&&mfdPage!==4)return;st.mv=true;podSlew(dx,dy,mfdR?mfdR.s:200);st.x=e.clientX;st.y=e.clientY;});
   hb.addEventListener('pointerup',()=>{if(st&&!st.mv)act('mfd');st=null;});hb.addEventListener('pointercancel',()=>{st=null;});}
+$('mfdHitR').onclick=()=>act('mfdR');$('mfdBtnR').onclick=()=>act('mfdR');
 for(const b of $('podBar').querySelectorAll('button'))b.addEventListener('click',()=>podAct(b.dataset.pod));$('mfdBtn').onclick=()=>act('mfd');$('panelBtn').onclick=()=>act('panel');$('resetBtn').onclick=()=>act('reset');$('tiltBtn').onclick=()=>{if(!tilt.on)tiltOn(true);tilt.p0=tilt.pit??null;toast('הטיה: המצב הנוכחי הוא עכשיו "ישר"');};
 $('wcamBtn').onclick=()=>act('wcam');$('relightBtn').onclick=()=>act('relight');
 addEventListener('keydown',e=>{
@@ -1212,12 +1214,14 @@ function syncScene(dt){
   {const nb=$('nvgBtn'),h=!(state==='fly'&&tod==='night');if(nb.hidden!==h)nb.hidden=h;
     const hb=$('hookBtn'),hh=!(p.gear&&p.alive&&(p.brakeK<1||W.flags.airborne||p.hook)&&(p.agl<1500||p.onGround));if(hb.hidden!==hh)hb.hidden=hh;if(!hh){const t=p.hook?'וו: למטה':'וו בלימה';if(hb.textContent!==t)hb.textContent=t;hb.dataset.on=p.hook?'1':'';}
     {const vis=(id,on,t)=>{const b=$(id);if(b.hidden===on)b.hidden=!on;if(on&&t&&b.textContent!==t)b.textContent=t;};
-      vis('padBtn',!!(W.lock&&W.lock.alive!==false)||padlock);vis('mapBtn',mfdPage===1||mapOn,mapOn?'סגור מפה':'מפה מלאה');vis('ecmBtn',mfdPage===3,W.ecm?'שיבוש: פועל':'שיבוש: כבוי');
+      vis('padBtn',!!(W.lock&&W.lock.alive!==false)||padlock);vis('mapBtn',mfdPage===1||mfdPageR===3||mapOn,mapOn?'סגור מפה':'מפה מלאה');vis('ecmBtn',mfdPage===3||mfdPageR<=1,W.ecm?'שיבוש: פועל':'שיבוש: כבוי');
       vis('panelBtn',view===0&&!look.panel&&p.alive&&!xr.on);{const rs=R.World.RESETTABLE.filter(k=>W.flt[k]),busy=rs.some(k=>W.flt[k].rt!=null);vis('resetBtn',rs.length>0&&p.alive,busy?'ריסט…':'ריסט מערכות');$('resetBtn').disabled=busy;}vis('tiltBtn',opts.tilt==='on'&&touchOn&&p.alive);
       if(opts.tilt==='on'&&touchOn&&state==='fly'&&!tilt.warned&&performance.now()-startedAt>4000&&performance.now()-(tilt.seen||0)>3000){tilt.warned=true;toast('היגוי בהטיה לא מקבל נתונים מהחיישן. לחץ "כיול הטיה" כדי לאשר גישה.');}
       /* the left screen: tap it (touch) or the button under it to change page */
       const hb=$('mfdHit'),mb=$('mfdBtn');if(mfdR){hb.hidden=false;const st=hb.style,v=[mfdR.x,mfdR.y,mfdR.s].map(n=>n+'px');if(st.left!==v[0]||st.top!==v[1]||st.width!==v[2]){st.left=v[0];st.top=v[1];st.width=st.height=v[2];}}else if(!hb.hidden)hb.hidden=true;
       const mt='מסך: '+MFDN[mfdPage]+' ‹';if(mb.textContent!==mt)mb.textContent=mt;
+      {const hr=$('mfdHitR');if(mfdRR){hr.hidden=false;const st=hr.style,v=[mfdRR.x,mfdRR.y,mfdRR.s].map(n=>n+'px');if(st.left!==v[0]||st.top!==v[1]||st.width!==v[2]){st.left=v[0];st.top=v[1];st.width=st.height=v[2];}}else if(!hr.hidden)hr.hidden=true;
+       const br=$('mfdBtnR'),tr='מסך ימין: '+MFDNR[mfdPageR]+' ‹';br.hidden=!!mfdRR||touchOn;if(br.textContent!==tr)br.textContent=tr;}
       /* touch: landing switches only near the ground or when set up for landing; weapon buttons only in the air */
       /* gear and flaps: near the ground, slow, or already out; once shown they stay 8 s so they do not flicker. The brake (speed brake in the air) always stays. */
       if(p.onGround||p.gearPos>0.05||!!p.flaps||p.agl<1200||p.V<110)lowT=clock;const low=clock-lowT<8;
@@ -1316,7 +1320,7 @@ function drawMap(p,e){if(W.flt.map){ctx.save();ctx.fillStyle='rgba(2,6,8,0.7)';c
 let tgpR=null;const tgpCam=new T.PerspectiveCamera(3,1,20,260000),tgpFx=document.createElement('div');
 tgpFx.style.cssText='position:absolute;pointer-events:none;display:none;backdrop-filter:grayscale(1) contrast(1.3) brightness(0.82);-webkit-backdrop-filter:grayscale(1) contrast(1.3) brightness(0.82)';hudc.parentNode.insertBefore(tgpFx,hudc);
 /* what the targeting pod shows: the live target, or for a few seconds after it dies the spot where it was, so the hit can be seen */
-let tgpHold=null,podLast=null,wcam=null,lowT=-99,mfdPage=0,mfdR=null;const MFDP=['RDR','MAP','WPN','EW','POD'],MFDN=['מכ"ם','מפה','חימוש','ל"א','פוד'];
+let tgpHold=null,podLast=null,wcam=null,lowT=-99,mfdPage=0,mfdR=null;let mfdPageR=0,mfdRR=null,mfdAuto={sel:null,mw:false,thr:0};const MFDPR=['TEWS','EW','RDR','MAP','WPN'],MFDNR=['איומים','ל"א','מכ"ם','מפה','חימוש'];const MFDP=['RDR','MAP','WPN','EW','POD'],MFDN=['מכ"ם','מפה','חימוש','ל"א','פוד'];
 function camWpn(){const p=W.player;for(const b of W.bombs)if(b.alive&&b.owner===p&&!b.lgb&&!b.gps)return b;for(const m of W.missiles)if(m.alive&&m.cruise&&m.owner===p)return m;return null;}
 /* the targeting pod can be flown by hand: slew it (drag on its window), zoom, track a point or an aircraft, lase, change the picture */
 const pod={free:false,dir:null,zoom:1,trk:null,mode:0,big:false,laser:false},PODZ=[22,6,1.6],PODM=['TV','WHT','BHT'],PODF=['grayscale(1) contrast(1.3) brightness(0.82)','grayscale(1) contrast(1.9) brightness(0.62)','grayscale(1) invert(1) contrast(1.6) brightness(0.92)'];
@@ -1371,7 +1375,7 @@ function renderTgp(){const g=podTgt(),on=!!tgpR&&state==='fly'&&!!g&&!xr.on;tgpF
   const hid=[];for(const L of[W.bombs,W.missiles])for(const q of L){const m=meshOf.get(q);if(m&&m.visible&&(q===v.wpn||vdist(q.pos,src)<600)){m.visible=false;hid.push(m);}}
   const cv=cockpit.visible,pv=pMesh.visible,y=vh-r.y-r.s;cockpit.visible=false;pMesh.visible=false;renderer.setScissorTest(true);renderer.setScissor(r.x,y,r.s,r.s);renderer.setViewport(r.x,y,r.s,r.s);renderer.render(scene,tgpCam);
   renderer.setScissorTest(false);renderer.setViewport(0,0,vw,vh);cockpit.visible=cv;pMesh.visible=pv;for(const m of hid)m.visible=true;pmat.uniforms.scale.value=ps;}
-function drawHUD(){tgpR=null;mfdR=null;if(W&&W.gtgt&&!W.gtgt.pt)podLast=W.gtgt;
+function drawHUD(){tgpR=null;mfdR=null;mfdRR=null;if(W&&W.gtgt&&!W.gtgt.pt)podLast=W.gtgt;
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.direction='ltr';ctx.clearRect(0,0,vw,vh);if(state!=='fly'&&state!=='pause'||!W){if(!$('podBar').hidden)$('podBar').hidden=true;return;}podFrame();
   const p=W.player,w=W.w,m=Math.min(vw,vh),cx=vw/2,cy=vh/2;u=clamp(m/700,touchOn?0.72:0.62,1.3);
   const e=p.euler(),kcas=p.V*Math.sqrt((p.rho||1.225)/1.225)*KT,altF=p.pos.y*FT,blink=(clock*4|0)%2===0;
@@ -1537,9 +1541,15 @@ function drawHUD(){tgpR=null;mfdR=null;if(W&&W.gtgt&&!W.gtgt.pt)podLast=W.gtgt;
     for(const t of th){txt(t.sym,x+10*u,yy,'left',12,t.lvl>=2?RED:t.lvl===1?AMB:HUDC);txt(['SEARCH','TRACK','LAUNCH','LAUNCH'][t.lvl]||'',x+ms*0.42,yy,'center',11,t.lvl>=2?RED:t.lvl===1?AMB:HUDC);txt((t.R/NM).toFixed(0)+' NM',x+ms-10*u,yy,'right',11);yy+=15*u;}
     if(!th.length&&!W.mwarn)txt('NO THREATS',x+ms/2,yy+6*u,'center',11,'rgba(116,255,150,0.5)');};
   const deadS=k=>W.flt.mfd&&W.flt.mfd.s===k;
+  const tabsR=(x,y0,ms)=>{const n=MFDPR.length,bw=ms/n;ctx.fillStyle='rgba(0,0,0,0.45)';ctx.fillRect(x+1,y0+ms-15*u,ms-2,14*u);for(let i=0;i<n;i++)txt(MFDPR[i],x+bw*(i+0.5),y0+ms-8*u,'center',9,i===mfdPageR?'#f2f2ea':'rgba(116,255,150,0.45)');};
+  const mfdRight=(x,y0,ms)=>{if(deadS('R'))return dark(x,y0,ms,ms);[mfdRwr,mfdEw,mfdRadar,mfdMap,mfdWpn][mfdPageR](x,y0,ms);if(pw&&mfdPageR!==0)tabsR(x,y0,ms);};
   const mfdLeft=(x,y0,ms)=>{if(deadS('L'))return dark(x,y0,ms,ms);if(mfdPage===4){bg(x,y0,ms,ms,'POD');txt('VIDEO ON HUD',x+ms/2,y0+ms/2,'center',12);}else [mfdRadar,mfdMap,mfdWpn,mfdEw][mfdPage](x,y0,ms);if(pw)tabs(x,y0,ms);};
   if(mfdPage===4&&!podTgt())podManual();
-  const pt=podTgt(),ag=pw&&!!pt&&(w.sel==='SPICE'||!!pt.held||!!wpnOn(pt)||mfdPage===4||pod.free||!!pod.trk);let podShown=null;
+  /* screens follow what is happening: air-to-ground selected puts the pod up on the left; a launch or a new radar threat puts the threat display up on the right */
+  if(w.sel!==mfdAuto.sel){if(w.sel==='SPICE'&&mfdAuto.sel!=null)mfdPage=4;else if(mfdAuto.sel==='SPICE'&&mfdPage===4&&!pod.free&&!pod.trk)mfdPage=0;mfdAuto.sel=w.sel;}
+  {const nt=(W.threats||[]).filter(t=>t.lvl>=1&&t.sym!=='M').length;if((W.mwarn&&!mfdAuto.mw)||nt>mfdAuto.thr){if(mfdPageR>1)mfdPageR=0;}mfdAuto.mw=!!W.mwarn;mfdAuto.thr=nt;}
+  if(tgpHold&&mfdPage!==4&&!mfdAuto.held){mfdPage=4;}mfdAuto.held=!!tgpHold;
+  const pt=podTgt(),ag=pw&&!!pt&&mfdPage===4;let podShown=null;
   const mfdTgp=(x,y0,ms)=>{const g=podTgt(),v=podView(g),sees=!!v.wpn||podCanSee(g),c0=x+ms/2,c1=y0+ms/2,gp=ms*0.07,ln=ms*0.2;ctx.clearRect(x,y0,ms,ms);if(sees)tgpR={x,y:y0,s:ms};else{ctx.fillStyle='#030504';ctx.fillRect(x,y0,ms,ms);}
     ctx.strokeStyle='rgba(116,255,150,0.6)';ctx.lineWidth=1.2*u;ctx.strokeRect(x+0.5,y0+0.5,ms-1,ms-1);ctx.strokeStyle='#f2f2ea';line(c0-ln,c1,c0-gp,c1);line(c0+gp,c1,c0+ln,c1);line(c0,c1-ln,c0,c1-gp);line(c0,c1+gp,c0,c1+ln);
     ctx.fillStyle='rgba(0,0,0,0.42)';ctx.fillRect(x+1,y0+1,ms-2,30*u);ctx.fillRect(x+1,y0+ms-17*u,ms-2,16*u);
@@ -1549,13 +1559,13 @@ function drawHUD(){tgpR=null;mfdR=null;if(W&&W.gtgt&&!W.gtgt.pt)podLast=W.gtgt;
     else if(g.pod){txt(['WFOV','MFOV','NFOV'][pod.zoom]+' '+PODM[pod.mode],c0,y0+25*u,'center',10,'#f2f2ea');txt(!sees?'MASKED':pod.laser&&!g.sky?'LASE':g.lab,x+ms-5*u,y0+ms-9*u,'right',11,!sees?AMB:pod.laser&&!g.sky?(blink?RED:'#f2f2ea'):'#f2f2ea');}
     else{const lg=W.plane.bomb.lgb,fl=W.bombs.length>0;txt(v.wpn?(v.fwd?'NAV':'SEEKER'):sees?(pod.laser||lg&&fl?'LASING':lg?'LASER RDY':'TRACK'):'MASKED',x+ms-5*u,y0+ms-9*u,'right',11,sees?((pod.laser||lg&&fl)&&blink?RED:'#f2f2ea'):AMB);}};
   const podBig=()=>{const S=touchOn?Math.min(vh-140,vw*0.45):Math.min(vw*0.45,vh*0.62);return{x:(vw-S)/2,y:touchOn?4:vh*0.06,s:S};};
-  if(ag&&pod.big&&!deadS('L')){const B=podBig();mfdR=B;podShown=B;mfdTgp(B.x,B.y,B.s);}
-  else if(ag&&view===0&&!touchOn&&(mfdPage===0||mfdPage===4)){const S=clamp(m*0.27,104,230),B={x:10*u,y:vh-S-10*u,s:S};mfdR=B;podShown=B;mfdTgp(B.x,B.y,S);}
+  if(pw&&!!pt&&pod.big&&!deadS('L')){const B=podBig();mfdR=B;podShown=B;mfdTgp(B.x,B.y,B.s);}
+  else if(ag&&view===0&&!touchOn){const S=clamp(m*0.27,104,230),B={x:10*u,y:vh-S-10*u,s:S};mfdR=B;podShown=B;mfdTgp(B.x,B.y,S);}
   if(view===0&&(opts.q==='high'||(clock*30|0)%(eco?3:2)===0)){const main=ctx,su=u,cv=cockpit.userData.cv;mfdSolid=true;u=1.3;
-    if(cv.w){ctx=cv.w.ctx;mfdLeft(0,0,256);mfdEng(256,0,256,256);mfdRwr(512,0,256);cv.w.tex.needsUpdate=true;}
-    else{ctx=cv.r.ctx;mfdLeft(0,0,256);cv.r.tex.needsUpdate=true;ctx=cv.t.ctx;mfdRwr(0,0,256);cv.t.tex.needsUpdate=true;ctx=cv.e.ctx;mfdEng(0,0,256,160);cv.e.tex.needsUpdate=true;}
+    if(cv.w){ctx=cv.w.ctx;mfdLeft(0,0,256);mfdEng(256,0,256,256);mfdRight(512,0,256);cv.w.tex.needsUpdate=true;}
+    else{ctx=cv.r.ctx;mfdLeft(0,0,256);cv.r.tex.needsUpdate=true;ctx=cv.t.ctx;mfdRight(0,0,256);cv.t.tex.needsUpdate=true;ctx=cv.e.ctx;mfdEng(0,0,256,160);cv.e.tex.needsUpdate=true;}
     ctx=main;u=su;mfdSolid=false;}
-  if(view===1||touchOn){const pad=10*u,y0=touchOn?pad+2+(document.fullscreenElement||fsMode?0:22):vh-ms-pad;if(!podShown){mfdR={x:pad,y:y0,s:ms};const pv=ag&&(mfdPage===0||mfdPage===4)&&!deadS('L');if(pv)podShown=mfdR;(pv?mfdTgp:mfdLeft)(pad,y0,ms);}mfdRwr(vw-ms-pad,y0,ms);
+  if(view===1||touchOn){const pad=10*u,y0=touchOn?pad+2+(document.fullscreenElement||fsMode?0:22):vh-ms-pad;if(!podShown){mfdR={x:pad,y:y0,s:ms};const pv=ag&&!deadS('L');if(pv)podShown=mfdR;(pv?mfdTgp:mfdLeft)(pad,y0,ms);}mfdRR={x:vw-ms-pad,y:y0,s:ms};mfdRight(vw-ms-pad,y0,ms);
     if(touchOn){const ty2=y0+ms+16*u;ctx.fillStyle='rgba(4,14,9,0.62)';if(!podShown)ctx.fillRect(pad-4*u,ty2-10*u,ms+8*u,19*u);ctx.fillRect(vw-pad-ms-4*u,ty2-10*u,ms+8*u,19*u);
       /* one line under each screen: throttle, and fuel; gear, flaps and brake show on their own buttons */
       if(!podShown)txt('THR '+thr+(p.gearPos>0.05&&p.gearPos<0.9?'  GEAR':''),pad,ty2,'left',13,p.eng>1.01||(p.gearPos>0.05&&p.gearPos<0.9)?AMB:HUDC);
