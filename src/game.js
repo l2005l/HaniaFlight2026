@@ -648,6 +648,7 @@ function act(a){if(!W||state!=='fly')return;const p=W.player;
   else if(a==='wing'){const w=W.wing;if(!w){toast('אין מספר שתיים במשימה הזאת');return;}const nx=w.mode==='form'?'attack':w.mode==='attack'?'cover':'form';W.wingCmd(nx==='attack'&&!(W.w.sel==='SPICE'?W.gtgt:(W.lock||W.irTgt))?'cover':nx);beep(1100,0.04);}
   else if(a==='ecm'){W.sw('ecm');toast(W.ecm?'שיבוש פועל: האויב רואה אותך מקרוב יותר, וגם המכ"ם שלך קצר יותר':'שיבוש כבוי');}
   else if(a==='map'){mapOn=!mapOn;beep(800,0.03);}
+  else if(a==='mfd'){mfdPage=(mfdPage+1)%MFDP.length;beep(1100,0.03);}
   else if(a==='padlock'){if(!padlock&&!(W.lock||W.irTgt)){toast('אין מטרה לעקוב אחריה. נעל מטרה קודם.');}else{padlock=!padlock;if(padlock){view=0;look.panel=false;}beep(1000,0.04);toast(padlock?'מבט נעול על המטרה':'מבט חופשי');}}
   else if(a==='nvg'){if(tod==='night'){setNVG(!nvg);beep(700,0.05);toast(nvg?'משקפת לילה פועלת':'משקפת לילה כבויה');}else toast('משקפת לילה מיועדת לטיסת לילה');}
   else if(a==='tgt'){tgpHold=null;W.cycleTarget();beep(1200,0.04);}
@@ -673,16 +674,15 @@ for(const ev of['pointerup','pointercancel'])glc.addEventListener(ev,e=>{if(e.po
   /* looking well down at the panel holds the view there; looking back up releases it */
   if(!look.panel&&look.pitch<-0.36)look.panel=true;else if(look.panel&&look.pitch>(touchOn?-0.55:-0.3))look.panel=false;});
 $('lookBack').onclick=()=>{look.panel=false;};$('nvgBtn').onclick=()=>act('nvg');$('mapBtn').onclick=()=>act('map');$('ecmBtn').onclick=()=>act('ecm');$('wingBtn').onclick=()=>act('wing');$('padBtn').onclick=()=>act('padlock');$('hookBtn').onclick=()=>act('hook');$('micBtn').onclick=()=>{if(voice.busy)micStop();else listen();};$('joinBtn').onclick=()=>act('join');
-$('bettyTest').onclick=()=>{Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();Betty.load();const k=['pull','bingo','coll','msl'][(Betty.tn=(Betty.tn||0)+1)%4];setTimeout(()=>{delete Betty.last[k];if(!Betty.say(k,10,0))toast(opts.betty==='off'?'ההתרעות הקוליות כבויות':'הצליל עוד נטען, נסה שוב');},350);};$('doorBtn').onclick=()=>act('ardoor');const chipsOpen=o=>{const c=$('chips');c.dataset.open=o?'1':'';$('moreBtn').textContent=o?'סגור':'עוד';$('moreBtn').setAttribute('aria-expanded',o?'true':'false');clearTimeout(chipsOpen.t);if(o)chipsOpen.t=setTimeout(()=>chipsOpen(false),10000);};
-$('moreBtn').onclick=()=>chipsOpen($('chips').dataset.open!=='1');for(const e of document.querySelectorAll('#chips .gen'))e.addEventListener('click',()=>setTimeout(()=>chipsOpen(false),150));
+$('bettyTest').onclick=()=>{Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();Betty.load();const k=['pull','bingo','coll','msl'][(Betty.tn=(Betty.tn||0)+1)%4];setTimeout(()=>{delete Betty.last[k];if(!Betty.say(k,10,0))toast(opts.betty==='off'?'ההתרעות הקוליות כבויות':'הצליל עוד נטען, נסה שוב');},350);};$('doorBtn').onclick=()=>act('ardoor');$('mfdHit').onclick=()=>act('mfd');$('mfdBtn').onclick=()=>act('mfd');$('panelBtn').onclick=()=>act('panel');
 $('wcamBtn').onclick=()=>act('wcam');$('relightBtn').onclick=()=>act('relight');
 addEventListener('keydown',e=>{
   if(state==='photo'&&(e.code==='Escape'||e.code==='KeyP')){endPhoto();return;}
   if(state==='pause'&&(e.code==='Escape'||e.code==='KeyP')){resume();return;}
   if(state!=='fly')return;
   if(/^(Space|Arrow|Tab|Enter|Backspace)/.test(e.code))e.preventDefault();
-  keys[e.code]=true;if(e.repeat)return;if(e.code==='Backquote'&&mpg.on){mpVoice.key(true);return;}if(e.code==='Quote'&&mpg.on){$('quickBox').hidden=!$('quickBox').hidden;return;}if(mpg.on&&!$('quickBox').hidden&&/^Digit\d$/.test(e.code)){mpg.quick((+e.code[5]+9)%10);return;}if(e.code==='Space')tap.gun=true;if(e.code==='Enter'||e.code==='NumpadEnter')tap.pickle=true;if(e.code==='KeyC')tap.cm=true;
-  const m={KeyG:'gear',KeyL:'flaps',KeyV:'view',KeyT:'tgt',KeyU:'unlock',KeyO:'time',KeyM:'arm',Digit0:'mute',KeyN:'wp',KeyH:'ap',KeyJ:'jett',KeyK:'ardoor',KeyY:'rmode',Period:'rrng',Comma:'rrngdn',Digit5:'ecm',Digit7:'w_attack',Digit8:'w_cover',Digit9:'w_form',KeyX:'panel',KeyI:'nvg',Tab:'map',KeyZ:'padlock',Backspace:'eject',Digit6:'hook',Semicolon:'relight',Backslash:'join',BracketLeft:'mic',Slash:'wcam'}[e.code];
+  keys[e.code]=true;if(e.repeat)return;if(e.code==='Backquote'&&mpg.on){mpVoice.key(true);return;}if(e.code==='Quote'&&mpg.on){$('quickBox').hidden=!$('quickBox').hidden;return;}if(mpg.on&&!$('quickBox').hidden&&/^Digit\d$/.test(e.code)){mpg.quick((+e.code[5]+9)%10);return;}if(e.code==='Space')tap.gun=true;if(e.code==='Enter'||e.code==='NumpadEnter')tap.pickle=true;if(e.code==='KeyC')tap.cm=true;if(e.code==='KeyQ')tap.ch=true;
+  const m={KeyG:'gear',KeyL:'flaps',KeyV:'view',KeyT:'tgt',KeyU:'unlock',KeyO:'time',KeyM:'arm',Digit0:'mute',KeyN:'wp',KeyH:'ap',KeyJ:'jett',KeyK:'ardoor',KeyY:'rmode',Period:'rrng',Comma:'rrngdn',Digit5:'ecm',Digit7:'w_attack',Digit8:'w_cover',Digit9:'w_form',KeyX:'panel',KeyI:'nvg',Tab:'map',KeyZ:'padlock',Backspace:'eject',Digit6:'hook',Semicolon:'relight',Backslash:'join',BracketLeft:'mic',BracketRight:'mfd',Slash:'wcam'}[e.code];
   if(m)act(m);else if(/^Digit[1-4]$/.test(e.code)){W.select(WSEL[+e.code[5]-1]);beep(900,0.04);}
   else if(e.code==='Escape'||e.code==='KeyP')pause();});
 addEventListener('keyup',e=>{keys[e.code]=false;if(e.code==='Backquote'&&MP.micOn)mpVoice.key(false);});
@@ -720,7 +720,7 @@ function readInput(dt){const pad=readXR(dt)||readPad(dt);if(state!=='fly')return
   if(ap.on){if(Math.abs(stick.x)>0.25||Math.abs(stick.y)>0.25||W.player.onGround){ap.on=false;beep(600,0.06);}
     else R.apSteer(W.player,vnorm(v3(Math.sin(ap.hdg),clamp((ap.alt-W.player.pos.y)/1500,-0.2,0.2),-Math.cos(ap.hdg))),0.45);}
   trigG=!!k.Space||touch.gun||tap.gun||!!(pad&&pad.gun);trigP=!!k.Enter||!!k.NumpadEnter||tap.pickle;
-  W.cmHeld=!!k.KeyC||touch.cm||tap.cm||!!(pad&&pad.cm);}
+  const fH=!!k.KeyC||touch.cm||tap.cm,cH=!!k.KeyQ||touch.ch||tap.ch,pH=!!(pad&&pad.cm);W.cmHeld=fH||cH||pH;W.cmKind=pH||(fH&&cH)?undefined:fH?'flare':'chaff';}
 /* iPhone Safari ignores "user-scalable=no": a quick second tap or a pinch zooms the page in, and in a full-screen game there is no way back.
    Block the gestures, swallow the second tap of a double tap (re-sending it as a click so the button still works), and if the page did zoom, snap it back. */
 {let lastT=0;const vm=document.querySelector('meta[name=viewport]');
@@ -751,7 +751,7 @@ const curve=v=>Math.sign(v)*Math.pow(Math.abs(v),{low:2.2,normal:1.6,high:1.1}[o
   setInterval(()=>{tk.style.bottom=(lever/1.3*100)+'%';},100);
   for(const b of tz.querySelectorAll('button')){const a=b.dataset.a;
     /* pointerdown, not click: a second finger does not produce a click while the first one holds the stick */
-    const hold=a==='gun'||a==='cm'||a==='brk';
+    const hold=a==='gun'||a==='cm'||a==='ch'||a==='brk';
     b.addEventListener('pointerdown',e=>{e.preventDefault();b.dataset.down='1';buzz(12);if(hold)touch[a]=true;else if(a==='pickle')tap.pickle=true;else if(a==='pause')pause();else act(a);});
     for(const ev of['pointerup','pointercancel','pointerleave'])b.addEventListener(ev,()=>{b.dataset.down='';if(hold)touch[a]=false;});
     b.addEventListener('contextmenu',e=>e.preventDefault());}}
@@ -862,13 +862,13 @@ const SRec=window.SpeechRecognition||window.webkitSpeechRecognition;
 const voice={busy:false,rec:null,get ok(){return !!SRec||!!(window.HFNative&&window.HFNative.canListen&&window.HFNative.canListen());}};
 const VCMD=[[/(שחרר|בטל) נעילה/,'unlock','שחרור נעילה'],[/שתיים.*(תקוף|תקיפה)/,'w_attack','שתיים תוקף'],[/שתיים.*(חופשי|ציד|כסה|כיסוי)/,'w_cover','שתיים בציד חופשי'],[/שתיים.*(מבנה|חזור)/,'w_form','שתיים חוזר למבנה'],
   [/מגדל.*נחית|בקשה לנחיתה/,'atc_land','בקשת נחיתה'],[/מגדל.*המרא|בקשה להמראה/,'atc_to','בקשת המראה'],[/כן נסע|גלגלים/,'gear','כן נסע'],[/מדפים/,'flaps','מדפים'],[/נעל|נעילה|מטרה הבאה/,'tgt','נעילה'],
-  [/מאסטר|חמש|נצור/,'arm','מאסטר ארם'],[/נורים|מוץ|פלרים/,'cm','נורים ומוץ'],[/מפה/,'map','מפה'],[/טייס אוטומטי/,'ap','טייס אוטומטי'],[/דלת תדלוק/,'ardoor','דלת תדלוק'],[/התקרבות|מתדלק/,'join','התקרבות למתדלק'],
+  [/מאסטר|חמש|נצור/,'arm','מאסטר ארם'],[/נורים|פלרים/,'cm','נורים'],[/מוץ/,'chaff','מוץ'],[/מפה/,'map','מפה'],[/טייס אוטומטי/,'ap','טייס אוטומטי'],[/דלת תדלוק/,'ardoor','דלת תדלוק'],[/התקרבות|מתדלק/,'join','התקרבות למתדלק'],
   [/שיבוש/,'ecm','שיבוש'],[/(^|\s)וו(\s|$)|וו בלימה/,'hook','וו בלימה'],[/התנעה|התנע/,'relight','התנעה באוויר'],[/משקפת/,'nvg','משקפת לילה'],[/השלך/,'jett','השלכה'],
   [/טיל מכ"?ם|אמרם|מכ"ם|מכם/,'s_AIM120','טיל מכ"ם'],[/פייתון|טיל חום|תרמי/,'s_PYTHON','טיל תרמי'],[/תותח/,'s_GUN','תותח'],[/פצצ|קרקע|דלילה|טיל ים|טילי ים/,'s_SPICE','חימוש לקרקע'],[/מבט|מצלמה/,'view','החלפת מבט'],[/השהי|עצור משחק/,'pause','השהיה']];
 function heard(alts){if(state!=='fly')return;for(const raw of alts){const t=String(raw).replace(/[\u0591-\u05C7]/g,'').trim();for(const[re,cmd,label]of VCMD)if(re.test(t)){doVoice(cmd);toast(`פקודה קולית: ${label}`);return;}}toast(`פקודה קולית: לא הבנתי: "${alts[0]||''}"`);}
 function doVoice(c){const p=W.player;
   if(c.startsWith('s_')){W.select(c.slice(2));beep(900,0.04);}
-  else if(c==='cm'){for(let i=0;i<3;i++)setTimeout(()=>{if(W&&state==='fly')W.dispense(W.player);},i*300);}
+  else if(c==='cm'||c==='chaff'){const k=c==='cm'?'flare':'chaff';for(let i=0;i<3;i++)setTimeout(()=>{if(W&&state==='fly')W.dispense(W.player,k);},i*300);}
   else if(c==='atc_land')W.msg(p.onGround?'מגדל חצרים: פטיש אחת, אתה כבר על הקרקע.':`מגדל חצרים: פטיש אחת, רשאי לנחות במסלול ${p.pos.x>0?'27':'09'}. כן נסע למטה, רוח שקטה.`);
   else if(c==='atc_to')W.msg(p.onGround?'מגדל חצרים: פטיש אחת, רשאי להמריא ממסלול 09. רוח שקטה.':'מגדל חצרים: פטיש אחת, אתה כבר באוויר.');
   else act(c);}
@@ -1092,7 +1092,7 @@ function handleEvents(){const p=W.player,cp=camera.position;
     else if(e.type==='spawn'){recObj.push(e.e);const g=mkDrone(e.e);dyn.add(g);meshOf.set(e.e,g);}
     else if(e.type==='kill'){const m=meshOf.get(e.e);if(m)m.visible=false;emitters.push({pos:{...e.e.pos},vel:{...e.e.vel},until:clock+40,rate:0.03,t:0,fall:true});}
     else if(e.type==='gkill'){if(e.g===podLast||e.g===W.gtgt)tgpHold={pos:{...e.g.pos},name:e.g.name,until:clock+8,held:true,t0:clock,w:W};const m=meshOf.get(e.g);if(m){m.traverse(o=>{if(o.material)o.material=lam(0x1d1b19);});m.scale.y=0.55;}}
-    else if(e.type==='cm'){for(let i=0;i<2;i++)spawn(e.pos,vadd(vmul(e.vel,0.6),v3((rnd()-0.5)*40,-25-rnd()*15,(rnd()-0.5)*40)),2.8,26,10,[1,0.9,0.6],1,{grav:-9,drag:0.5});
+    else if(e.type==='cm'){if(e.ch!==false)for(let i=0;i<5;i++)spawn(vadd(e.pos,rv(4)),vadd(vmul(e.vel,0.35),rv(10)),5,9,30,[0.78,0.8,0.82],0.35);if(e.fl!==false)for(let i=0;i<2;i++)spawn(e.pos,vadd(vmul(e.vel,0.6),v3((rnd()-0.5)*40,-25-rnd()*15,(rnd()-0.5)*40)),2.8,26,10,[1,0.9,0.6],1,{grav:-9,drag:0.5});
       for(let i=0;i<6;i++)spawn(e.pos,vadd(vmul(e.vel,0.5),rv(30)),1.6,5,30,[0.95,0.95,0.95],0.5,{drag:1.5});}
     else if(e.type==='gun'){gunSnd=0.09;if(clock-buzzT>0.09){buzzT=clock;buzz(25);}}
     else if(e.type==='spark')spawn(e.pos,rv(20),0.4,10,22,[1,0.85,0.5],1);
@@ -1182,14 +1182,19 @@ function syncScene(dt){
   cockpit.visible=inPit;const cm=inPit?(look.panel?2:0):1;if(cm!==camMode){camMode=cm;layout();$('touch').dataset.panel=cm===2?'1':'';$('lookBack').hidden=cm!==2;}
   {const nb=$('nvgBtn'),h=!(state==='fly'&&tod==='night');if(nb.hidden!==h)nb.hidden=h;
     const hb=$('hookBtn'),hh=!(p.gear&&p.alive&&(p.brakeK<1||W.flags.airborne||p.hook)&&(p.agl<1500||p.onGround));if(hb.hidden!==hh)hb.hidden=hh;if(!hh){const t=p.hook?'וו: למטה':'וו בלימה';if(hb.textContent!==t)hb.textContent=t;hb.dataset.on=p.hook?'1':'';}
-    {const pb=$('padBtn'),pc=!!(W.lock&&W.lock.alive!==false);if(pb.classList.contains('ctx')!==pc)pb.classList.toggle('ctx',pc);
+    {const vis=(id,on,t)=>{const b=$(id);if(b.hidden===on)b.hidden=!on;if(on&&t&&b.textContent!==t)b.textContent=t;};
+      vis('padBtn',!!(W.lock&&W.lock.alive!==false)||padlock);vis('mapBtn',mfdPage===1||mapOn,mapOn?'סגור מפה':'מפה מלאה');vis('ecmBtn',mfdPage===3,W.ecm?'שיבוש: פועל':'שיבוש: כבוי');
+      vis('panelBtn',view===0&&!look.panel&&p.alive&&!xr.on);
+      /* the left screen: tap it (touch) or the button under it to change page */
+      const hb=$('mfdHit'),mb=$('mfdBtn');if(mfdR){hb.hidden=false;const st=hb.style,v=[mfdR.x,mfdR.y,mfdR.s].map(n=>n+'px');if(st.left!==v[0]||st.top!==v[1]||st.width!==v[2]){st.left=v[0];st.top=v[1];st.width=st.height=v[2];}}else if(!hb.hidden)hb.hidden=true;
+      const mt='מסך: '+MFDN[mfdPage]+' ‹';if(mb.textContent!==mt)mb.textContent=mt;
       /* touch: landing switches only near the ground or when set up for landing; weapon buttons only in the air */
       /* gear and flaps: near the ground, slow, or already out; once shown they stay 8 s so they do not flicker. The brake (speed brake in the air) always stays. */
       if(p.onGround||p.gearPos>0.05||!!p.flaps||p.agl<1200||p.V<110)lowT=clock;const low=clock-lowT<8;
       for(const id of['tbGear','tbFlaps']){const e=$(id);if(e.classList.contains('off')===low)e.classList.toggle('off',!low);}
-      for(const id of['tbPickle','tbGun','tbTgt','tbWpn','tbCm']){const e=$(id);if(e.classList.contains('off')!==p.onGround)e.classList.toggle('off',p.onGround);}
+      for(const id of['tbPickle','tbGun','tbTgt','tbWpn','tbCm','tbCh']){const e=$(id);if(e.classList.contains('off')!==p.onGround)e.classList.toggle('off',p.onGround);}
       const st=(id,v)=>{const e=$(id),x=v?'1':'';if(e.dataset.st!==x)e.dataset.st=x;};st('tbGear',p.gearPos>0.5);st('tbFlaps',!!p.flaps);st('tbBrk',p.brakePos>0.5);}
-    {const mb=$('micBtn'),mh=!(opts.voice!=='off'&&voice.ok);if(mb.hidden!==mh)mb.hidden=mh;}{const cb=$('wcamBtn'),ch=!(p.alive&&!!camWpn());if(ch)wcam=null;if(cb.hidden!==ch)cb.hidden=ch;if(!ch){const t=wpnOn(podTgt())?'תעל: מהמטוס':'מצלמת החימוש';if(cb.textContent!==t)cb.textContent=t;}}{const pb2=$('pttBtn'),ph2=!(mpg.on&&MP.live);if(pb2.hidden!==ph2){pb2.hidden=ph2;$('quickBtn').hidden=ph2;}}{const db=$('doorBtn'),dh=!(W.tanker&&p.alive&&!p.onGround&&!W.sys.arDoor);if(db.hidden!==dh)db.hidden=dh;}const jb=$('joinBtn'),jh=!(W.tanker&&W.sys.arDoor&&p.alive&&!p.onGround&&W.ar.state!=='contact'&&(W.arJoin||W.ar.dist>45));if(jb.hidden!==jh)jb.hidden=jh;if(!jh){const t=W.arJoin?'מתקרב… (ביטול)':'התקרבות אוטומטית';if(jb.textContent!==t)jb.textContent=t;}
+    {const mb=$('micBtn'),mh=!(opts.voice!=='off'&&voice.ok);if(mb.hidden!==mh)mb.hidden=mh;}{const cb=$('wcamBtn'),ch=!(p.alive&&!!camWpn());if(ch)wcam=null;if(cb.hidden!==ch)cb.hidden=ch;if(!ch){const t=wpnOn(podTgt())?'תעל: מהמטוס':'מצלמת החימוש';if(cb.textContent!==t)cb.textContent=t;}}{const pb2=$('pttBtn'),ph2=!(mpg.on&&MP.live);if(pb2.hidden!==ph2){pb2.hidden=ph2;$('quickBtn').hidden=ph2;}}{const db=$('doorBtn'),dh=!(W.tanker&&p.alive&&!p.onGround&&!W.sys.arDoor&&(W.missionId==='tanker'||vdist(W.tanker.pos,p.pos)<20000||p.fuel<W.bingo*1.5));if(db.hidden!==dh)db.hidden=dh;}const jb=$('joinBtn'),jh=!(W.tanker&&W.sys.arDoor&&p.alive&&!p.onGround&&W.ar.state!=='contact'&&(W.arJoin||W.ar.dist>45));if(jb.hidden!==jh)jb.hidden=jh;if(!jh){const t=W.arJoin?'מתקרב… (ביטול)':'התקרבות אוטומטית';if(jb.textContent!==t)jb.textContent=t;}
     const rb=$('relightBtn'),rh=!(p.alive&&!p.onGround&&p.flame&&p.flame.some(Boolean));if(rb.hidden!==rh)rb.hidden=rh;const ch=$('chips'),hc=state!=='fly'||cm===2;if(ch.hidden!==hc)ch.hidden=hc;{const wb=$('wingBtn'),hw=!(W&&W.wing);if(wb.hidden!==hw)wb.hidden=hw;if(!hw){const t='שתיים: '+{form:'במבנה',attack:'תוקף',cover:'ציד חופשי'}[W.wing.mode];if(wb.textContent!==t)wb.textContent=t;}}if(W&&(!!W.ecm)!==($('ecmBtn').dataset.on==='1'))$('ecmBtn').dataset.on=W.ecm?'1':'';if(padlock!==($('padBtn').dataset.on==='1'))$('padBtn').dataset.on=padlock?'1':'';if(state!=='fly'&&nvg)setNVG(false);}
   if(inPit){const cs=cockpit.userData.sw;for(const id in cs){const v=swState(id),o=cs[id],k=o.kind,ease=Math.min(1,Math.max(dt,0.016)*14),since=clock-o.clickT;
       if(k==='push'||k==='tap'){const tz=(k==='push'&&v)||since<0.18?0.006:0.012;o.lev.position.z+=(tz-o.lev.position.z)*ease*1.6;}
@@ -1224,8 +1229,8 @@ function frame(now){if(!xr.on)requestAnimationFrame(frame);if(eco&&now-last<31&&
   if(state==='fly'){
     readInput(dt);if(W.mwarn&&timeAcc>1)timeAcc=1;
     simAcc+=dt*timeAcc;const h=1/120;let n=0;
-    while(simAcc>=h&&n<48){W.trigger(trigG,trigP,h);if(W.cmHeld){W.cmT-=h;if(W.cmT<=0){W.cmT=0.3;W.dispense(W.player);}}else W.cmT=0;W.step(h);simAcc-=h;n++;}
-    if(n===48)simAcc=0;if(n>0)tap.gun=tap.pickle=tap.cm=false;
+    while(simAcc>=h&&n<48){W.trigger(trigG,trigP,h);if(W.cmHeld){W.cmT-=h;if(W.cmT<=0){W.cmT=0.3;W.dispense(W.player,W.cmKind);}}else W.cmT=0;W.step(h);simAcc-=h;n++;}
+    if(n===48)simAcc=0;if(n>0)tap.gun=tap.pickle=tap.cm=tap.ch=false;
     handleEvents();recT+=dt*timeAcc;if(recT>=0.1){recT=0;recFrame();}
     const p=W.player;gAcc=clamp(gAcc+(Math.max(0,p.g-6.5)*0.1-(p.g<5?0.3:0))*dt*timeAcc,0,1);
     if(W.over){overT+=wall;if(overT>(p.alive?1.5:4))debrief();}
@@ -1246,10 +1251,11 @@ function line(...a){ctx.beginPath();ctx.moveTo(a[0],a[1]);for(let i=2;i<a.length
 const dirAE=(az,el)=>v3(Math.sin(az)*Math.cos(el),Math.sin(el),-Math.cos(az)*Math.cos(el));
 /* tactical map: north up, the whole theatre. Shows only what the pilot would know. */
 let mapBox=false;
-function drawMap(p,e){const{nx,nz,cell,x0,z0}=TER,WX=(nx-1)*cell,WZ=(nz-1)*cell;
+function getMapBg(){const{nx,nz,cell,x0,z0}=TER,WX=(nx-1)*cell,WZ=(nz-1)*cell;
   if(!mapBg){const BW=WX>=WZ?312:400,BH=WX>=WZ?180:800;mapBg=document.createElement('canvas');mapBg.width=BW;mapBg.height=BH;const x=mapBg.getContext('2d'),im=x.createImageData(BW,BH),d=im.data;
     for(let j=0;j<BH;j++)for(let i=0;i<BW;i++){const px=x0+i/(BW-1)*WX,pz=z0+j/(BH-1)*WZ,h=terrainH(px,pz),hr=terrainH(x0+(i+1)/(BW-1)*WX,pz),k=(j*BW+i)*4,t=clamp(h/1500,0,1),sh=clamp((h-hr)/90,-1,1)*26;
-      if(R.isWater(px,pz)){d[k]=20;d[k+1]=46;d[k+2]=66;}else{d[k]=70+t*62+sh;d[k+1]=68+t*44+sh;d[k+2]=50+t*26+sh;}d[k+3]=255;}x.putImageData(im,0,0);}
+      if(R.isWater(px,pz)){d[k]=20;d[k+1]=46;d[k+2]=66;}else{d[k]=70+t*62+sh;d[k+1]=68+t*44+sh;d[k+2]=50+t*26+sh;}d[k+3]=255;}x.putImageData(im,0,0);}return mapBg;}
+function drawMap(p,e){const{nx,nz,cell,x0,z0}=TER,WX=(nx-1)*cell,WZ=(nz-1)*cell;getMapBg();
   const top=mapBox?2:touchOn?8:46,bot=mapBox?2:touchOn?(opts.ui==='large'?166:136):20,AW=vw-24,AH=vh-top-bot;
   /* the whole country is too tall for a landscape screen: on the real map, show the area of the mission (you, the route and the threats) */
   let vx0=x0,vz0=z0,VW=WX,VZ=WZ;if(theatre0==='israel'){const P=[[p.pos.x,p.pos.z],[0,0],...W.wps.map(q=>[q.x,q.z]),...W.sams.filter(q=>q.alive&&!(q.silent&&!q.awake)).map(q=>[q.pos.x,q.pos.z])];
@@ -1280,7 +1286,7 @@ function drawMap(p,e){const{nx,nz,cell,x0,z0}=TER,WX=(nx-1)*cell,WZ=(nz-1)*cell;
 let tgpR=null;const tgpCam=new T.PerspectiveCamera(3,1,20,260000),tgpFx=document.createElement('div');
 tgpFx.style.cssText='position:absolute;pointer-events:none;display:none;backdrop-filter:grayscale(1) contrast(1.3) brightness(0.82);-webkit-backdrop-filter:grayscale(1) contrast(1.3) brightness(0.82)';hudc.parentNode.insertBefore(tgpFx,hudc);
 /* what the targeting pod shows: the live target, or for a few seconds after it dies the spot where it was, so the hit can be seen */
-let tgpHold=null,podLast=null,wcam=null,lowT=-99;
+let tgpHold=null,podLast=null,wcam=null,lowT=-99,mfdPage=0,mfdR=null;const MFDP=['RDR','MAP','WPN','EW'],MFDN=['מכ"ם','מפה','חימוש','ל"א'];
 function camWpn(){const p=W.player;for(const b of W.bombs)if(b.alive&&b.owner===p&&!b.lgb&&!b.gps)return b;for(const m of W.missiles)if(m.alive&&m.cruise&&m.owner===p)return m;return null;}
 function podTgt(){if(tgpHold&&(tgpHold.w!==W||clock>tgpHold.until))tgpHold=null;if(tgpHold)return tgpHold;const g=W.gtgt;return g&&g.alive?g:null;}
 /* which picture the pod window shows: wcam null = automatic (the weapon's camera only when the jet's own pod cannot see the target), true = weapon, false = jet */
@@ -1304,7 +1310,7 @@ function renderTgp(){const g=podTgt(),on=!!tgpR&&state==='fly'&&!!g&&!xr.on;tgpF
   const hid=[];for(const L of[W.bombs,W.missiles])for(const q of L){const m=meshOf.get(q);if(m&&m.visible&&(q===v.wpn||vdist(q.pos,src)<600)){m.visible=false;hid.push(m);}}
   const cv=cockpit.visible,pv=pMesh.visible,y=vh-r.y-r.s;cockpit.visible=false;pMesh.visible=false;renderer.setScissorTest(true);renderer.setScissor(r.x,y,r.s,r.s);renderer.setViewport(r.x,y,r.s,r.s);renderer.render(scene,tgpCam);
   renderer.setScissorTest(false);renderer.setViewport(0,0,vw,vh);cockpit.visible=cv;pMesh.visible=pv;for(const m of hid)m.visible=true;pmat.uniforms.scale.value=ps;}
-function drawHUD(){tgpR=null;if(W.gtgt)podLast=W.gtgt;
+function drawHUD(){tgpR=null;mfdR=null;if(W.gtgt)podLast=W.gtgt;
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.direction='ltr';ctx.clearRect(0,0,vw,vh);if(state!=='fly'&&state!=='pause'||!W)return;
   const p=W.player,w=W.w,m=Math.min(vw,vh),cx=vw/2,cy=vh/2;u=clamp(m/700,touchOn?0.72:0.62,1.3);
   const e=p.euler(),kcas=p.V*Math.sqrt((p.rho||1.225)/1.225)*KT,altF=p.pos.y*FT,blink=(clock*4|0)%2===0;
@@ -1440,6 +1446,36 @@ function drawHUD(){tgpR=null;if(W.gtgt)podLast=W.gtgt;
     let tx=xc-bw*0.36;for(const q of[['GEAR',p.gearPos>0.9,p.gearPos>0.05&&p.gearPos<=0.9],['FLAPS',p.flaps],['BRK',p.brakePos>0.5]]){txt(q[0],tx,y0+r*2.45,'left',13,q[2]?AMB:q[1]?HUDC:'rgba(116,255,150,0.28)');tx+=bw*0.27;}
     txt('MASTER '+(W.arm?'ARM':'SAFE')+(W.ecm?'  ECM':'')+(ap.on?'  AP':'')+(sy.pbrake?'  PBRK':'')+(sy.arDoor?'  AR':''),xc,y0+r*3.4,'center',13,W.arm?RED:HUDC);
     let s2='';for(const k of WSEL)s2+=(k===w.sel?'>':' ')+{AIM120:'120',PYTHON:'PY5',GUN:'GUN',SPICE:'SPC'}[k]+' '+cnt[k]+' ';if(wide)txt(s2.trim(),xc,y0+r*4.35,'center',12);};
+  /* the left screen has four pages: radar, a moving map of the theatre, the stores and the electronic warfare page */
+  const tabs=(x,y0,ms)=>{const n=MFDP.length,bw=ms/n;ctx.fillStyle='rgba(0,0,0,0.45)';ctx.fillRect(x+1,y0+ms-15*u,ms-2,14*u);for(let i=0;i<n;i++)txt(MFDP[i],x+bw*(i+0.5),y0+ms-8*u,'center',10,i===mfdPage?'#f2f2ea':'rgba(116,255,150,0.45)');};
+  const mfdMap=(x,y0,ms)=>{if(!pw)return dark(x,y0,ms,ms);const B=getMapBg(),{nx,nz,cell,x0,z0}=TER,WX=(nx-1)*cell,WZ=(nz-1)*cell,Rm=W.radar.rng*NM*0.75,s=(ms-4)/(2*Rm),cxm=x+ms/2,cym=y0+ms/2,X=v=>cxm+(v-p.pos.x)*s,Y=v=>cym+(v-p.pos.z)*s;
+    bg(x,y0,ms,ms,'MAP '+Math.round(Rm/NM)+'NM');ctx.save();ctx.beginPath();ctx.rect(x+1,y0+13*u,ms-2,ms-14*u);ctx.clip();
+    /* the source rectangle is clamped to the image: Safari draws nothing when it reaches outside */
+    {const ax=Math.max(x0,p.pos.x-Rm),bx=Math.min(x0+WX,p.pos.x+Rm),az=Math.max(z0,p.pos.z-Rm),bz=Math.min(z0+WZ,p.pos.z+Rm);if(bx>ax&&bz>az){ctx.globalAlpha=0.8;ctx.drawImage(B,(ax-x0)/WX*B.width,(az-z0)/WZ*B.height,(bx-ax)/WX*B.width,(bz-az)/WZ*B.height,X(ax),Y(az),(bx-ax)*s,(bz-az)*s);ctx.globalAlpha=1;}}
+    ctx.fillStyle='rgba(2,10,6,0.25)';ctx.fillRect(x,y0,ms,ms);
+    if(theatre0==='israel'){ctx.save();ctx.direction='rtl';ctx.textAlign='center';ctx.font=`600 ${Math.round(9*u)}px Assistant,Arial,sans-serif`;ctx.fillStyle='rgba(246,240,222,0.75)';for(const[n,la,lo,k]of PLACES){if(k!==1)continue;const q=R.ISR.xy(la,lo),px=X(q.x),py=Y(q.z);if(px<x||px>x+ms||py<y0||py>y0+ms)continue;ctx.beginPath();ctx.arc(px,py,1.4,0,7);ctx.fill();ctx.fillText(n,px,py-4);}
+      for(const b of R.ISR.alt){const px=X(b.x),py=Y(b.z);ctx.fillStyle='#ffd98a';ctx.fillRect(px-3,py-1,6,2);}ctx.restore();}
+    ctx.fillStyle='#d2b47c';ctx.fillRect(X(RWY.x1),Y(0)-1.5,Math.max(5,(RWY.x2-RWY.x1)*s),3);
+    for(const q of W.sams){if(!q.alive||(q.silent&&!q.awake))continue;ctx.strokeStyle=RED;ctx.fillStyle='rgba(255,92,79,0.12)';ctx.beginPath();ctx.arc(X(q.pos.x),Y(q.pos.z),W.d.samR*q.rk*s,0,7);ctx.fill();ctx.stroke();}
+    for(const g of W.ground){if(!g.alive||g.kind==='launcher'||g.hid)continue;ctx.strokeStyle=g.kind==='radar'?RED:AMB;const d=3*u;ctx.strokeRect(X(g.pos.x)-d,Y(g.pos.z)-d,2*d,2*d);}
+    ctx.strokeStyle='#d2b47c';ctx.setLineDash([5*u,4*u]);ctx.beginPath();ctx.moveTo(cxm,cym);for(let i=W.wp;i<W.wps.length;i++)ctx.lineTo(X(W.wps[i].x),Y(W.wps[i].z));ctx.stroke();ctx.setLineDash([]);
+    W.wps.forEach((q,i)=>{ctx.strokeStyle=i===W.wp?HUDC:'#d2b47c';ctx.beginPath();ctx.arc(X(q.x),Y(q.z),4*u,0,7);ctx.stroke();});
+    for(const k of W.friends){if(!k.alive)continue;ctx.strokeStyle=HUDC;ctx.beginPath();ctx.arc(X(k.pos.x),Y(k.pos.z),4*u,0,7);ctx.stroke();}
+    for(const c of W.contacts){if(c.fr)continue;ctx.fillStyle=RED;ctx.fillRect(X(c.e.pos.x)-4*u,Y(c.e.pos.z)-2*u,8*u,4*u);if(c.e===W.lock){ctx.strokeStyle=RED;ctx.beginPath();ctx.arc(X(c.e.pos.x),Y(c.e.pos.z),7*u,0,7);ctx.stroke();}}
+    ctx.restore();ctx.save();ctx.translate(cxm,cym);ctx.rotate(e.hdg);ctx.fillStyle=HUDC;ctx.beginPath();ctx.moveTo(0,-8*u);ctx.lineTo(5*u,6*u);ctx.lineTo(0,3*u);ctx.lineTo(-5*u,6*u);ctx.closePath();ctx.fill();ctx.restore();
+    txt('N',x+ms-9*u,y0+24*u,'center',10,'rgba(116,255,150,0.7)');};
+  const mfdWpn=(x,y0,ms)=>{if(!pw)return dark(x,y0,ms,ms);bg(x,y0,ms,ms,'STORES');const L=[],nm={AIM120:(W.mrm&&W.mrm.name)||'AIM-120',PYTHON:(W.srm&&W.srm.name)||'PYTHON-5',GUN:'GUN',SPICE:W.plane.bomb.name};
+    for(const k of WSEL){if(k==='SPICE'&&!W.plane.spice)continue;if(k==='PYTHON'&&!W.plane.python&&!w.python)continue;L.push([k===w.sel?'>':' ',nm[k],cnt[k]]);}
+    if(w.tanks)L.push([' ','TANKS',w.tanks]);const lh=Math.min(17*u,(ms-60*u)/(L.length+1));let yy=y0+30*u;
+    for(const r of L){txt(r[0]+' '+r[1],x+8*u,yy,'left',12,r[0]==='>'?'#f2f2ea':HUDC);txt(String(r[2]),x+ms-8*u,yy,'right',12,r[2]?HUDC:AMB);yy+=lh;}
+    txt('FLARE '+w.flare+'   CHAFF '+w.chaff,x+ms/2,y0+ms-34*u,'center',11);txt(W.arm?'MASTER ARM':'MASTER SAFE',x+ms/2,y0+ms-21*u,'center',12,W.arm?RED:HUDC);};
+  const mfdEw=(x,y0,ms)=>{if(!pw)return dark(x,y0,ms,ms);bg(x,y0,ms,ms,'EW');txt('ECM '+(W.ecm?'ON':'OFF'),x+ms/2,y0+30*u,'center',16,W.ecm?AMB:HUDC);
+    txt('FLARE '+w.flare,x+ms*0.27,y0+50*u,'center',12,w.flare<10?AMB:HUDC);txt('CHAFF '+w.chaff,x+ms*0.73,y0+50*u,'center',12,w.chaff<10?AMB:HUDC);
+    let yy=y0+70*u;if(W.mwarn){if(blink)txt('MISSILE '+(W.mwarn.R/NM).toFixed(1)+' NM',x+ms/2,yy,'center',13,RED);yy+=17*u;}
+    const th=[...(W.threats||[])].filter(t=>t.sym!=='M').sort((a,b)=>b.lvl-a.lvl||a.R-b.R).slice(0,Math.max(1,Math.floor((y0+ms-yy-18*u)/(15*u))));
+    for(const t of th){txt(t.sym,x+10*u,yy,'left',12,t.lvl>=2?RED:t.lvl===1?AMB:HUDC);txt(['SEARCH','TRACK','LAUNCH','LAUNCH'][t.lvl]||'',x+ms*0.42,yy,'center',11,t.lvl>=2?RED:t.lvl===1?AMB:HUDC);txt((t.R/NM).toFixed(0)+' NM',x+ms-10*u,yy,'right',11);yy+=15*u;}
+    if(!th.length&&!W.mwarn)txt('NO THREATS',x+ms/2,yy+6*u,'center',11,'rgba(116,255,150,0.5)');};
+  const mfdLeft=(x,y0,ms)=>{[mfdRadar,mfdMap,mfdWpn,mfdEw][mfdPage](x,y0,ms);if(pw)tabs(x,y0,ms);};
   const pt=podTgt(),ag=pw&&!!pt&&(w.sel==='SPICE'||!!pt.held||!!wpnOn(pt));
   const mfdTgp=(x,y0,ms)=>{const g=podTgt(),v=podView(g),sees=!!v.wpn||W.podSees(g.held?{alive:true,pos:g.pos}:g),c0=x+ms/2,c1=y0+ms/2,gp=ms*0.07,ln=ms*0.2;if(sees)tgpR={x,y:y0,s:ms};else{ctx.fillStyle='#030504';ctx.fillRect(x,y0,ms,ms);}
     ctx.strokeStyle='rgba(116,255,150,0.6)';ctx.lineWidth=1.2*u;ctx.strokeRect(x+0.5,y0+0.5,ms-1,ms-1);ctx.strokeStyle='#f2f2ea';line(c0-ln,c1,c0-gp,c1);line(c0+gp,c1,c0+ln,c1);line(c0,c1-ln,c0,c1-gp);line(c0,c1+gp,c0,c1+ln);
@@ -1450,10 +1486,10 @@ function drawHUD(){tgpR=null;if(W.gtgt)podLast=W.gtgt;
     else{const lg=W.plane.bomb.lgb,fl=W.bombs.length>0;txt(v.wpn?(v.fwd?'NAV':'SEEKER'):sees?(lg?(fl?'LASING':'LASER RDY'):'TRACK'):'MASKED',x+ms-5*u,y0+ms-9*u,'right',11,sees?(lg&&fl&&blink?RED:'#f2f2ea'):AMB);}};
   if(ag&&view===0&&!touchOn)mfdTgp(10*u,vh-clamp(m*0.27,104,230)-10*u,clamp(m*0.27,104,230));
   if(view===0&&(opts.q==='high'||(clock*30|0)%(eco?3:2)===0)){const main=ctx,su=u,cv=cockpit.userData.cv;mfdSolid=true;u=1.3;
-    if(cv.w){ctx=cv.w.ctx;mfdRadar(0,0,256);mfdEng(256,0,256,256);mfdRwr(512,0,256);cv.w.tex.needsUpdate=true;}
-    else{ctx=cv.r.ctx;mfdRadar(0,0,256);cv.r.tex.needsUpdate=true;ctx=cv.t.ctx;mfdRwr(0,0,256);cv.t.tex.needsUpdate=true;ctx=cv.e.ctx;mfdEng(0,0,256,160);cv.e.tex.needsUpdate=true;}
+    if(cv.w){ctx=cv.w.ctx;mfdLeft(0,0,256);mfdEng(256,0,256,256);mfdRwr(512,0,256);cv.w.tex.needsUpdate=true;}
+    else{ctx=cv.r.ctx;mfdLeft(0,0,256);cv.r.tex.needsUpdate=true;ctx=cv.t.ctx;mfdRwr(0,0,256);cv.t.tex.needsUpdate=true;ctx=cv.e.ctx;mfdEng(0,0,256,160);cv.e.tex.needsUpdate=true;}
     ctx=main;u=su;mfdSolid=false;}
-  if(view===1||touchOn){const pad=10*u,y0=touchOn?pad+2+(document.fullscreenElement||fsMode?0:22):vh-ms-pad;(ag?mfdTgp:mfdRadar)(pad,y0,ms);mfdRwr(vw-ms-pad,y0,ms);
+  if(view===1||touchOn){const pad=10*u,y0=touchOn?pad+2+(document.fullscreenElement||fsMode?0:22):vh-ms-pad;mfdR={x:pad,y:y0,s:ms};(ag&&mfdPage===0?mfdTgp:mfdLeft)(pad,y0,ms);mfdRwr(vw-ms-pad,y0,ms);
     if(touchOn){const ty2=y0+ms+16*u;ctx.fillStyle='rgba(4,14,9,0.62)';ctx.fillRect(pad-4*u,ty2-10*u,ms+8*u,19*u);ctx.fillRect(vw-pad-ms-4*u,ty2-10*u,ms+8*u,19*u);
       /* one line under each screen: throttle, and fuel; gear, flaps and brake show on their own buttons */
       txt('THR '+thr+(p.gearPos>0.05&&p.gearPos<0.9?'  GEAR':''),pad,ty2,'left',13,p.eng>1.01||(p.gearPos>0.05&&p.gearPos<0.9)?AMB:HUDC);

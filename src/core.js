@@ -610,10 +610,11 @@ class World{
     this.missiles.push(m);this.events.push({type:'launch',m});return m;}
   bullet(owner,mv){const f=qrot(owner.q,FWD),j=()=>(Math.random()-0.5)*0.004;
     this.bullets.push({pos:vadd(owner.pos,vmul(f,8)),vel:vadd(owner.vel,vmul(vnorm(v3(f.x+j(),f.y+j(),f.z+j())),mv)),t:0,owner});}
-  dispense(ac){
-    if(ac===this.player){const w=this.w;if(w.chaff<=0&&w.flare<=0)return;w.chaff=Math.max(0,w.chaff-1);w.flare=Math.max(0,w.flare-1);}
-    ac.lastCM=this.time;this.events.push({type:'cm',pos:ac.pos,vel:ac.vel,ac});
-    for(const m of this.missiles){if(!m.alive||m.target!==ac||m.decoy||m.lost)continue;const r=vsub(ac.pos,m.pos),R=vlen(r);if(R>12000)continue;
+  /* countermeasures: flares decoy heat-seeking missiles, chaff decoys radar-guided ones; kind 'flare', 'chaff', or both when left out */
+  dispense(ac,kind){let fl=kind!=='chaff',ch=kind!=='flare';
+    if(ac===this.player){const w=this.w;fl=fl&&w.flare>0;ch=ch&&w.chaff>0;if(!fl&&!ch)return;if(fl)w.flare--;if(ch)w.chaff--;}
+    ac.lastCM=this.time;this.events.push({type:'cm',pos:ac.pos,vel:ac.vel,ac,fl,ch});
+    for(const m of this.missiles){if(!m.alive||m.target!==ac||m.decoy||m.lost)continue;if(m.s.seeker==='ir'?!fl:!ch)continue;const r=vsub(ac.pos,m.pos),R=vlen(r);if(R>12000)continue;
       let p;const good=m.owner===this.player;
       if(m.s.seeker==='ir')p=(good?0.05:0.22)*(ac.eng>1.02?0.5:1.2);
       else p=(good?0.03:0.06)+(good?0.22:0.42)*sstep(1-Math.abs(vdot(vnorm(ac.vel),vmul(r,1/R))),0.6,0.97);

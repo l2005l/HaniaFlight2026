@@ -134,9 +134,8 @@ details[open] summary{margin-bottom:10px}
 #chips button{background:rgba(8,12,14,.6);padding:4px 12px;font-size:.78rem;white-space:nowrap}
 #chips button[data-on="1"]{border-color:var(--sand);color:var(--sand)}
 #chips button.warn{border-color:#ff5c4f;color:#ffd0c8;animation:blinkw 1s steps(2) infinite}@keyframes blinkw{50%{background:rgba(120,20,10,.7)}}
-#chips:not([data-open="1"]) .gen:not(.ctx){display:none}
-#chips button.gen[hidden]{display:none}
-#moreBtn{color:var(--dim)}#chips[data-open="1"] #moreBtn{border-color:var(--sand);color:var(--sand)}
+#mfdHit{position:absolute;z-index:3;background:transparent;border:0;padding:0;border-radius:0}#mfdHit[hidden]{display:none}#mfdHit:focus-visible{outline:2px solid var(--hud)}
+#mfdBtn{color:#cfe4ff;border-color:rgba(127,184,255,.6)}
 @media (pointer:fine){#chips{top:44px;left:auto;transform:none;inset-inline-start:16px;flex-direction:column;align-items:flex-start;gap:4px}}
 .tb button[data-st="1"]{border-color:var(--sand);color:var(--sand)}
 .tb button.off{display:none}
@@ -203,7 +202,7 @@ details[open] summary{margin-bottom:10px}
   <div id="radio" aria-live="polite"></div>
   <div id="toast" role="status" aria-live="polite"></div>
   <button id="lookBack" hidden>חזרה למבט קדימה</button>
-  <div id="chips" hidden><button id="moreBtn" aria-expanded="false">עוד</button><button class="gen" id="mapBtn">מפה</button><button class="gen" id="ecmBtn">שיבוש</button><button class="gen" id="wingBtn" hidden>שתיים</button><button class="gen" id="padBtn">מבט למטרה</button><button class="gen" id="nvgBtn" hidden>משקפת לילה</button><button class="gen" id="micBtn" hidden>פקודה קולית</button><button id="wcamBtn" hidden>מצלמת החימוש</button><button id="pttBtn" class="radio" hidden>לחץ לדבר</button><button id="quickBtn" class="radio" hidden>הודעה</button><button id="doorBtn" hidden>פתח דלת תדלוק</button><button id="joinBtn" hidden>התקרבות אוטומטית</button><button id="hookBtn" hidden>וו בלימה</button><button id="relightBtn" class="warn" hidden>התנעה באוויר</button></div>
+  <div id="chips" hidden><button id="mfdBtn">מסך: מכ"ם ‹</button><button id="panelBtn">לוח מתגים</button><button id="mapBtn" hidden>מפה מלאה</button><button id="ecmBtn" hidden>שיבוש</button><button id="wingBtn" hidden>שתיים</button><button id="padBtn" hidden>מבט למטרה</button><button id="nvgBtn" hidden>משקפת לילה</button><button id="micBtn" hidden>פקודה קולית</button><button id="wcamBtn" hidden>מצלמת החימוש</button><button id="pttBtn" class="radio" hidden>לחץ לדבר</button><button id="quickBtn" class="radio" hidden>הודעה</button><button id="doorBtn" hidden>פתח דלת תדלוק</button><button id="joinBtn" hidden>התקרבות אוטומטית</button><button id="hookBtn" hidden>וו בלימה</button><button id="relightBtn" class="warn" hidden>התנעה באוויר</button></div>
   <div id="check" hidden>
     <div class="chead"><b>רשימת תיוג להתנעה</b><button id="autoStart">התנעה אוטומטית</button></div>
     <ol id="checkList"></ol>
@@ -218,9 +217,9 @@ details[open] summary{margin-bottom:10px}
     </div>
     <div class="tgap"></div>
     <div class="tb">
-      <button id="tbPickle" class="wide" data-a="pickle">פיקל</button>
+      <button id="tbPickle" data-a="pickle">פיקל</button>
       <button id="tbGun" data-a="gun">הדק</button><button id="tbTgt" data-a="tgt">נעילה</button>
-      <button id="tbWpn" data-a="wpn">חימוש</button><button id="tbCm" data-a="cm">נורים</button>
+      <button id="tbWpn" data-a="wpn">חימוש</button><button id="tbCm" data-a="cm">נורים</button><button id="tbCh" data-a="ch">מוץ</button>
     </div>
     <div id="tThr"><div id="tThrK"></div></div>
   </div>
@@ -607,7 +606,7 @@ details[open] summary{margin-bottom:10px}
         <kbd>Enter</kbd><span>פיקל: שיגור הטיל או שחרור הפצצה שנבחרו</span>
         <kbd>1 2 3 4</kbd><span>AIM-120 · פייתון · כוונת תותח · אוויר־קרקע</span>
         <kbd>T · U</kbd><span>נעילה על המטרה הבאה · שחרור נעילה</span>
-        <kbd>C</kbd><span>מוץ ונורים</span>
+        <kbd>C · Q</kbd><span>נורים (נגד טילים מבייתי חום) · מוץ (נגד טילי מכ"ם)</span>
         <kbd>G · L · B</kbd><span>כן נסע · מדפים · מעצור אוויר ובלמים (בלחיצה רצופה)</span>
         <kbd>H · J</kbd><span>טייס אוטומטי (שומר גובה וכיוון) · השלכת חימוש קרקע</span>
         <kbd>Y · , .</kbd><span>מצב מכ"ם (חיפוש או קרב צמוד) · טווח המכ"ם קטן וגדול</span>
@@ -624,7 +623,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט. לחיצה על המוט השמאלי: וו בלימה, על הימני: מבט למטרה. Start מתחיל טיסה מהתפריט. באפליקציית האנדרואיד השלט עובד דרך האפליקציה עצמה.</p>
     </details>
-    <p class="note">גרסה 2.0.1 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
+    <p class="note">גרסה 2.1 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
     </div>
     <div id="dock">
     <div id="update" role="status" aria-live="polite" hidden>
@@ -647,6 +646,7 @@ details[open] summary{margin-bottom:10px}
     <button id="rpPlay">השהה</button><input id="rpSeek" type="range" min="0" max="1000" value="0" aria-label="מיקום בהקלטה"><span id="rpTime" dir="ltr">0:00</span>
     <button id="rpCam">מצלמה: סיבוב</button><button id="rpRec" hidden>הקלט קטע</button><button id="rpSpeed">×1</button><button id="rpIn" aria-label="התקרב">+</button><button id="rpOut" aria-label="התרחק">−</button><button id="rpExit">סיום</button>
   </div>
+  <button id="mfdHit" aria-label="החלף תצוגה במסך השמאלי" hidden></button>
   <div id="quickBox" hidden></div>
   <div id="talkers" hidden></div>
   <section id="mpBox" class="modal" hidden>
@@ -693,10 +693,11 @@ details[open] summary{margin-bottom:10px}
         <kbd>Y · , . · K</kbd><span>מצב מכ"ם · טווח · דלת תדלוק</span>
         <kbd>X</kbd><span>מבט אל לוח המתגים</span>
         <kbd>I</kbd><span>משקפת לילה (בטיסת לילה)</span>
-        <kbd>Tab</kbd><span>מפה טקטית</span>
-        <kbd>Z</kbd><span>מבט נעול על המטרה</span>
+        <kbd>Tab</kbd><span>מפה טקטית מלאה</span>
+        <kbd>]</kbd><span>החלפת המסך השמאלי: מכ"ם, מפה, חימוש, ל"א</span>
+        <kbd>Z</kbd><span>מבט נעול על המטרה: הראש עוקב אחרי המטרה הנעולה גם כשהיא מאחוריך</span>
         <kbd>Backspace ×2</kbd><span>נטישה</span>
-        <kbd>5</kbd><span>שיבוש אלקטרוני</span>
+        <kbd>5</kbd><span>שיבוש אלקטרוני: טילי מכ"ם וסוללות נועלים עליך רק מקרוב יותר, אבל גם המכ"ם שלך רואה פחות רחוק</span>
         <kbd>7 · 8 · 9</kbd><span>מספר שתיים: תקוף את המטרה שלי · ציד חופשי · חזור למבנה</span>
         <kbd>V · O · 0</kbd><span>מבט · האצת זמן · השתקה</span>
       </div>
