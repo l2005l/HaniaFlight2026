@@ -1412,7 +1412,7 @@ function drawHUD(){tgpR=null;mfdR=null;if(W.gtgt)podLast=W.gtgt;
   const ahead=terrainH(p.pos.x+p.vel.x*5,p.pos.z+p.vel.z*5);
   hudWarn.pull=!p.onGround&&p.gearPos<0.5&&p.pos.y+p.vel.y*5<ahead+40;hudWarn.stall=!p.onGround&&(p.alpha>26.5*D2R||kcas<105&&p.gearPos<0.5);
   const wr=[];for(const d of W.dmg)if(d.lvl<2||blink)wr.push([d.t,d.lvl===2?RED:AMB]);if(sy.canopy>0.05&&pw)wr.push(['CANOPY',AMB]);if(sy.pins&&W.arm&&pw)wr.push(['WEAPON PINS IN',AMB]);if(p.dragChute)wr.push(['DRAG CHUTE',HUDC]);if(p.hook)wr.push([p.caught?'CABLE ENGAGED':'HOOK DOWN',HUDC]);if(W.photo!=null)wr.push(['PHOTO '+Math.round(W.photo*100)+'%',HUDC]);if(sy.pbrake&&lever>0.25)wr.push(['PARKING BRAKE',AMB]);
-  if(W.mwarn){const oc=((Math.round(W.mwarn.brg*R2D/30)+12)%12)||12;wr.push([`MISSILE ${oc} O'CLOCK  ${(W.mwarn.R/1000).toFixed(1)}KM`,RED]);}
+  if(W.mwarn){const mw=W.mwarn,oc=((Math.round(mw.brg*R2D/30)+12)%12)||12;wr.push([`${mw.name} ${mw.ir?'IR':'RADAR'}  ${oc} O'CLOCK  ${(mw.R/1000).toFixed(1)}KM`,RED]);wr.push([mw.ir?'FLARES! (C)':'CHAFF! (Q)',AMB]);}
   if(hudWarn.pull)wr.push(['PULL UP',RED]);if(hudWarn.coll)wr.push(['COLLISION',RED]);if(hudWarn.stall)wr.push(['STALL',AMB]);
   if(!p.onGround&&p.gearPos<0.5&&p.agl<260&&kcas<210)wr.push(['GEAR',AMB]);if(p.fuel<W.bingo)wr.push(['BINGO FUEL',AMB]);if(p.gearPos>0.5&&kcas>300)wr.push(['GEAR SPEED',AMB]);
   if(clock-safeT<1.8)wr.push(['MASTER ARM SAFE — M',AMB]);
@@ -1439,7 +1439,7 @@ function drawHUD(){tgpR=null;mfdR=null;if(W.gtgt)podLast=W.gtgt;
     ctx.strokeStyle=HUDC;const q=gb(wp);if(q&&sy.ins>=1){ctx.beginPath();ctx.arc(q[0],q[1],4*u,0,7);ctx.stroke();}};
   const mfdRwr=(x,y0,ms)=>{if(!pw)return dark(x,y0,ms,ms);bg(x,y0,ms,ms,W.dmgRwr?'TEWS FAIL':'TEWS');const ox=x+ms/2,oy=y0+ms/2+4*u,rr=ms/2-12*u;ctx.strokeStyle='rgba(116,255,150,0.3)';ctx.beginPath();ctx.arc(ox,oy,rr,0,7);ctx.stroke();ctx.beginPath();ctx.arc(ox,oy,rr*0.5,0,7);ctx.stroke();line(ox,oy-6*u,ox,oy+6*u);line(ox-6*u,oy,ox+6*u,oy);
     for(const t of W.threats||[]){const r=rr*[0.86,0.66,0.46,0.3][t.lvl],px=ox+Math.sin(t.brg)*r,py=oy-Math.cos(t.brg)*r,col=t.lvl>=3?RED:t.lvl===2?RED:t.lvl===1?AMB:HUDC;
-      if(t.lvl>=2&&!blink&&t.sym!=='M')continue;txt(t.sym,px,py,'center',13,col);ctx.strokeStyle=col;if(t.lvl>=1){const d=10*u;line(px,py-d,px+d,py,px,py+d,px-d,py,px,py-d);}}
+      if(t.lvl>=2&&!blink&&t.sym!=='M')continue;txt(t.sym==='M'?(t.ir?'M·IR':'M·R'):t.sym,px,py,'center',13,col);ctx.strokeStyle=col;if(t.lvl>=1){const d=10*u;line(px,py-d,px+d,py,px,py+d,px-d,py,px,py-d);}}
     txt('CH '+w.chaff,x+5*u,y0+ms-9*u,'left',11);txt('FL '+w.flare,x+ms-5*u,y0+ms-9*u,'right',11);};
   const mfdEng=(x,y0,bw,bh)=>{if(!pw)return dark(x,y0,bw,bh);bg(x,y0,bw,bh);const xc=x+bw/2,r=bh/5,wide=bw>205*u;
     txt(`FUEL ${Math.round(p.fuel)} KG`+(wide?`  FF ${(p.ff*3.6).toFixed(1)}`:''),xc,y0+r*0.55,'center',13,p.fuel<W.bingo?AMB:HUDC);txt('THR '+thr+'   RPM '+p.rpm.map(v=>Math.round(v*100)).join('/'),xc,y0+r*1.5,'center',wide?14:12,p.eng>1.01?AMB:HUDC);
@@ -1471,7 +1471,7 @@ function drawHUD(){tgpR=null;mfdR=null;if(W.gtgt)podLast=W.gtgt;
     txt('FLARE '+w.flare+'   CHAFF '+w.chaff,x+ms/2,y0+ms-34*u,'center',11);txt(W.arm?'MASTER ARM':'MASTER SAFE',x+ms/2,y0+ms-21*u,'center',12,W.arm?RED:HUDC);};
   const mfdEw=(x,y0,ms)=>{if(!pw)return dark(x,y0,ms,ms);bg(x,y0,ms,ms,'EW');txt('ECM '+(W.ecm?'ON':'OFF'),x+ms/2,y0+30*u,'center',16,W.ecm?AMB:HUDC);
     txt('FLARE '+w.flare,x+ms*0.27,y0+50*u,'center',12,w.flare<10?AMB:HUDC);txt('CHAFF '+w.chaff,x+ms*0.73,y0+50*u,'center',12,w.chaff<10?AMB:HUDC);
-    let yy=y0+70*u;if(W.mwarn){if(blink)txt('MISSILE '+(W.mwarn.R/NM).toFixed(1)+' NM',x+ms/2,yy,'center',13,RED);yy+=17*u;}
+    let yy=y0+70*u;for(const m of (W.inbound||[]).slice(0,3)){txt(m.name,x+8*u,yy,'left',11,RED);txt(m.ir?'IR':'RDR',x+ms*0.6,yy,'center',11,AMB);txt((m.R/NM).toFixed(1),x+ms-8*u,yy,'right',11,RED);yy+=16*u;}
     const th=[...(W.threats||[])].filter(t=>t.sym!=='M').sort((a,b)=>b.lvl-a.lvl||a.R-b.R).slice(0,Math.max(1,Math.floor((y0+ms-yy-18*u)/(15*u))));
     for(const t of th){txt(t.sym,x+10*u,yy,'left',12,t.lvl>=2?RED:t.lvl===1?AMB:HUDC);txt(['SEARCH','TRACK','LAUNCH','LAUNCH'][t.lvl]||'',x+ms*0.42,yy,'center',11,t.lvl>=2?RED:t.lvl===1?AMB:HUDC);txt((t.R/NM).toFixed(0)+' NM',x+ms-10*u,yy,'right',11);yy+=15*u;}
     if(!th.length&&!W.mwarn)txt('NO THREATS',x+ms/2,yy+6*u,'center',11,'rgba(116,255,150,0.5)');};

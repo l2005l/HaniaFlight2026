@@ -197,7 +197,7 @@ details[open] summary{margin-bottom:10px}
   #chips{top:6px;left:124px;transform:none;flex-direction:column;gap:4px}
   #chips button{padding:3px 9px;font-size:.72rem}
   #app[data-fly="1"] #obj{display:none}
-  #radio{top:50px;bottom:auto;inset-inline:auto;left:50%;transform:translateX(-50%);width:max-content;max-width:min(26rem,calc(100% - 470px));font-size:.78rem;line-height:1.3;text-align:center;padding:3px 8px}
+  #radio{top:4px;bottom:auto;inset-inline:auto;left:50%;transform:translateX(-50%);width:max-content;max-width:min(26rem,calc(100% - 470px));font-size:.78rem;line-height:1.3;text-align:center;padding:3px 8px}
 }
 @media (pointer:coarse) and (max-width:620px){
   #app[data-fly="1"] #touch[data-on="1"]{grid-template-columns:92px auto 1fr auto 40px;gap:4px;inset-inline:8px}
@@ -588,7 +588,7 @@ details[open] summary{margin-bottom:10px}
         <div><h4>התרעות קוליות</h4><ul>
           <li><b>PULL UP</b>: אם תמשיך כך, תפגע בקרקע בתוך 5 שניות. מושכים ומוסיפים כוח. ההתרעה מחשבת קדימה, ולכן היא נשמעת גם כשבסוף יוצאים בזמן.</li>
           <li><b>COLLISION</b>: מטוס אחר יעבור קרוב מ-35 מטר בתוך 4 שניות. פונים או משנים גובה.</li>
-          <li><b>MISSILE</b>: טיל שוגר אליך. <b>ENGINE FIRE</b>, <b>ENGINE OUT</b>: שריפה או כבייה במנוע. <b>OVER G</b>: עומס מעל המותר.</li>
+          <li><b>MISSILE</b>: טיל שוגר אליך. ב-HUD מופיע איזה טיל ומאיזה סוג: <b>IR</b> (מביית חום, מטעים בנורים) או <b>RADAR</b> (מכ"ם, מטעים במוץ). במסך האיומים הוא מסומן <b>M·IR</b> או <b>M·R</b>, ובעמוד ל"א מופיעים כל הטילים שבדרך. <b>ENGINE FIRE</b>, <b>ENGINE OUT</b>: שריפה או כבייה במנוע. <b>OVER G</b>: עומס מעל המותר.</li>
           <li><b>LANDING GEAR</b>: נמוך ואיטי בירידה בלי כן נסע. <b>BINGO FUEL</b>: דלק מספיק רק לחזרה הביתה. <b>FUEL LOW</b>: חצי מזה.</li>
           <li>כיבוי ההתרעות הקוליות: בלשונית "הגדרות". הכיתוב ב-HUD נשאר.</li>
         </ul></div>
@@ -637,7 +637,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט. לחיצה על המוט השמאלי: וו בלימה, על הימני: מבט למטרה. Start מתחיל טיסה מהתפריט. באפליקציית האנדרואיד השלט עובד דרך האפליקציה עצמה.</p>
     </details>
-    <p class="note">גרסה 2.1 (9a4af16, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
+    <p class="note">גרסה 2.1.1 (de68894, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
     </div>
     <div id="dock">
     <div id="update" role="status" aria-live="polite" hidden>
@@ -1598,7 +1598,10 @@ class World{
     for(const q of this.sams)if(q.alive&&q.search)th.push({sym:q.sym,brg:rel(q.pos),lvl:q.inFlight.length?2:q.tracking?1:0,R:vdist(q.pos,p.pos)});
     for(const t of this.netThreats||[])th.push({sym:t.sym,brg:rel(t.pos),lvl:t.lvl,R:vdist(t.pos,p.pos)});
     let mw=null;
-    for(const m of this.missiles)if(m.alive&&m.target===p&&!m.lost){const R=vdist(m.pos,p.pos);if(R<25000){th.push({sym:'M',brg:rel(m.pos),lvl:3,R});if(!mw||R<mw.R)mw={R,brg:rel(m.pos),decoy:!!m.decoy};}}
+    /* incoming missiles: which kind matters, flares beat heat seekers and chaff beats radar missiles */
+    const inb=[];for(const m of this.missiles)if(m.alive&&m.target===p&&!m.lost){const R=vdist(m.pos,p.pos);if(R<25000){const ir=m.s.seeker==='ir',name=m.s===MSL.SAM?(m.owner&&m.owner.sym&&m.owner.sym!=='SA'?'SA-'+m.owner.sym:'SAM'):m.s.name,x={R,brg:rel(m.pos),decoy:!!m.decoy,ir,name};
+      th.push({sym:'M',brg:x.brg,lvl:3,R,ir});inb.push(x);if(!mw||R<mw.R)mw=x;}}
+    inb.sort((a,b)=>a.R-b.R);this.inbound=inb;
     this.threats=this.dmgRwr||!this.power?[]:th;this.mwarn=mw;
   }
   mission(){
@@ -3610,7 +3613,7 @@ function drawHUD(){tgpR=null;mfdR=null;if(W.gtgt)podLast=W.gtgt;
   const ahead=terrainH(p.pos.x+p.vel.x*5,p.pos.z+p.vel.z*5);
   hudWarn.pull=!p.onGround&&p.gearPos<0.5&&p.pos.y+p.vel.y*5<ahead+40;hudWarn.stall=!p.onGround&&(p.alpha>26.5*D2R||kcas<105&&p.gearPos<0.5);
   const wr=[];for(const d of W.dmg)if(d.lvl<2||blink)wr.push([d.t,d.lvl===2?RED:AMB]);if(sy.canopy>0.05&&pw)wr.push(['CANOPY',AMB]);if(sy.pins&&W.arm&&pw)wr.push(['WEAPON PINS IN',AMB]);if(p.dragChute)wr.push(['DRAG CHUTE',HUDC]);if(p.hook)wr.push([p.caught?'CABLE ENGAGED':'HOOK DOWN',HUDC]);if(W.photo!=null)wr.push(['PHOTO '+Math.round(W.photo*100)+'%',HUDC]);if(sy.pbrake&&lever>0.25)wr.push(['PARKING BRAKE',AMB]);
-  if(W.mwarn){const oc=((Math.round(W.mwarn.brg*R2D/30)+12)%12)||12;wr.push([`MISSILE ${oc} O'CLOCK  ${(W.mwarn.R/1000).toFixed(1)}KM`,RED]);}
+  if(W.mwarn){const mw=W.mwarn,oc=((Math.round(mw.brg*R2D/30)+12)%12)||12;wr.push([`${mw.name} ${mw.ir?'IR':'RADAR'}  ${oc} O'CLOCK  ${(mw.R/1000).toFixed(1)}KM`,RED]);wr.push([mw.ir?'FLARES! (C)':'CHAFF! (Q)',AMB]);}
   if(hudWarn.pull)wr.push(['PULL UP',RED]);if(hudWarn.coll)wr.push(['COLLISION',RED]);if(hudWarn.stall)wr.push(['STALL',AMB]);
   if(!p.onGround&&p.gearPos<0.5&&p.agl<260&&kcas<210)wr.push(['GEAR',AMB]);if(p.fuel<W.bingo)wr.push(['BINGO FUEL',AMB]);if(p.gearPos>0.5&&kcas>300)wr.push(['GEAR SPEED',AMB]);
   if(clock-safeT<1.8)wr.push(['MASTER ARM SAFE — M',AMB]);
@@ -3637,7 +3640,7 @@ function drawHUD(){tgpR=null;mfdR=null;if(W.gtgt)podLast=W.gtgt;
     ctx.strokeStyle=HUDC;const q=gb(wp);if(q&&sy.ins>=1){ctx.beginPath();ctx.arc(q[0],q[1],4*u,0,7);ctx.stroke();}};
   const mfdRwr=(x,y0,ms)=>{if(!pw)return dark(x,y0,ms,ms);bg(x,y0,ms,ms,W.dmgRwr?'TEWS FAIL':'TEWS');const ox=x+ms/2,oy=y0+ms/2+4*u,rr=ms/2-12*u;ctx.strokeStyle='rgba(116,255,150,0.3)';ctx.beginPath();ctx.arc(ox,oy,rr,0,7);ctx.stroke();ctx.beginPath();ctx.arc(ox,oy,rr*0.5,0,7);ctx.stroke();line(ox,oy-6*u,ox,oy+6*u);line(ox-6*u,oy,ox+6*u,oy);
     for(const t of W.threats||[]){const r=rr*[0.86,0.66,0.46,0.3][t.lvl],px=ox+Math.sin(t.brg)*r,py=oy-Math.cos(t.brg)*r,col=t.lvl>=3?RED:t.lvl===2?RED:t.lvl===1?AMB:HUDC;
-      if(t.lvl>=2&&!blink&&t.sym!=='M')continue;txt(t.sym,px,py,'center',13,col);ctx.strokeStyle=col;if(t.lvl>=1){const d=10*u;line(px,py-d,px+d,py,px,py+d,px-d,py,px,py-d);}}
+      if(t.lvl>=2&&!blink&&t.sym!=='M')continue;txt(t.sym==='M'?(t.ir?'M·IR':'M·R'):t.sym,px,py,'center',13,col);ctx.strokeStyle=col;if(t.lvl>=1){const d=10*u;line(px,py-d,px+d,py,px,py+d,px-d,py,px,py-d);}}
     txt('CH '+w.chaff,x+5*u,y0+ms-9*u,'left',11);txt('FL '+w.flare,x+ms-5*u,y0+ms-9*u,'right',11);};
   const mfdEng=(x,y0,bw,bh)=>{if(!pw)return dark(x,y0,bw,bh);bg(x,y0,bw,bh);const xc=x+bw/2,r=bh/5,wide=bw>205*u;
     txt(`FUEL ${Math.round(p.fuel)} KG`+(wide?`  FF ${(p.ff*3.6).toFixed(1)}`:''),xc,y0+r*0.55,'center',13,p.fuel<W.bingo?AMB:HUDC);txt('THR '+thr+'   RPM '+p.rpm.map(v=>Math.round(v*100)).join('/'),xc,y0+r*1.5,'center',wide?14:12,p.eng>1.01?AMB:HUDC);
@@ -3669,7 +3672,7 @@ function drawHUD(){tgpR=null;mfdR=null;if(W.gtgt)podLast=W.gtgt;
     txt('FLARE '+w.flare+'   CHAFF '+w.chaff,x+ms/2,y0+ms-34*u,'center',11);txt(W.arm?'MASTER ARM':'MASTER SAFE',x+ms/2,y0+ms-21*u,'center',12,W.arm?RED:HUDC);};
   const mfdEw=(x,y0,ms)=>{if(!pw)return dark(x,y0,ms,ms);bg(x,y0,ms,ms,'EW');txt('ECM '+(W.ecm?'ON':'OFF'),x+ms/2,y0+30*u,'center',16,W.ecm?AMB:HUDC);
     txt('FLARE '+w.flare,x+ms*0.27,y0+50*u,'center',12,w.flare<10?AMB:HUDC);txt('CHAFF '+w.chaff,x+ms*0.73,y0+50*u,'center',12,w.chaff<10?AMB:HUDC);
-    let yy=y0+70*u;if(W.mwarn){if(blink)txt('MISSILE '+(W.mwarn.R/NM).toFixed(1)+' NM',x+ms/2,yy,'center',13,RED);yy+=17*u;}
+    let yy=y0+70*u;for(const m of (W.inbound||[]).slice(0,3)){txt(m.name,x+8*u,yy,'left',11,RED);txt(m.ir?'IR':'RDR',x+ms*0.6,yy,'center',11,AMB);txt((m.R/NM).toFixed(1),x+ms-8*u,yy,'right',11,RED);yy+=16*u;}
     const th=[...(W.threats||[])].filter(t=>t.sym!=='M').sort((a,b)=>b.lvl-a.lvl||a.R-b.R).slice(0,Math.max(1,Math.floor((y0+ms-yy-18*u)/(15*u))));
     for(const t of th){txt(t.sym,x+10*u,yy,'left',12,t.lvl>=2?RED:t.lvl===1?AMB:HUDC);txt(['SEARCH','TRACK','LAUNCH','LAUNCH'][t.lvl]||'',x+ms*0.42,yy,'center',11,t.lvl>=2?RED:t.lvl===1?AMB:HUDC);txt((t.R/NM).toFixed(0)+' NM',x+ms-10*u,yy,'right',11);yy+=15*u;}
     if(!th.length&&!W.mwarn)txt('NO THREATS',x+ms/2,yy+6*u,'center',11,'rgba(116,255,150,0.5)');};

@@ -851,7 +851,10 @@ class World{
     for(const q of this.sams)if(q.alive&&q.search)th.push({sym:q.sym,brg:rel(q.pos),lvl:q.inFlight.length?2:q.tracking?1:0,R:vdist(q.pos,p.pos)});
     for(const t of this.netThreats||[])th.push({sym:t.sym,brg:rel(t.pos),lvl:t.lvl,R:vdist(t.pos,p.pos)});
     let mw=null;
-    for(const m of this.missiles)if(m.alive&&m.target===p&&!m.lost){const R=vdist(m.pos,p.pos);if(R<25000){th.push({sym:'M',brg:rel(m.pos),lvl:3,R});if(!mw||R<mw.R)mw={R,brg:rel(m.pos),decoy:!!m.decoy};}}
+    /* incoming missiles: which kind matters, flares beat heat seekers and chaff beats radar missiles */
+    const inb=[];for(const m of this.missiles)if(m.alive&&m.target===p&&!m.lost){const R=vdist(m.pos,p.pos);if(R<25000){const ir=m.s.seeker==='ir',name=m.s===MSL.SAM?(m.owner&&m.owner.sym&&m.owner.sym!=='SA'?'SA-'+m.owner.sym:'SAM'):m.s.name,x={R,brg:rel(m.pos),decoy:!!m.decoy,ir,name};
+      th.push({sym:'M',brg:x.brg,lvl:3,R,ir});inb.push(x);if(!mw||R<mw.R)mw=x;}}
+    inb.sort((a,b)=>a.R-b.R);this.inbound=inb;
     this.threats=this.dmgRwr||!this.power?[]:th;this.mwarn=mw;
   }
   mission(){
