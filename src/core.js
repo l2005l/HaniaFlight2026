@@ -299,7 +299,7 @@ class Bomb{
     let nload=Math.max(0,Math.cos(Math.asin(clamp(vh.y,-1,1))));
     /* a glide bomb's own camera takes over for the last few kilometres, so it can follow a target that moves */
     if(!this.lgb&&!this.gps&&this.target.alive&&this.target.vel&&Math.abs(this.target.vel.x)+Math.abs(this.target.vel.z)>0.5&&hd<4500){const tp=this.target.pos;this.aim={x:tp.x,y:tp.y,z:tp.z};}
-    if(this.lgb){this.guided=W.lasing(this.target);if(this.guided){const tp=this.target.pos;this.aim={x:tp.x,y:tp.y,z:tp.z};}if(!this.guided&&this.t>0.8)this.lost=(this.lost||0)+dt;}
+    if(this.lgb){const sp=W.laserFor?W.laserFor(this):null;this.guided=!!sp||W.lasing(this.target);if(sp)this.aim={x:sp.x,y:sp.y,z:sp.z};else if(this.guided){const tp=this.target.pos;this.aim={x:tp.x,y:tp.y,z:tp.z};}if(!this.guided&&this.t>0.8)this.lost=(this.lost||0)+dt;}
     if(this.t>0.8&&(!this.lgb||this.guided)){let des;
       if(elev<-0.62||hd<1200)des=vnorm(r);
       else{const g=sp>235?-0.02:-1/this.ld-clamp((170-sp)*0.004,0,0.25),ch=Math.cos(g);des=v3(r.x/hd*ch,Math.sin(g),r.z/hd*ch);}
@@ -773,6 +773,8 @@ class World{
       const nm={radar:'המכ"ם',ew:'מערכת הל"א',ins:'הניווט',mfd:'המסך',map:'המפה',fuelq:'מד הדלק',sms:'מחשב החימוש',cmds:'מערכת הנורים והמוץ'}[k];
       if(ok){delete F[k];if(k==='radar'){this.dmgRadar=false;this.sys.radar=true;}if(k==='ew')this.dmgRwr=false;if(k==='ins'&&!F.gps)this.insErr={x:0,z:0};this.msg(`ריסט הצליח: ${nm} חזר${['המפה','מערכת הל"א','מערכת הנורים והמוץ'].includes(nm)?'ה':''} לעבוד.`);}
       else this.msg(`ריסט לא עזר: ${nm} עדיין תקול${['המפה','מערכת הל"א','מערכת הנורים והמוץ'].includes(nm)?'ה':''}. ממשיכים ככה.`);this.syncDmg();}}
+  /* a laser spot for this bomb: ours, or a friend's, whichever is nearest to where it is going (within 4 km) */
+  laserFor(b){const L=[];if(b.owner===this.player&&this.laserSpot)L.push(this.laserSpot);for(const q of this.netLasers||[])L.push(q);let best=null,bd=4000;for(const q of L){const d=Math.hypot(q.x-b.aim.x,q.z-b.aim.z);if(d<bd){bd=d;best=q;}}return best;}
   navPos(){const p=this.player;return{x:p.pos.x+this.insErr.x,y:p.pos.y,z:p.pos.z+this.insErr.z};}
   get fuelShown(){return this.flt&&this.flt.fuelq?this.flt.fuelq.v:this.player.fuel;}
   relight(){const p=this.player;if(!p.alive)return false;for(let i=0;i<p.nEng;i++)if(p.rpm[i]<0.98&&p.engOK[i]>0&&!this.sys.start[i])return this.sw('eng'+i);

@@ -136,6 +136,8 @@ details[open] summary{margin-bottom:10px}
 #chips button.warn{border-color:#ff5c4f;color:#ffd0c8;animation:blinkw 1s steps(2) infinite}@keyframes blinkw{50%{background:rgba(120,20,10,.7)}}
 #mfdHit{position:absolute;z-index:3;background:transparent;border:0;padding:0;border-radius:0}#mfdHit[hidden]{display:none}#mfdHit:focus-visible{outline:2px solid var(--hud)}
 #mfdBtn{color:#cfe4ff;border-color:rgba(127,184,255,.6)}
+#podBar{position:absolute;z-index:4;display:grid;grid-template-columns:repeat(3,1fr);gap:3px}#podBar[hidden]{display:none}#podBar[data-nar="1"]{grid-template-columns:repeat(2,1fr)}#podBar button{padding:3px 2px;font-size:.72rem;background:rgba(8,12,14,.72);white-space:nowrap}#podBar button[data-on="1"]{border-color:var(--red);color:#ffd0c8}
+#mfdHit{touch-action:none}
 #chips button.warn2{border-color:var(--amber);color:var(--amber)}
 @media (pointer:fine){#chips{top:44px;left:auto;transform:none;inset-inline-start:16px;flex-direction:column;align-items:flex-start;gap:4px}}
 .tb button[data-st="1"]{border-color:var(--sand);color:var(--sand)}
@@ -585,6 +587,12 @@ details[open] summary{margin-bottom:10px}
           <li><b>LANDING GEAR</b>: נמוך ואיטי בירידה בלי כן נסע. <b>BINGO FUEL</b>: דלק מספיק רק לחזרה הביתה. <b>FUEL LOW</b>: חצי מזה.</li>
           <li>כיבוי ההתרעות הקוליות: בלשונית "הגדרות". הכיתוב ב-HUD נשאר.</li>
         </ul></div>
+        <div><h4>הפוד</h4><ul>
+          <li>במסך השמאלי, בעמוד <b>POD</b>, או אוטומטית כשבוחרים חימוש לקרקע. גרירה על חלון הפוד מזיזה את המצלמה; לחיצה קצרה מחליפה עמוד.</li>
+          <li>מתחת לחלון: <b>זום</b> (רחב, בינוני, צר), <b>נעל</b> (על מטוס או מטרה ליד הצלב, אחרת על הנקודה בקרקע; הפוד נשאר עליה גם כשמתמרנים), <b>לייזר</b>, <b>TV/WHT/BHT</b> (תמונה רגילה, תרמית לבן־חם או שחור־חם), <b>הגדל</b>, <b>אוטומטי</b> (חזרה למטרה של המשימה).</li>
+          <li>לייזר: פצצת לייזר (GBU-12) הולכת לנקודה שהפוד מסמן. במשחק עם חברים היא הולכת גם לנקודה שחבר מסמן, ואז אפשר לשחרר בלי מטרה משלך (BUDDY LASE).</li>
+          <li>במשחק עם חברים רואים בפוד את המטוס של החבר עם הגלגלים והחימוש שבאמת נשאר עליו.</li>
+        </ul></div>
         <div><h4>תקלות אקראיות</h4><ul>
           <li>בלשונית "הכנה" ‹ "תקלות אקראיות: עם". בערך בשש מכל עשר גיחות קורות תקלה אחת או שתיים, בזמן אקראי: מנוע, דלק, הידראוליקה, בלמים, מכ"ם, ל"א, ניווט, לוויינים, מסך, מפה, מד דלק, מחשב החימוש, נורים ומוץ, פצצה תקולה, קירור לפיתון, וציפור.</li>
           <li>התקלה מופיעה ב-HUD ובלוח, והבקר אומר מה לעשות. בחלק מהתקלות מופיע הכפתור <b>ריסט מערכות</b> (או בקול: "ריסט"). הריסט לוקח 8 שניות; לפעמים הוא עוזר ולפעמים לא, ואז ממשיכים ככה.</li>
@@ -634,7 +642,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט. לחיצה על המוט השמאלי: וו בלימה, על הימני: מבט למטרה. Start מתחיל טיסה מהתפריט. באפליקציית האנדרואיד השלט עובד דרך האפליקציה עצמה.</p>
     </details>
-    <p class="note">גרסה 2.3 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
+    <p class="note">גרסה 2.4 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
     </div>
     <div id="dock">
     <div id="update" role="status" aria-live="polite" hidden>
@@ -657,7 +665,8 @@ details[open] summary{margin-bottom:10px}
     <button id="rpPlay">השהה</button><input id="rpSeek" type="range" min="0" max="1000" value="0" aria-label="מיקום בהקלטה"><span id="rpTime" dir="ltr">0:00</span>
     <button id="rpCam">מצלמה: סיבוב</button><button id="rpRec" hidden>הקלט קטע</button><button id="rpSpeed">×1</button><button id="rpIn" aria-label="התקרב">+</button><button id="rpOut" aria-label="התרחק">−</button><button id="rpExit">סיום</button>
   </div>
-  <button id="mfdHit" aria-label="החלף תצוגה במסך השמאלי" hidden></button>
+  <button id="mfdHit" aria-label="החלף תצוגה במסך השמאלי. גרירה מזיזה את הפוד" hidden></button>
+  <div id="podBar" hidden><button data-pod="zoom">זום</button><button data-pod="trk">נעל</button><button data-pod="laser">לייזר</button><button data-pod="mode">TV</button><button data-pod="big">הגדל</button><button data-pod="auto">אוטומטי</button></div>
   <div id="quickBox" hidden></div>
   <div id="talkers" hidden></div>
   <section id="mpBox" class="modal" hidden>

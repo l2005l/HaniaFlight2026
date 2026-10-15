@@ -119,13 +119,13 @@ const mpg={on:false,cfg:null,room:{mode:'coop',start:'air'},ch:1,team:null,
   /* ---- per frame ---- */
   tick(dt){if(!mpg.on||!W)return;const fly=state==='fly'||state==='pause';if(!fly)return;const p=W.player;
     mpg.sT-=dt;if(mpg.sT<=0){mpg.sT=0.1;const q=p.q,r=v=>Math.round(v*10)/10;
-      MP.send({t:'s',p:[r(p.pos.x),r(p.pos.y),r(p.pos.z)],v:[r(p.vel.x),r(p.vel.y),r(p.vel.z)],q:[+q.x.toFixed(4),+q.y.toFixed(4),+q.z.toFixed(4),+q.w.toFixed(4)],e:+p.eng.toFixed(2),g:+p.gearPos.toFixed(2),a:p.alive?1:0,gd:p.onGround?1:0,gun:trigG&&W.w.sel==='GUN'&&p.alive?1:0,lk:W.lock&&W.lock.remote?W.lock.id:0,ty:W.plane.type},false);}
+      MP.send({t:'s',p:[r(p.pos.x),r(p.pos.y),r(p.pos.z)],v:[r(p.vel.x),r(p.vel.y),r(p.vel.z)],q:[+q.x.toFixed(4),+q.y.toFixed(4),+q.z.toFixed(4),+q.w.toFixed(4)],e:+p.eng.toFixed(2),g:+p.gearPos.toFixed(2),a:p.alive?1:0,gd:p.onGround?1:0,gun:trigG&&W.w.sel==='GUN'&&p.alive?1:0,lk:W.lock&&W.lock.remote?W.lock.id:0,ty:W.plane.type,ls:W.laserSpot?[r(W.laserSpot.x),r(W.laserSpot.y),r(W.laserSpot.z)]:0,ld:[W.w.aim120,W.w.python,W.w.spice,W.w.tanks||0]},false);}
     if(MP.host&&mpg.cfg.mode==='coop'){mpg.wT-=dt;if(mpg.wT<=0){mpg.wT=0.125;mpg.snap();}}
     /* remote jets: dead reckoning towards the last state, gentle correction */
-    const now=performance.now()/1000;W.netThreats=[];
+    const now=performance.now()/1000;W.netThreats=[];W.netLasers=W.remotes.filter(e=>e.alive&&e.laser).map(e=>e.laser);
     for(const e of W.remotes){const t=e.tgt;if(!t||!e.alive)continue;const k=Math.min(now-t.at,0.6),tp=vadd(t.pos,vmul(t.vel,k)),d=vdist(tp,e.pos);
       e.pos=d>400?tp:vadd(e.pos,vmul(vsub(tp,e.pos),Math.min(1,dt*8)));e.vel=t.vel;const qa=new T.Quaternion(e.q.x,e.q.y,e.q.z,e.q.w),qb=new T.Quaternion(t.q[0],t.q[1],t.q[2],t.q[3]);qa.slerp(qb,Math.min(1,dt*10));e.q={x:qa.x,y:qa.y,z:qa.z,w:qa.w};
-      e.eng=t.e;e.gearPos=t.g;e.onGround=!!t.gd;
+      e.eng=t.e;e.gearPos=t.g;e.onGround=!!t.gd;e.ld=t.ld;e.laser=t.ls&&e.side===0?{x:t.ls[0],y:t.ls[1],z:t.ls[2]}:null;
       if(t.gun&&state==='fly'){e.gunT=(e.gunT||0)-dt;if(e.gunT<=0){e.gunT=1/14;const f=qrot(e.q,FWD);W.bullets.push({pos:vadd(e.pos,vmul(f,8)),vel:vadd(e.vel,vmul(f,1000)),t:0,owner:e,ghost:true});}}
       if(t.lk===MP.id&&p.alive&&e.side===1){const fl=W.missiles.some(m=>m.alive&&m.owner===e&&m.target===p);W.netThreats.push({sym:({F15I:'15',F15C:'15',F16I:'16',F35I:'35'})[e.type]||'F',pos:e.pos,lvl:fl?2:1});}}
     /* my bombs: send a copy so the others see them fall */
@@ -165,7 +165,7 @@ const mpg={on:false,cfg:null,room:{mode:'coop',start:'air'},ch:1,team:null,
     if(o.t==='q'){if(P&&(o.ch===1||o.ch===mpg.ch)){radioQ.push(`${P.call||P.name}: ${QUICK[o.i]||''}`);mpVoice.click(true);}return;}
     if(!mpg.on||!W)return;const p=W.player,re=W.remotes.find(x=>x.id===from);
     if(o.t==='s'){if(P){P.plane=o.ty||P.plane;P.st={pos:{x:o.p[0],y:o.p[1],z:o.p[2]}};}if(!re)return;
-      re.tgt={pos:{x:o.p[0],y:o.p[1],z:o.p[2]},vel:{x:o.v[0],y:o.v[1],z:o.v[2]},q:o.q,e:o.e,g:o.g,gd:o.gd,gun:o.gun,lk:o.lk,at:performance.now()/1000};
+      re.tgt={pos:{x:o.p[0],y:o.p[1],z:o.p[2]},vel:{x:o.v[0],y:o.v[1],z:o.v[2]},q:o.q,e:o.e,g:o.g,gd:o.gd,gun:o.gun,lk:o.lk,ls:o.ls,ld:o.ld,at:performance.now()/1000};
       if(!o.a&&re.alive){re.alive=false;W.events.push({type:'boom',pos:re.pos,size:1.4});W.events.push({type:'kill',e:re});if(W.lock===re)W.lock=null;}}
     else if(o.t==='w'){if(!MP.host)mpg.applySnap(o);}
     else if(o.t==='m'){const spec=R.MSL[o.k];if(!spec)return;const own=mpg.deref(o.o),tg=mpg.deref(o.tg);if(!tg)return;
