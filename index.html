@@ -129,7 +129,7 @@ details[open] summary{margin-bottom:10px}
 #achList{display:grid;grid-template-columns:repeat(auto-fill,minmax(9.5rem,1fr));gap:6px}
 .ach{border:1px solid var(--line);padding:6px 8px;display:flex;flex-direction:column;gap:2px;opacity:.38;font-size:.8rem}
 .ach.on{opacity:1;border-color:var(--sand)}.ach.on b{color:var(--sand)}.ach span{color:var(--dim);font-size:.72rem}
-#dAch{display:flex;flex-direction:column;gap:4px}#dAch span{border:1px solid var(--sand);padding:5px 9px;font-size:.85rem}#dAch:empty{display:none}
+#dAch{display:flex;flex-direction:column;gap:4px}#dAch span{border:1px solid var(--sand);padding:5px 9px;font-size:.85rem}#dAch:empty{display:none}#dPts a{color:inherit;font-weight:700}
 #replay button[data-on="1"]{border-color:var(--red);color:var(--red)}
 @media (max-width:700px){#replay{flex-wrap:wrap}#replay input{flex-basis:100%;order:-1}}
 #pilotBox{display:flex;gap:12px;align-items:center;border:1px solid var(--line);padding:10px}
@@ -656,7 +656,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט. לחיצה על המוט השמאלי: וו בלימה, על הימני: מבט למטרה. Start מתחיל טיסה מהתפריט. באפליקציית האנדרואיד השלט עובד דרך האפליקציה עצמה.</p>
     </details>
-    <p class="note">גרסה 2.4.2 (8029a68, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
+    <p class="note">גרסה 2.4.2 (f330430, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
     </div>
     <div id="dock">
     <div id="update" role="status" aria-live="polite" hidden>
@@ -756,7 +756,7 @@ details[open] summary{margin-bottom:10px}
   <section id="debrief" class="modal" hidden>
     <div class="card">
       <div><div class="eyebrow">תחקיר</div><h2 id="dTitle"></h2></div>
-      <p id="dReason"></p><p id="dCamp" class="note"></p><button id="campSkip" hidden>המשך במערכה בלי השלב הזה</button><div id="dAch"></div>
+      <p id="dReason"></p><p id="dCamp" class="note"></p><button id="campSkip" hidden>המשך במערכה בלי השלב הזה</button><div id="dAch"></div><p id="dPts" class="note" hidden></p>
       <dl id="dStats"></dl>
       <div class="acts"><button id="again" class="go">טיסה נוספת</button><button id="watch">צפייה חוזרת</button><button id="back">לתדריך</button></div>
     </div>
@@ -3364,7 +3364,17 @@ function judge(){newAch.length=0;const s=W.stats,o=W.over,p=W.player,L=readLog()
   if(win&&tod==='night')unlock('night');if(id==='escort'&&win&&W.strikers.every(k=>k.ac.alive))unlock('guard');if(win&&W.wx==='storm')unlock('storm');if(W.ejected&&W.ejected.safe)unlock('eject');if(s.home)unlock('home');if(id==='train'&&win&&W.lesson!=='basic')unlock('school');if(s.pair)unlock('pair');if(id==='csar'&&win)unlock('rescue');if(p.caught&&p.alive)unlock('hook');if(s.relit)unlock('relight');
   let best=null;if(win){const B=readBest(),k=id+(id==='duel'?'-'+opts.foe:''),old=B[k];if(!old||W.time<old.t){B[k]={t:Math.round(W.time),plane:W.plane.name,diff:W.diff};try{localStorage.setItem('haniaflight-best',JSON.stringify(B));}catch(e){}best={now:true,old};}else best={now:false,old};}
   return best;}
-function debrief(){mpg.end();if(xr.on&&xr.session)xr.session.end().catch(()=>{});hush();state='debrief';writeLog();const best=judge();$('dCamp').textContent=[campResult(),dailyResult()].filter(Boolean).join(' · ');$('dAch').innerHTML=newAch.map(id=>{const x=ACH.find(q=>q[0]===id);return `<span>הישג חדש: <b>${x[1]}</b> · ${x[2]}</span>`;}).join('');if(rec.length)recFrame();$('watch').hidden=rec.length<20;const o=W.over,s=W.stats,p=W.player,mm=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
+// Hania points: the first win of each mission pays 10 points to the person's Hania360 account
+// (signed in at pass.hania360.com; the cookie is shared across hania360.com).
+const HP_MISSIONS=['train','strike','intercept','duel','csar','convoy','sead','escort','recon','tanker','stealth','naval'];
+function hpCsrf(){const c=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith('hp_csrf='));return c?c.slice(8):'';}
+function hpAward(){const el=$('dPts');if(!el)return;el.hidden=true;el.textContent='';
+  if(!/(^|\.)hania360\.com$/.test(location.hostname)||!W.over.win||!HP_MISSIONS.includes(W.missionId))return;
+  const csrf=hpCsrf();
+  if(!csrf){el.innerHTML='כל משימה ראשונה שמנצחים שווה 10 נקודות Hania. <a href="https://pass.hania360.com/?return='+encodeURIComponent(location.href)+'">כניסה ל־Hania360</a>';el.hidden=false;return;}
+  fetch('https://pass.hania360.com/api/points/flight',{method:'POST',credentials:'include',headers:{'content-type':'application/json','x-csrf-token':csrf},body:JSON.stringify({mission:W.missionId})})
+    .then(r=>r.ok?r.json():null).then(j=>{if(!j)return;el.textContent=j.added?`+${j.added} נקודות Hania · יש לך ${j.balance}`:`נקודות Hania: ${j.balance} (המשימה הזאת כבר זיכתה)`;el.hidden=false;}).catch(()=>{});}
+function debrief(){mpg.end();if(xr.on&&xr.session)xr.session.end().catch(()=>{});hush();state='debrief';writeLog();const best=judge();$('dCamp').textContent=[campResult(),dailyResult()].filter(Boolean).join(' · ');hpAward();$('dAch').innerHTML=newAch.map(id=>{const x=ACH.find(q=>q[0]===id);return `<span>הישג חדש: <b>${x[1]}</b> · ${x[2]}</span>`;}).join('');if(rec.length)recFrame();$('watch').hidden=rec.length<20;const o=W.over,s=W.stats,p=W.player,mm=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
   $('dTitle').textContent=o.title;$('dReason').textContent=o.reason||'';$('debrief').dataset.win=o.win?'1':'';
   const rows=W.missionId==='tanker'?[['דלק שהתקבל',`${Math.round(W.ar.taken).toLocaleString('en')} ק"ג`]]:W.missionId==='duel'?[[W.foeName+' שהופלו',`${s.mig} מתוך ${W.migs.length}`]]:W.missionId==='escort'?[['מטוסי תקיפה ששרדו',`${W.strikers.filter(k=>k.ac.alive).length} מתוך ${W.strikers.length}`],['מטרות שהושמדו',`${s.tgt} מתוך ${W.nPrimary}`],['מטוסי אויב שהופלו',`${s.mig} מתוך ${W.migs.length}`]]:W.missionId==='sead'?[['סוללות ששותקו',`${s.tgt} מתוך ${W.nPrimary}`],[W.foeName+' שהופלו',`${s.mig} מתוך ${W.migs.length}`]]:W.missionId==='convoy'?[['כלי רכב שהושמדו',`${s.tgt} מתוך ${W.nPrimary}`],['סוללת הליווי',s.sam?'הושמדה':'לא הושמדה']]:W.missionId==='naval'?[['ספינות שהוטבעו',`${s.tgt} מתוך 3`],['טילים ששוגרו',s.shots]]:W.missionId==='csar'?[['המסוק',W.helo.alive?(W.helo.phase==='home'?'חזר עם הטייס':'עדיין באוויר'):'הופל'],[W.foeName+' שהופלו',`${s.mig} מתוך ${W.migs.length}`]]:W.missionId==='recon'?[['אתרים שצולמו',`${s.tgt} מתוך 3`],[W.foeName+' שהופלו',`${s.mig} מתוך ${W.migs.length}`]]:W.missionId==='stealth'?[['הכטב"ם החמקן',W.stealthUav.alive?(W.stealthUav.leaked?'חדר':'לא יורט'):'יורט'],['כטב"מי הטעיה שהופלו',`${s.uav-(W.stealthUav.alive?0:1)} מתוך 3`]]:W.missionId==='train'?[['מטרות אימון שהופלו',`${s.uav} מתוך 2`]]:W.missionId==='intercept'?[['איומים שהופלו',`${s.uav} מתוך ${W.nDrone}`],['חדרו',s.leak]]:[['כטב"מים שהופלו',`${s.uav} מתוך 4`+(s.leak?` (${s.leak} חדרו)`:'')],['מיג-29 שהופלו',`${s.mig} מתוך 2`],['מטרות אתר השיגור',`${s.tgt} מתוך 3`],['מכ"ם סוללת הנ"מ',s.sam?'הושמד':'לא הושמד']];
   rows.push(['מטוס',W.plane.name],['רמת קושי',{easy:'קל',normal:'רגיל',hard:'קשה'}[W.diff]],['חימוש ששוגר',s.shots],['נזק',W.dmg.length?W.dmg.map(d=>d.t).join(', '):'אין'],['דלק שנותר',`${Math.round(p.fuel).toLocaleString()} ק"ג`],['זמן משימה',mm(W.time)]);
