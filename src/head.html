@@ -104,6 +104,9 @@ details[open] summary{margin-bottom:10px}
 #app[data-fly="1"] #radio,#app[data-fly="1"] #obj{display:block}
 #radio{inset-inline-end:16px;max-width:min(21rem,calc(100% - 32px));font-weight:600;opacity:0;transition:opacity .4s;border-bottom:2px solid var(--sand)}
 #radio[data-on="1"]{opacity:1}
+#tour{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.35)}#tourRing{position:fixed;border:2px solid var(--hud,#74ff96);border-radius:10px;box-shadow:0 0 0 9999px rgba(0,0,0,.35);transition:all .25s;pointer-events:none}
+#tourBox{position:fixed;left:50%;transform:translateX(-50%);width:min(24rem,calc(100% - 32px));background:#10171a;border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:12px 14px;color:#f1ead8}
+#tourBox p{margin:0 0 10px;line-height:1.45}#tourBox .acts{display:flex;gap:8px;align-items:center;justify-content:flex-end}#tourBox .note{margin-inline-end:auto}#radio[data-bg="1"][data-on="1"]{opacity:.55;font-weight:400;font-style:italic;border-bottom-color:transparent}
 #obj{inset-inline-start:16px;font-size:.85rem;color:var(--dim)}
 #toast{position:absolute;left:50%;bottom:140px;transform:translateX(-50%);z-index:4;max-width:calc(100% - 32px);background:rgba(8,12,14,.86);border:1px solid var(--amber);color:var(--amber);font-weight:700;padding:6px 14px;border-radius:2px;text-align:center;opacity:0;pointer-events:none;transition:opacity .25s}
 #toast[data-on="1"]{opacity:1}
@@ -251,6 +254,7 @@ details[open] summary{margin-bottom:10px}
       <button id="mConvoy" data-opt="mission" data-val="convoy">סיור חמוש</button>
       <button id="mEscort" data-opt="mission" data-val="escort">ליווי</button>
       <button id="mCsar" data-opt="mission" data-val="csar">חילוץ</button>
+      <button id="mCas" data-opt="mission" data-val="cas">סיוע קרוב</button>
       <button id="mRecon" data-opt="mission" data-val="recon">צילום</button>
       <button id="mStealth" data-opt="mission" data-val="stealth">כטב"ם חמקן</button>
       <button id="mNaval" data-opt="mission" data-val="naval">תקיפה ימית</button>
@@ -264,6 +268,7 @@ details[open] summary{margin-bottom:10px}
       <button id="pF16" data-opt="plane" data-val="F16I">F-16I סופה</button>
       <button id="pF35" data-opt="plane" data-val="F35I">F-35I אדיר</button>
       <button id="pF15C" data-opt="plane" data-val="F15C">F-15 בז</button>
+      <button id="pM346" data-opt="plane" data-val="M346">M-346 לביא (הדרכה)</button>
     </div>
     <div class="seg" role="group" aria-label="זירה">
       <span>זירה</span>
@@ -338,6 +343,15 @@ details[open] summary{margin-bottom:10px}
         <li>המשימה מצליחה כשהמסוק חוצה בחזרה את קו הגבול עם הטייס.</li>
       </ol>
     </div>
+    <div id="briefCas" class="brief" hidden>
+      <h2>סיוע קרוב</h2>
+      <p>כוח שלנו במגע עם האויב, והבקר הקרקעי (JTAC) מבקש סיוע. הוא סימן את הכוחות שלנו בעשן לבן, וינחה אותך אל כל מטרה במילים: כמה מטרים ולאיזה כיוון מהעשן.</p>
+      <ol class="steps">
+        <li>מצא את העשן הלבן בפוד, ומשם את המטרה שהבקר תיאר. נעל עליה.</li>
+        <li>הבקר מאשר רק כשהפוד על המטרה הנכונה: "רשאי לתקוף". שחרור בלי אישור נרשם לחובתך.</li>
+        <li>חימוש שנופל ליד הכוחות שלנו מסיים את המשימה. מהעמדות משגרים טילי כתף על מטוס נמוך.</li>
+      </ol>
+    </div>
     <div id="briefRecon" class="brief" hidden>
       <h2>צילום מודיעין</h2>
       <p>שלושה אתרים לצלם בפוד, בלי חימוש לקרקע. סוללת SA-6 שומרת על האתר האמצעי, ואחרי הצילום הראשון יעלה זוג מיג-29.</p>
@@ -371,6 +385,7 @@ details[open] summary{margin-bottom:10px}
         <span>שיעור</span>
         <button data-opt="lesson" data-val="basic">טיסה ראשונה</button>
         <button data-opt="lesson" data-val="land">נחיתה</button>
+        <button data-opt="lesson" data-val="ils">נחיתה בערפל (ILS)</button>
         <button data-opt="lesson" data-val="refuel">תדלוק</button>
         <button data-opt="lesson" data-val="ground">תקיפת קרקע</button>
         <button data-opt="lesson" data-val="evade">התחמקות מטיל</button>
@@ -448,6 +463,10 @@ details[open] summary{margin-bottom:10px}
       <button data-opt="bomb" data-val="lgb">לייזר (GBU-12)</button>
       <button data-opt="bomb" data-val="jdam">לוויין (JDAM)</button>
       <button data-opt="bomb" data-val="delilah">טיל שיוט (דלילה)</button>
+      <button data-opt="bomb" data-val="sdb">פצצה קטנה (GBU-39)</button>
+      <button data-opt="bomb" data-val="bunker">חודרת בונקרים (GBU-28)</button>
+      <button data-opt="bomb" data-val="rampage">טיל על־קולי (רמפייג')</button>
+      <button data-opt="bomb" data-val="mk84">פצצה רגילה (MK-84)</button>
     </div>
     <div id="prepBox" class="brief">
       <h2>הכנת המטוס</h2>
@@ -502,6 +521,17 @@ details[open] summary{margin-bottom:10px}
       <button data-opt="betty" data-val="off">כבויות</button>
       <button id="bettyTest">השמע דוגמה</button>
     </div>
+    <div class="seg" role="group" aria-label="תעבורת קשר ברקע">
+      <span>תעבורת קשר ברקע</span>
+      <button data-opt="chatter" data-val="on">פועלת</button>
+      <button data-opt="chatter" data-val="off">כבויה</button>
+    </div>
+    <div class="seg" role="group" aria-label="קשר קולי עם חברים">
+      <span>קשר קולי עם חברים</span>
+      <button data-opt="radio" data-val="on">פועל</button>
+      <button data-opt="radio" data-val="off">כבוי</button>
+      <span class="note">המיקרופון נפתח רק בזמן טיסה עם חברים ונסגר בסופה.</span>
+    </div>
     <div class="seg">
       <span>קול הבקר</span>
       <button id="voiceTest">השמע בדיקה</button>
@@ -537,6 +567,7 @@ details[open] summary{margin-bottom:10px}
     </div>
     </div>
     <div class="tab" data-tab="help" hidden>
+    <div class="acts"><button id="tourAgain">סיור בכפתורים בטיסה הבאה</button></div>
     <details open>
       <summary>מדריך תצוגות: HUD, מכ"ם ומסך איומים</summary>
       <div id="guide"><div class="guide">
@@ -579,6 +610,8 @@ details[open] summary{margin-bottom:10px}
           <li>קשר: "לחץ לדבר" (או מקש <b>`</b>) כל עוד מדברים. תדר 1 שומעים כולם, תדר 2 רק מי שבחר בו. "הודעה" (או <b>F2</b>) שולח הודעה מוכנה.</li>
           <li>כשאין חיבור ישיר בין המכשירים, המשחק עובר דרך השרת. במצב כזה הקול לא עובר, וההודעות המוכנות כן.</li>
           <li>במשחק רשת אין האצת זמן. השהיה עוצרת רק אצלך.</li>
+          <li>המיקרופון נפתח רק כשהטיסה עם החברים מתחילה, ונסגר כשיוצאים ממנה. כדי לכבות את הקשר הקולי לגמרי: "הגדרות" ‹ "קשר קולי עם חברים: כבוי". אם הדפדפן חסם את המיקרופון, ההודעה על המסך מסבירה איפה לאשר.</li>
+          <li>על המפה (גם על מפת המסך השמאלי) מופיעים החברים עם השמות שלהם, בחץ תכלת לכיוון הטיסה. יריב מופיע בשמו רק כשהמכ"ם רואה אותו.</li>
         </ul></div>
         <div><h4>התרעות קוליות</h4><ul>
           <li><b>PULL UP</b>: אם תמשיך כך, תפגע בקרקע בתוך 5 שניות. מושכים ומוסיפים כוח. ההתרעה מחשבת קדימה, ולכן היא נשמעת גם כשבסוף יוצאים בזמן.</li>
@@ -592,6 +625,27 @@ details[open] summary{margin-bottom:10px}
           <li>מתחת לחלון: <b>זום</b> (רחב, בינוני, צר), <b>נעל</b> (על מטוס או מטרה ליד הצלב, אחרת על הנקודה בקרקע; הפוד נשאר עליה גם כשמתמרנים), <b>לייזר</b>, <b>TV/WHT/BHT</b> (תמונה רגילה, תרמית לבן־חם או שחור־חם), <b>הגדל</b>, <b>אוטומטי</b> (חזרה למטרה של המשימה).</li>
           <li>לייזר: פצצת לייזר (GBU-12) הולכת לנקודה שהפוד מסמן. במשחק עם חברים היא הולכת גם לנקודה שחבר מסמן, ואז אפשר לשחרר בלי מטרה משלך (BUDDY LASE).</li>
           <li>במשחק עם חברים רואים בפוד את המטוס של החבר עם הגלגלים והחימוש שבאמת נשאר עליו.</li>
+        </ul></div>
+        <div><h4>חימוש לקרקע</h4><ul>
+          <li><b>SPICE</b> פצצת דאייה עם מצלמה, טווח ארוך. <b>GBU-12</b> מונחית לייזר, צריך לסמן בפוד עד הפגיעה. <b>JDAM</b> מונחית לוויין, בלי מצלמה. <b>דלילה</b> טיל שיוט שטס נמוך.</li>
+          <li><b>GBU-39</b> פצצה קטנה ומדויקת, הרבה על המטוס. טובה ליד כוחות שלנו. <b>GBU-28</b> חודרת בונקרים כבדה, רק לרעם, שתיים, מונחית לייזר. <b>רמפייג'</b> טיל על־קולי לטווח ארוך, טס גבוה וצולל על המטרה.</li>
+          <li><b>MK-84</b> פצצה רגילה בלי הנחיה. ב-HUD מופיע עיגול <b>CCIP</b>, המקום שבו הפצצה תפגע אם תשחרר עכשיו. צוללים, מביאים את העיגול על המטרה ומשחררים. <b>ON TGT REL</b> פירושו שהעיגול על המטרה; <b>MISS</b> אומר בכמה מטרים מפספסים.</li>
+        </ul></div>
+        <div><h4>סיוע קרוב</h4><ul>
+          <li>הבקר הקרקעי (JTAC) מסמן את הכוחות שלנו בעשן לבן. בכל מטרה הוא אומר מה היא, כמה מטרים ובאיזה כיוון מהעשן, למשל "נגמ"ש, 600 מטר צפון־מזרחית לעשן".</li>
+          <li>מוצאים בפוד, נועלים, ומחכים ל"רשאי לתקוף". על מטרה לא נכונה הוא מתקן: כמה מטרים ולאן ממה שאתה מסתכל עליו.</li>
+          <li>שחרור בלי אישור נרשם לחובתך. חימוש שנופל ליד הכוחות שלנו מסיים את המשימה.</li>
+        </ul></div>
+        <div><h4>נחיתה לפי ILS</h4><ul>
+          <li>כשחוזרים לבסיס, או עם כן נסע למטה, מופיעים ב-HUD שני קווים כתומים. האנכי הוא ציר המסלול, האופקי מדרון הגלישה של 3 מעלות. הקו מראה לאן לטוס: קו אנכי ימינה פירושו לפנות ימינה, קו אופקי למעלה פירושו לעלות.</li>
+          <li><b>DME</b> המרחק במייל. הקו המקווקו בסולם הוא 3 מעלות ירידה: שם צריך להיות עיגול וקטור המהירות. ליד העיגול מופיע סוגר זווית ההתקפה: <b>SLOW</b> או <b>FAST</b> אם המהירות לא נכונה לנחיתה.</li>
+          <li>קריאות הגובה בנחיתה: "Minimums" ב-200 רגל על ה-ILS, ואחר כך 100, 50, 30, 20, 10. בהדרכה יש שיעור "נחיתה בערפל (ILS)", בלילה ובערפל.</li>
+        </ul></div>
+        <div><h4>מזג אוויר</h4><ul>
+          <li>אפשר להיכנס לעננים: בפנים הכול לבן, ויש טלטלות קלות. במזג אוויר סוער יש תאי סערה גבוהים, כהים, עם ברקים וגשם. בתוכם ובקרבתם הטלטלות חזקות. עדיף לעקוף.</li>
+        </ul></div>
+        <div><h4>מטוס ההדרכה לביא (M-346)</h4><ul>
+          <li>מטוס קל, בלי מבער אחורי, עם שוליים רחבים מהזדקרות: גם במשיכה מלאה הוא לא נכנס להזדקרות. טס את שיעורי ההדרכה וקרב אוויר, עם פייתון אימון ותותח.</li>
         </ul></div>
         <div><h4>תקלות אקראיות</h4><ul>
           <li>בלשונית "הכנה" ‹ "תקלות אקראיות: עם". בערך בשש מכל עשר גיחות קורות תקלה אחת או שתיים, בזמן אקראי: מנוע, דלק, הידראוליקה, בלמים, מכ"ם, ל"א, ניווט, לוויינים, מסך, מפה, מד דלק, מחשב החימוש, נורים ומוץ, פצצה תקולה, קירור לפיתון, וציפור.</li>
@@ -642,7 +696,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט. לחיצה על המוט השמאלי: וו בלימה, על הימני: מבט למטרה. Start מתחיל טיסה מהתפריט. באפליקציית האנדרואיד השלט עובד דרך האפליקציה עצמה.</p>
     </details>
-    <p class="note">גרסה 2.4.2 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
+    <p class="note">גרסה 2.5 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
     </div>
     <div id="dock">
     <div id="update" role="status" aria-live="polite" hidden>
@@ -666,6 +720,7 @@ details[open] summary{margin-bottom:10px}
     <button id="rpCam">מצלמה: סיבוב</button><button id="rpRec" hidden>הקלט קטע</button><button id="rpSpeed">×1</button><button id="rpIn" aria-label="התקרב">+</button><button id="rpOut" aria-label="התרחק">−</button><button id="rpExit">סיום</button>
   </div>
   <button id="mfdHit" aria-label="החלף תצוגה במסך השמאלי. גרירה מזיזה את הפוד" hidden></button>
+  <div id="tour" hidden><div id="tourRing"></div><div id="tourBox" role="dialog" aria-live="polite"><p id="tourText"></p><div class="acts"><span id="tourN" class="note"></span><button id="tourSkip">דלג</button><button id="tourNext" class="go">הבא</button></div></div></div>
   <button id="mfdHitR" aria-label="החלף תצוגה במסך הימני" hidden></button>
   <div id="podBar" hidden><button data-pod="zoom">זום</button><button data-pod="trk">נעל</button><button data-pod="laser">לייזר</button><button data-pod="mode">TV</button><button data-pod="big">הגדל</button><button data-pod="auto">אוטומטי</button></div>
   <div id="quickBox" hidden></div>
@@ -677,7 +732,7 @@ details[open] summary{margin-bottom:10px}
         <p class="note">פותחים חדר ושולחים את הקוד לחבר, או מקלידים קוד שקיבלתם. עד 4 שחקנים בחדר.</p>
         <div class="acts"><button id="mpCreate" class="go">פתח חדר</button></div>
         <div class="prow mpjoin"><input id="mpCode" maxlength="6" placeholder="קוד חדר" aria-label="קוד חדר" autocomplete="off" autocapitalize="characters" dir="ltr"><button id="mpJoin">הצטרף</button></div>
-        <label class="note"><input type="checkbox" id="mpVoice" checked> קשר קולי (יבקש אישור למיקרופון)</label>
+        <label class="note"><input type="checkbox" id="mpVoice" checked> קשר קולי. המיקרופון נפתח רק בזמן הטיסה, ורק בזמן שלוחצים "דבר" הוא משדר.</label>
       </div>
       <div id="mpRoomPane" hidden>
         <div class="mpcode"><span>קוד החדר</span><b id="mpCodeShow" dir="ltr"></b><button id="mpShare">שלח לחבר</button></div>

@@ -162,3 +162,40 @@ function buildF35HD(){const G=new T.Group(),ud=G.userData,M=hdm(),body=stdMat({m
   dressJet(G,{noPitot:true,tip:[5.3,0.14,4.0],nose:-7.7,spine:1.05,spineZ:2.2,noz:[],player:true,tanks:[],fins:[]});
   ud.gear=new T.Group();G.add(ud.gear);hdGearLeg(ud.gear,0,-4.4,-0.55,1.0,0.33,0.2,false);hdGearLeg(ud.gear,-1.5,1.5,-0.5,1.04,0.36,0.25,false);hdGearLeg(ud.gear,1.5,1.5,-0.5,1.04,0.36,0.25,false);
   return hdFinish(G);}
+
+/* M-346 Lavi: the advanced trainer. Slim fuselage, long tandem canopy with the rear seat raised, LERX, side intakes under them,
+   twin engines side by side, one fin with the tiger stripes of 102 Squadron, Python training rounds on the wing tips */
+function tigerTex(){return decalTex(256,128,(x,w,h)=>{x.fillStyle='#f08a1c';x.fillRect(0,0,w,h);x.fillStyle='#141414';for(let i=0;i<9;i++){const a=i*w/8.5-10;x.beginPath();x.moveTo(a,0);x.lineTo(a+22,0);x.lineTo(a+6+((i%2)?18:-6),h*0.55);x.lineTo(a+30,h);x.lineTo(a+14,h);x.lineTo(a-6,h*0.5);x.closePath();x.fill();}});}
+function buildM346HD(){const G=new T.Group(),ud=G.userData,M=hdm(),body=stdMat({map:skin('gray'),roughness:0.55,metalness:0.12});ud.ab=[];ud.bombs=[];ud.aams=[];
+  const fwd=[[-5.9,0.02,0.02,0.02,0],[-5.5,0.18,0.18,0.18,0],[-4.9,0.34,0.36,0.32,0],[-4.2,0.46,0.5,0.42,0.02],[-3.3,0.54,0.6,0.5,0.04],[-2.3,0.6,0.64,0.52,0.04]].map(([z,w,ht,hb,y])=>({z,w,ht,hb,y,n:2.2}));
+  const nose=new T.Mesh(outward(loftGeo(fwd.slice(0,3),24)),M.radome),front=new T.Mesh(outward(loftGeo(fwd.slice(2),24)),body);G.add(nose,front);
+  const aft=[[-2.4,0.6,0.64,0.52,0.04,2.2],[-1.0,0.8,0.62,0.56,0.02,2.5],[1.2,0.86,0.58,0.56,0,2.7],[3.4,0.78,0.5,0.52,0,2.6],[5.0,0.7,0.44,0.44,0,2.4],[5.75,0.66,0.4,0.4,0,2.2]].map(([z,w,ht,hb,y,n])=>({z,w,ht,hb,y,n}));
+  G.add(new T.Mesh(outward(loftGeo(aft,28)),body));
+  /* raised spine behind the rear seat */
+  G.add(new T.Mesh(outward(loftGeo([[-1.5,0.05,0.02,0.02],[-0.6,0.3,0.26,0.05],[3.0,0.28,0.22,0.05],[4.6,0.05,0.03,0.02]].map(([z,w,ht,hb])=>({z,w,ht,hb,y:0.58,n:2.4})),16)),body));
+  for(const s of[-1,1]){
+    /* intake under the LERX, with a dark mouth */
+    G.add(new T.Mesh(outward(loftGeo([[-1.7,0.3,0.36,0.34],[-0.6,0.34,0.4,0.38],[1.6,0.3,0.34,0.32],[2.8,0.08,0.1,0.1]].map(([z,w,ht,hb])=>({x:s*0.78,z,w,ht,hb,y:-0.12,n:3})),18)),body));
+    const mo=part(new T.CircleGeometry(1,20),M.dark,s*0.78,-0.12,-1.72,G);mo.scale.set(0.28,0.33,1);mo.rotation.y=Math.PI;
+    const wg=outward(foilGeo({span:0.8,y:0.12,le:-0.5,te:2.7,t:0.05},{span:4.8,y:0.08,le:1.9,te:3.0,t:0.04}));G.add(new T.Mesh(s>0?wg:mirX(wg),body));
+    const lx=outward(foilGeo({span:0.6,y:0.14,le:-3.1,te:-0.4,t:0.03},{span:0.95,y:0.13,le:-0.7,te:-0.4,t:0.03}));G.add(new T.Mesh(s>0?lx:mirX(lx),body));
+    const st=outward(foilGeo({span:0.6,y:0,le:-0.7,te:0.8,t:0.04},{span:2.25,y:0,le:0.35,te:1.05,t:0.035})),sh=new T.Group();sh.position.set(0,-0.08,4.8);sh.add(new T.Mesh(s>0?st:mirX(st),body));G.add(sh);(ud.stabs=ud.stabs||[]).push({h:sh,side:s});
+    const rd=part(new T.CircleGeometry(0.55,24),new T.MeshLambertMaterial({map:roundel,polygonOffset:true,polygonOffsetFactor:-4}),s*3.1,0.12,2.25,G);rd.rotation.x=-Math.PI/2;
+    /* wing-tip rail with a training Python, and an empty pylon */
+    part(new T.BoxGeometry(0.08,0.1,2.0),M.dark,s*4.85,0.08,2.4,G);
+    const py=hdMissile(3.0,0.08,M.white,true);py.position.set(s*4.92,0.09,2.4);py.userData.k='python';py.userData.th=s<0?0:1;G.add(py);ud.aams.push(py);
+    part(new T.BoxGeometry(0.1,0.26,1.4),M.dark,s*2.6,-0.04,1.6,G);
+    hdNozzle(G,s*0.4,-0.02,5.95,0.3,0.5,ud);
+    part(new T.SphereGeometry(0.08,8,6),new T.MeshBasicMaterial({color:s<0?0xff3030:0x30ff60}),s*4.8,0.16,3.05,G);}
+  /* fin with the tiger stripes and the squadron number */
+  const fn=outward(foilGeo({span:0.45,x:0,le:2.4,te:5.5,t:0.05},{span:2.75,x:0,le:4.6,te:5.75,t:0.04},true));G.add(new T.Mesh(fn,body));
+  for(const s of[-1,1]){const d=part(new T.PlaneGeometry(1.5,0.75),tigerTex(),s*0.075,2.3,5.05,G);d.rotation.y=s*Math.PI/2;}
+  part(new T.PlaneGeometry(0.7,0.35),tailNo('612'),0.07,1.2,4.9,G).rotation.y=Math.PI/2;
+  /* long canopy over two seats, the rear one higher */
+  const can=part(new T.SphereGeometry(1,28,14,0,Math.PI*2,0,Math.PI/2),M.glass,0,0.6,-3.05,G);can.scale.set(0.5,0.62,2.25);can.renderOrder=3;
+  const fr=part(new T.TorusGeometry(0.48,0.03,6,20,Math.PI),M.dark,0,0.6,-3.0,G);G.userData.fr=fr;
+  ud.front=[nose,front,can,fr,...hdPilot(G,-3.9,0.78),...hdPilot(G,-2.5,0.92)];
+  ud.sb=new T.Group();G.add(ud.sb);
+  dressJet(G,{tip:[4.8,0.16,3.05],nose:-5.9,spine:0.85,spineZ:1.5,noz:[],player:true,fins:[[-0.06,1.85,3.9,-Math.PI/2],[0.06,1.85,3.9,Math.PI/2]]});
+  ud.gear=new T.Group();G.add(ud.gear);hdGearLeg(ud.gear,0,-3.7,-0.5,0.9,0.26,0.16,false);hdGearLeg(ud.gear,-1.15,1.25,-0.3,1.1,0.31,0.2,false);hdGearLeg(ud.gear,1.15,1.25,-0.3,1.1,0.31,0.2,false);
+  return hdFinish(G);}

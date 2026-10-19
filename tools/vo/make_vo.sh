@@ -20,6 +20,12 @@ fire|Engine fire.
 eng|Engine out.
 overg|Over G. Over G.
 gear|Landing gear.
+mins|Minimums.
+c100|One hundred.
+c50|Fifty.
+c30|Thirty.
+c20|Twenty.
+c10|Ten.
 LIST
 printf '};\n' >> $out
 rm -rf "$T"

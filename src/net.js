@@ -29,7 +29,7 @@ const MP={ws:null,id:null,host:false,code:null,name:'',peers:new Map(),url:null,
         else if(o.t==='g'&&o.d)mpg.recv(o.d,o.from,true);};
       ws.onclose=()=>{clearTimeout(to);if(MP.ws!==ws)return;const was=MP.live;MP.live=false;MP.ws=null;if(!ok){MP.status('לא ניתן להתחבר לשרת. ייתכן שהמכסה היומית של השרת נגמרה; היא מתחדשת ב-3 בלילה.');res(false);}else if(was){MP.status('החיבור לשרת נותק.');mpg.lost('השרת');}mpUi.room();};
       ws.onerror=()=>{};});},
-  leave(silent){const ws=MP.ws;MP.ws=null;MP.live=false;try{if(ws)ws.close();}catch(e){}for(const id of[...MP.peers.keys()])MP.dropPeer(id,false,true);MP.id=null;MP.host=false;if(!silent)mpUi.room();},
+  leave(silent){mpVoice.micStop();const ws=MP.ws;MP.ws=null;MP.live=false;try{if(ws)ws.close();}catch(e){}for(const id of[...MP.peers.keys()])MP.dropPeer(id,false,true);MP.id=null;MP.host=false;if(!silent)mpUi.room();},
   wsSend(o){try{if(MP.ws&&MP.ws.readyState===1)MP.ws.send(JSON.stringify(o));}catch(e){}},
   addPeer(info,offer){if(MP.peers.has(info.id))return;const P={id:info.id,name:info.name||'טייס',host:!!info.host,via:'wait',st:null,pc:null,dcU:null,dcR:null,plane:'',ch:1,talk:false,audio:null};MP.peers.set(P.id,P);
     try{MP.rtc(P,offer);}catch(e){P.via='relay';}if(P.via==='relay')setTimeout(()=>mpg.hi(P),300);
@@ -58,9 +58,19 @@ const MP={ws:null,id:null,host:false,code:null,name:'',peers:new Map(),url:null,
 
 /* push-to-talk radio: the microphone track is always attached but only enabled while talking */
 const mpVoice={
-  async micStart(){if(MP.mic||MP.micAsk)return!!MP.mic;MP.micAsk=true;
-    try{const s=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});MP.mic=s.getAudioTracks()[0];MP.mic.enabled=false;
-      for(const P of MP.peers.values())if(P.sender)P.sender.replaceTrack(MP.mic).catch(()=>{});return true;}catch(e){MP.micAsk=false;toast('אין גישה למיקרופון. הקשר הקולי לא יעבוד; ההודעות המוכנות כן.');return false;}},
+  /* the microphone is opened only while a network flight is on and the radio is enabled in the settings, and closed when the flight ends */
+  async micStart(){if(MP.mic||MP.micAsk)return!!MP.mic;if(opts.radio==='off'){toast('הקשר הקולי כבוי בהגדרות. ההודעות המוכנות עובדות.');return false;}
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){toast(isSecureContext?'הדפדפן הזה לא תומך במיקרופון. ההודעות המוכנות עובדות.':'מיקרופון עובד רק בכתובת מאובטחת (https).');return false;}
+    MP.micAsk=true;
+    try{const s=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+      if(!mpg.on){for(const t of s.getTracks())t.stop();MP.micAsk=false;return false;}
+      MP.mic=s.getAudioTracks()[0];MP.mic.enabled=false;MP.micAsk=false;
+      for(const P of MP.peers.values())if(P.sender)P.sender.replaceTrack(MP.mic).catch(()=>{});return true;}
+    catch(e){MP.micAsk=false;const n=e&&e.name;
+      toast(n==='NotAllowedError'||n==='SecurityError'?(window.HFNative?'אין הרשאה למיקרופון. הגדרות הטלפון ← אפליקציות ← HaniaFlight ← הרשאות ← מיקרופון.':/iPhone|iPad|Mac/.test(navigator.userAgent)?'הדפדפן חסם את המיקרופון. בספארי: aA ליד הכתובת ← הגדרות אתר ← מיקרופון ← אפשר. אחר כך לחץ שוב על "דבר".':'הדפדפן חסם את המיקרופון. לחץ על המנעול ליד הכתובת ← מיקרופון ← אפשר, ואז לחץ שוב על "דבר".')
+        :n==='NotFoundError'?'לא נמצא מיקרופון במכשיר.':n==='NotReadableError'?'המיקרופון תפוס על ידי אפליקציה אחרת.':'אין גישה למיקרופון. ההודעות המוכנות עובדות.',7000);return false;}},
+  micStop(){if(MP.micOn){MP.micOn=false;try{MP.send({t:'ptt',on:false,ch:mpg.ch},true);}catch(e){}}const m=MP.mic;MP.mic=null;
+    for(const P of MP.peers.values())if(P.sender)P.sender.replaceTrack(null).catch(()=>{});if(m)try{m.stop();}catch(e){}const b=$('pttBtn');if(b)b.dataset.on='';},
   attach(P,stream){Snd.init();const ac=Snd.ac;if(!ac||P.audio)return;
     const el=new Audio();el.srcObject=stream;el.muted=true;el.play().catch(()=>{});
     const src=ac.createMediaStreamSource(stream),hp=ac.createBiquadFilter(),lp=ac.createBiquadFilter(),sh=ac.createWaveShaper(),g=ac.createGain();
@@ -72,7 +82,7 @@ const mpVoice={
   ptt(P,on,ch){P.talk=on;P.ch=ch||1;const hear=mpVoice.hears(P);if(P.audio)P.audio.g.gain.setTargetAtTime(on&&hear?1.6:0,Snd.ac.currentTime,0.02);
     if(hear){mpVoice.click(on);mpg.talkers();}},
   click(on){if(!Snd.ac)return;const ac=Snd.ac,n=ac.createBufferSource(),b=ac.createBuffer(1,ac.sampleRate*0.09,ac.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*(1-i/d.length)*0.5;n.buffer=b;const g=ac.createGain();g.gain.value=0.25;n.connect(g);g.connect(Snd.master);n.start();if(!on)beep(1700,0.07,0.04,'sine');},
-  async key(on){if(!MP.live)return;if(on&&!MP.mic&&!(await mpVoice.micStart()))return;if(MP.mic)MP.mic.enabled=on;if(MP.micOn===on)return;MP.micOn=on;MP.send({t:'ptt',on,ch:mpg.ch},true);mpVoice.click(on);$('pttBtn').dataset.on=on?'1':'';}};
+  async key(on){if(!MP.live||!mpg.on)return;if(on&&!MP.mic&&!(await mpVoice.micStart()))return;if(MP.mic)MP.mic.enabled=on;if(MP.micOn===on)return;MP.micOn=on;MP.send({t:'ptt',on,ch:mpg.ch},true);mpVoice.click(on);$('pttBtn').dataset.on=on?'1':'';}};
 
 /* the game over the network */
 const QUICK=['כסה אותי','אני תוקף','פונה ימינה','פונה שמאלה','טיל באוויר!','נפגעתי','בינגו, חוזר הביתה','רואה אותך','מצטרף אליך','כן'];
@@ -83,7 +93,7 @@ const mpg={on:false,cfg:null,room:{mode:'coop',start:'air'},ch:1,team:null,
   left(P,wasHost){if(mpg.on&&W){const r=W.remotes.find(x=>x.id===P.id);if(r&&r.alive){r.alive=false;r.gone=true;W.events.push({type:'kill',e:r});}radioQ.push(`רשת: ${P.name} יצא מהמשחק.`);
       if(!W.over&&((wasHost&&!MP.host)||(mpg.vs(mpg.cfg.mode)&&!W.remotes.some(x=>!x.gone&&x.side===1))))W.over={win:false,title:'החיבור נותק',reason:wasHost?'המארח יצא מהמשחק.':'היריב יצא מהמשחק.'};}
     else if(wasHost)MP.status('המארח יצא. החדר נסגר.');},
-  end(){if(!mpg.on)return;MP.send({t:'end'},true);mpg.on=false;},
+  end(){if(!mpg.on)return;mpVoice.micStop();MP.send({t:'end'},true);mpg.on=false;},
   lost(what){if(mpg.on&&W&&!W.over)W.over={win:false,title:'החיבור נותק',reason:'הקשר עם '+what+' אבד.'};},
   /* ---- references to world objects, the same on every machine ---- */
   ref(e){if(!e)return null;if(e===W.player)return{p:MP.id};if(e.remote)return{p:e.id};let i;
@@ -95,7 +105,7 @@ const mpg={on:false,cfg:null,room:{mode:'coop',start:'air'},ch:1,team:null,
   /* ---- starting a game ---- */
   begin(cfg){mpg.cfg=cfg;mpg.on=true;mpg.live.clear();mpg.overSent=false;mpg.lostSent=false;
     if(cfg.mode==='teams'&&cfg.teams&&cfg.teams[MP.id]){mpg.team=cfg.teams[MP.id];if(mpg.ch!==1)mpg.ch=mpg.teamCh();}
-    Object.assign(opts,{mission:mpg.vs(cfg.mode)?'duel':cfg.mission,diff:cfg.diff,tod:cfg.tod,wx:cfg.wx});applyOpts();show('mpBox',false);
+    Object.assign(opts,{mission:mpg.vs(cfg.mode)?'duel':cfg.mission,diff:cfg.diff,tod:cfg.tod,wx:cfg.wx});applyOpts();show('mpBox',false);if(opts.radio!=='off')mpVoice.micStart();
     start(mpg.vs(cfg.mode)?'air':cfg.start==='runway'?'runway':'air');},
   /* called by newGame: the extra World options and the seeded random numbers */
   worldOpts(){const c=mpg.cfg;return{net:MP.host?'host':'guest',coop:c.mode==='coop',pvp:mpg.vs(c.mode),wing:false,fail:false};},
@@ -127,7 +137,7 @@ const mpg={on:false,cfg:null,room:{mode:'coop',start:'air'},ch:1,team:null,
       e.pos=d>400?tp:vadd(e.pos,vmul(vsub(tp,e.pos),Math.min(1,dt*8)));e.vel=t.vel;const qa=new T.Quaternion(e.q.x,e.q.y,e.q.z,e.q.w),qb=new T.Quaternion(t.q[0],t.q[1],t.q[2],t.q[3]);qa.slerp(qb,Math.min(1,dt*10));e.q={x:qa.x,y:qa.y,z:qa.z,w:qa.w};
       e.eng=t.e;e.gearPos=t.g;e.onGround=!!t.gd;e.ld=t.ld;e.laser=t.ls&&e.side===0?{x:t.ls[0],y:t.ls[1],z:t.ls[2]}:null;
       if(t.gun&&state==='fly'){e.gunT=(e.gunT||0)-dt;if(e.gunT<=0){e.gunT=1/14;const f=qrot(e.q,FWD);W.bullets.push({pos:vadd(e.pos,vmul(f,8)),vel:vadd(e.vel,vmul(f,1000)),t:0,owner:e,ghost:true});}}
-      if(t.lk===MP.id&&p.alive&&e.side===1){const fl=W.missiles.some(m=>m.alive&&m.owner===e&&m.target===p);W.netThreats.push({sym:({F15I:'15',F15C:'15',F16I:'16',F35I:'35'})[e.type]||'F',pos:e.pos,lvl:fl?2:1});}}
+      if(t.lk===MP.id&&p.alive&&e.side===1){const fl=W.missiles.some(m=>m.alive&&m.owner===e&&m.target===p);W.netThreats.push({sym:({F15I:'15',F15C:'15',F16I:'16',F35I:'35',M346:'46'})[e.type]||'F',pos:e.pos,lvl:fl?2:1});}}
     /* my bombs: send a copy so the others see them fall */
     for(const b of W.bombs)if(b.owner===p&&!b.netId&&!b.ghost){b.netId=MP.id+':'+(mpg.netN++);MP.send({t:'b',p:[b.pos.x,b.pos.y,b.pos.z],v:[b.vel.x,b.vel.y,b.vel.z],tg:mpg.ref(b.target),lgb:b.lgb,gps:b.gps,ld:b.ld},true);}
     /* missiles decided here that the others hold as copies */
@@ -186,21 +196,21 @@ const mpg={on:false,cfg:null,room:{mode:'coop',start:'air'},ch:1,team:null,
     else if(o.t==='over'){if(!W.over)W.over=Object.assign({},o.o,{reason:(o.o.reason||'')+(p.alive?'':'')});}},
   /* a guest follows the host's theatre: switching theatre needs a reload, then the guest rejoins by itself */
   align(o){if(MP.host)return;if(o.theatre&&o.theatre!==theatre0||o.theatre==='israel'&&o.isrBase&&o.isrBase!==opts.isrBase){
-      opts.theatre=o.theatre;if(o.isrBase)opts.isrBase=o.isrBase;try{localStorage.setItem('haniaflight-opts',JSON.stringify(opts));}catch(e){}try{localStorage.setItem('haniaflight-mpjoin',JSON.stringify({code:MP.code,t:Date.now(),v:$('mpVoice').checked}));}catch(e){}
+      opts.theatre=o.theatre;if(o.isrBase)opts.isrBase=o.isrBase;try{localStorage.setItem('haniaflight-opts',JSON.stringify(opts));}catch(e){}try{localStorage.setItem('haniaflight-mpjoin',JSON.stringify({code:MP.code,t:Date.now()}));}catch(e){}
       MP.status('עובר לזירה של המארח…');setTimeout(()=>location.reload(),600);}},
   talkers(){const t=[...MP.peers.values()].filter(P=>P.talk&&mpVoice.hears(P)).map(P=>P.call||P.name);const el=$('talkers');el.textContent=t.length?'🎙 '+t.join(', '):'';el.hidden=!t.length;},
   quick(i){if(!MP.live)return;MP.send({t:'q',i,ch:mpg.ch},true);radioQ.push(`אתה: ${QUICK[i]}`);$('quickBox').hidden=true;}};
 
 /* lobby */
 const mpUi={
-  open(){show('mpBox',true);mpUi.room();},
+  open(){show('mpBox',true);$('mpVoice').checked=opts.radio!=='off';mpUi.room();},
   status(t){const el=$('mpStatus');el.textContent=t||'';el.hidden=!t;
     /* inside a preview page (such as the Claude artifact) outside connections are blocked: point to the real site */
     if(t&&/לא עונה|לא ניתן להתחבר|נכשל/.test(t)&&!/hania360\.com$|^localhost$|^127\./.test(location.hostname)){el.innerHTML='בגרסה הזאת של הדף החיבור לרשת חסום. משחק עם חברים עובד באתר <a href="https://flight.hania360.com/" target="_blank" rel="noopener">flight.hania360.com</a> ובאפליקציה.';}},
   code(){const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';const r=new Uint32Array(4);crypto.getRandomValues(r);for(const x of r)s+=A[x%A.length];return s;},
   async create(){mpUi.prep();const ok=await MP.connect(mpUi.code(),mpUi.name());if(ok)mpg.sendRoom();},
   async join(code){code=(code||$('mpCode').value||'').toUpperCase().replace(/[^A-Z0-9]/g,'');if(code.length<4){MP.status('הקוד צריך להיות 4 תווים.');return;}mpUi.prep();await MP.connect(code,mpUi.name());},
-  prep(){Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();if($('mpVoice').checked)mpVoice.micStart();},
+  prep(){Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();},
   name(){const pl=readPilot();return pl.call||pl.name||'טייס';},
   room(){const inRoom=MP.live;$('mpJoinPane').hidden=inRoom;$('mpRoomPane').hidden=!inRoom;$('mpBtn').textContent=inRoom?`חדר ${MP.code} · ${MP.peers.size+1} שחקנים`:'משחק עם חברים';
     if(!inRoom)return;$('mpCodeShow').textContent=MP.code;
@@ -212,7 +222,7 @@ const mpUi={
     for(const b of document.querySelectorAll('[data-mps]')){b.setAttribute('aria-pressed',b.dataset.mps===r.start?'true':'false');b.disabled=!h||mpg.vs(r.mode);}
     for(const b of document.querySelectorAll('[data-ch]')){b.setAttribute('aria-pressed',(+b.dataset.ch===1)===(mpg.ch===1)?'true':'false');if(b.dataset.ch==='2')b.textContent=tms?'2 · הצוות':'2';}
     $('mpTeamRow').hidden=!tms;for(const b of document.querySelectorAll('[data-team]'))b.setAttribute('aria-pressed',b.dataset.team===mpg.myTeam()?'true':'false');
-    const hc=mpg.hostCfg,mis=h?opts.mission:hc&&hc.mission,mn=$(({strike:'mStrike',intercept:'mIcpt',sead:'mSead',convoy:'mConvoy',escort:'mEscort',csar:'mCsar',recon:'mRecon',stealth:'mStealth',naval:'mNaval',duel:'mDuel',tanker:'mTanker',train:'mTrain'})[mis]||'mStrike');
+    const hc=mpg.hostCfg,mis=h?opts.mission:hc&&hc.mission,mn=$(({strike:'mStrike',intercept:'mIcpt',sead:'mSead',convoy:'mConvoy',escort:'mEscort',csar:'mCsar',cas:'mCas',recon:'mRecon',stealth:'mStealth',naval:'mNaval',duel:'mDuel',tanker:'mTanker',train:'mTrain'})[mis]||'mStrike');
     $('mpInfo').textContent=tms?'כחול נגד אדום: כל צוות מתחיל יחד בצד אחר, 44 ק"מ בין הצוותים. בני הצוות מופיעים כידידים. תדר 2 שומע רק הצוות שלך.':r.mode==='pvp'?'קרב אוויר: כל אחד מתחיל במרחק 22 ק"מ מהמרכז, פונה פנימה. מנצח מי שנשאר באוויר.':`משימה: ${mn?mn.textContent:''}. ${h?'בוחרים משימה ומטוס בתפריט, הם עוברים לכולם.':'המארח בוחר את המשימה. המטוס שלך לבחירתך.'}`;
     $('mpGo').hidden=!h;$('mpWait').hidden=h;const tl=[mpg.myTeam(),...[...MP.peers.values()].map(P=>P.team)];$('mpGo').disabled=!MP.peers.size||(tms&&!(tl.includes('b')&&tl.includes('r')));},
   go(){if(!MP.host||!MP.peers.size)return;const r=mpg.room,order=[MP.id,...MP.peers.keys()];
@@ -229,9 +239,9 @@ $('quickBtn').onclick=()=>{$('quickBox').hidden=!$('quickBox').hidden;};
 $('quickBox').innerHTML=QUICK.map((q,i)=>`<button data-q="${i}">${i<9?i+1:0}. ${q}</button>`).join('');for(const b of $('quickBox').querySelectorAll('button'))b.onclick=()=>mpg.quick(+b.dataset.q);
 $('mpBtn').onclick=()=>mpUi.open();
 {let code=null,auto=false;try{code=new URLSearchParams(location.search).get('room');}catch(e){}
-  try{const j=JSON.parse(localStorage.getItem('haniaflight-mpjoin')||'null');localStorage.removeItem('haniaflight-mpjoin');if(j&&Date.now()-j.t<180000){code=j.code;auto=true;$('mpVoice').checked=j.v!==false;}}catch(e){}
+  try{const j=JSON.parse(localStorage.getItem('haniaflight-mpjoin')||'null');localStorage.removeItem('haniaflight-mpjoin');if(j&&Date.now()-j.t<180000){code=j.code;auto=true;}}catch(e){}
   if(code){$('mpCode').value=code.toUpperCase();mpUi.open();if(auto)setTimeout(()=>mpUi.join(),300);else MP.status('הוזמנת לחדר '+code.toUpperCase()+'. לחץ "הצטרף".');}}$('mpClose').onclick=()=>show('mpBox',false);$('mpCreate').onclick=()=>mpUi.create();$('mpJoin').onclick=()=>mpUi.join();$('mpLeave').onclick=()=>{MP.leave();MP.status('יצאת מהחדר.');};
-$('mpGo').onclick=()=>mpUi.go();$('mpShare').onclick=()=>mpUi.share();$('mpCode').addEventListener('keydown',e=>{if(e.key==='Enter')mpUi.join();});
+$('mpVoice').onchange=()=>{opts.radio=$('mpVoice').checked?'on':'off';applyOpts();};$('mpGo').onclick=()=>mpUi.go();$('mpShare').onclick=()=>mpUi.share();$('mpCode').addEventListener('keydown',e=>{if(e.key==='Enter')mpUi.join();});
 for(const b of document.querySelectorAll('[data-mp]'))b.onclick=()=>{mpg.room.mode=b.dataset.mp;mpg.sendRoom();mpUi.room();};
 for(const b of document.querySelectorAll('[data-mps]'))b.onclick=()=>{mpg.room.start=b.dataset.mps;mpg.sendRoom();mpUi.room();};
 for(const b of document.querySelectorAll('[data-ch]'))b.onclick=()=>{mpg.ch=b.dataset.ch==='1'?1:mpg.room.mode==='teams'?mpg.teamCh():2;for(const P of MP.peers.values())mpVoice.ptt(P,P.talk,P.ch);mpUi.room();};
