@@ -1400,6 +1400,14 @@ function getMapBg(){const{nx,nz,cell,x0,z0}=TER,WX=(nx-1)*cell,WZ=(nz-1)*cell;
   if(!mapBg){const BW=WX>=WZ?312:400,BH=WX>=WZ?180:800;mapBg=document.createElement('canvas');mapBg.width=BW;mapBg.height=BH;const x=mapBg.getContext('2d'),im=x.createImageData(BW,BH),d=im.data;
     for(let j=0;j<BH;j++)for(let i=0;i<BW;i++){const px=x0+i/(BW-1)*WX,pz=z0+j/(BH-1)*WZ,h=terrainH(px,pz),hr=terrainH(x0+(i+1)/(BW-1)*WX,pz),k=(j*BW+i)*4,t=clamp(h/1500,0,1),sh=clamp((h-hr)/90,-1,1)*26;
       if(R.isWater(px,pz)){d[k]=20;d[k+1]=46;d[k+2]=66;}else{d[k]=70+t*62+sh;d[k+1]=68+t*44+sh;d[k+2]=50+t*26+sh;}d[k+3]=255;}x.putImageData(im,0,0);}return mapBg;}
+/* the release envelope of the selected air-to-ground weapon at the jet's present height and speed: a ring around the target
+   from the minimum to the maximum release range; inside it (and pointed at the target) the weapon reaches */
+function relEnv(){if(!W||W.w.sel!=='SPICE'||!W.w.spice)return null;const b=W.bombSol(),g=W.gtgt;if(!b||b.dumb||!g||!g.alive||!(b.rmax>0))return null;
+  return{g,rmax:b.rmax,rmin:Math.min(b.rmin||0,b.rmax),inside:b.hd<b.rmax&&b.hd>(b.rmin||0),ok:b.ok};}
+function mapEnv(X,Y,s,k){const ev=relEnv();if(!ev)return;const x=X(ev.g.pos.x),y=Y(ev.g.pos.z),c=ev.inside?'116,255,150':'255,190,85';ctx.save();
+  ctx.fillStyle=`rgba(${c},0.12)`;ctx.beginPath();ctx.arc(x,y,ev.rmax*s,0,7);if(ev.rmin>0){ctx.moveTo(x+ev.rmin*s,y);ctx.arc(x,y,ev.rmin*s,0,7,true);}ctx.fill('evenodd');
+  ctx.strokeStyle=`rgb(${c})`;ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(x,y,ev.rmax*s,0,7);ctx.stroke();if(ev.rmin>0){ctx.setLineDash([4,4]);ctx.beginPath();ctx.arc(x,y,ev.rmin*s,0,7);ctx.stroke();ctx.setLineDash([]);}
+  txt('REL '+(ev.rmax/NM).toFixed(0)+' NM',x,y-ev.rmax*s-8*k,'center',Math.round(10*k)+0,`rgb(${c})`);ctx.restore();}
 /* players in network play on a map: an arrow along their heading and their call sign; an opponent only while the radar sees it */
 function mapPeers(X,Y,k){if(!W.remotes.length)return;ctx.save();ctx.direction='rtl';ctx.textAlign='center';ctx.font=`700 ${Math.round(11*k)}px Assistant,Arial,sans-serif`;
   for(const r of W.remotes){if(!r.alive)continue;const foe=r.side===1;if(foe&&!W.contacts.some(c=>c.e===r))continue;const x=X(r.pos.x),y=Y(r.pos.z),h=Math.atan2(r.vel.x||0,-(r.vel.z||-1)),c=foe?RED:'#7fdcff';
@@ -1424,6 +1432,7 @@ function drawMap(p,e){if(W.flt.map){ctx.save();ctx.fillStyle='rgba(2,6,8,0.7)';c
   if((W.missionId==='strike'||W.missionId==='intercept'||W.missionId==='stealth')&&theatre0!=='israel'){ctx.strokeStyle=AMB;ctx.setLineDash([5,5]);line(X(16000),oy,X(16000),oy+mh2);ctx.setLineDash([]);txt('DEFENCE LINE',X(16000)+5,oy+12,'left',10,AMB);}
   for(const q of W.sams){if(!q.alive||(q.silent&&!q.awake))continue;const r=Math.min(W.d.samR*q.rk,60000*W.sig*Math.min(1.25,q.rk+0.25))*s;ctx.strokeStyle=RED;ctx.fillStyle='rgba(255,92,79,0.13)';ctx.beginPath();ctx.arc(X(q.pos.x),Y(q.pos.z),r,0,7);ctx.fill();ctx.stroke();txt(q.sym==='SA'?'SAM':'SA-'+q.sym,X(q.pos.x),Y(q.pos.z)-r-8,'center',10,RED);}
   for(const g of W.ground){if(!g.alive||g.kind==='launcher'||g.hid)continue;ctx.strokeStyle=g.kind==='radar'?RED:AMB;ctx.strokeRect(X(g.pos.x)-3,Y(g.pos.z)-3,6,6);}
+  mapEnv(X,Y,s,1);
   if(W.cas){const c=W.cas.smoke;ctx.fillStyle='#7fb8ff';ctx.beginPath();ctx.arc(X(c.x),Y(c.z),4,0,7);ctx.fill();txt('OWN',X(c.x),Y(c.z)+12,'center',10,'#7fb8ff');}
 
   ctx.strokeStyle=SND;ctx.setLineDash([7,5]);ctx.beginPath();const NPm=W.navPos();ctx.moveTo(X(NPm.x),Y(NPm.z));for(let i=W.wp;i<W.wps.length;i++)ctx.lineTo(X(W.wps[i].x),Y(W.wps[i].z));ctx.stroke();ctx.setLineDash([]);
@@ -1569,7 +1578,10 @@ function drawHUD(){tgpR=null;mfdR=null;mfdRR=null;if(W&&W.gtgt&&!W.gtgt.pt)podLa
       if(b.ccip){const s=proj(b.ccip.x,b.ccip.y,b.ccip.z);if(s.ok){ctx.beginPath();ctx.arc(s.x,s.y,10*u,0,7);ctx.stroke();ctx.beginPath();ctx.arc(s.x,s.y,1.8*u,0,7);ctx.fill();if(fp.ok){ctx.setLineDash([4*u,4*u]);line(fp.x,fp.y,s.x,s.y);ctx.setLineDash([]);}}
         else txt('CCIP ↓ DIVE',hx,hy+mh*0.13,'center',13,AMB);txt('TOF '+Math.round(b.ccip.t),hx+mh*0.24,hy+mh*0.15+14*u,'center',13);}
       const on=b.miss!=null&&b.miss<22;txt(b.low?'TOO LOW':b.miss!=null?(on?'ON TGT  REL':'MISS '+Math.round(b.miss)+' M'):'CCIP',hx,hy+mh*0.2,'center',on?20:15,on||b.miss==null&&!b.low?HUDC:AMB);}
-    else if(g&&b){const s=proj(g.pos.x,g.pos.y+4,g.pos.z);if(locate(s)){const d=11*u;line(s.x,s.y-d,s.x+d,s.y,s.x,s.y+d,s.x-d,s.y,s.x,s.y-d);}
+    else if(g&&b){{const ev=relEnv();if(ev){const ring=(R,dash)=>{ctx.setLineDash(dash);let pr=null;for(let i=0;i<=64;i++){const a=i/64*Math.PI*2,x=g.pos.x+Math.sin(a)*R,z=g.pos.z-Math.cos(a)*R,q=proj(x,terrainH(x,z)+3,z);
+          if(q.ok&&pr&&pr.ok&&Math.abs(q.x-pr.x)<vw*0.6&&Math.abs(q.y-pr.y)<vh*0.6)line(pr.x,pr.y,q.x,q.y);pr=q;}ctx.setLineDash([]);};
+        ctx.save();ctx.strokeStyle=ev.inside?HUDC:AMB;ctx.lineWidth=1.3*u;ring(ev.rmax,[]);if(ev.rmin>0)ring(ev.rmin,[5*u,5*u]);ctx.restore();ctx.strokeStyle=HUDC;}}
+      const s=proj(g.pos.x,g.pos.y+4,g.pos.z);if(locate(s)){const d=11*u;line(s.x,s.y-d,s.x+d,s.y,s.x,s.y+d,s.x-d,s.y,s.x,s.y-d);}
       const tf=tofOf(g),ix=ax+40*u,tfs=tf!=null?'TOF '+Math.max(0,Math.ceil(tf)):null,tfc=tf!=null&&tf<5&&blink?AMB:HUDC;
       /* the phone HUD is short, so the target block is packed into two lines that sit above the waypoint lines */
       if(touchOn){const iy=Math.min(hy+78*u,by-33*u);txt(g.name+'  '+(b.hd/NM).toFixed(1)+' NM',ix,iy,'right',14);txt(tfs||'MAX '+(b.rmax/NM).toFixed(1),ix,iy+17*u,'right',14,tfs?tfc:HUDC);}
@@ -1652,7 +1664,7 @@ function drawHUD(){tgpR=null;mfdR=null;mfdRR=null;if(W&&W.gtgt&&!W.gtgt.pt)podLa
       for(const b of R.ISR.alt){const px=X(b.x),py=Y(b.z);ctx.fillStyle='#ffd98a';ctx.fillRect(px-3,py-1,6,2);}ctx.restore();}
     ctx.fillStyle='#d2b47c';ctx.fillRect(X(RWY.x1),Y(0)-1.5,Math.max(5,(RWY.x2-RWY.x1)*s),3);
     for(const q of W.sams){if(!q.alive||(q.silent&&!q.awake))continue;ctx.strokeStyle=RED;ctx.fillStyle='rgba(255,92,79,0.12)';ctx.beginPath();ctx.arc(X(q.pos.x),Y(q.pos.z),W.d.samR*q.rk*s,0,7);ctx.fill();ctx.stroke();}
-    for(const g of W.ground){if(!g.alive||g.kind==='launcher'||g.hid)continue;ctx.strokeStyle=g.kind==='radar'?RED:AMB;const d=3*u;ctx.strokeRect(X(g.pos.x)-d,Y(g.pos.z)-d,2*d,2*d);}if(W.cas){const c=W.cas.smoke;ctx.fillStyle='#7fb8ff';ctx.beginPath();ctx.arc(X(c.x),Y(c.z),3*u,0,7);ctx.fill();}
+    for(const g of W.ground){if(!g.alive||g.kind==='launcher'||g.hid)continue;ctx.strokeStyle=g.kind==='radar'?RED:AMB;const d=3*u;ctx.strokeRect(X(g.pos.x)-d,Y(g.pos.z)-d,2*d,2*d);}mapEnv(X,Y,s,u);if(W.cas){const c=W.cas.smoke;ctx.fillStyle='#7fb8ff';ctx.beginPath();ctx.arc(X(c.x),Y(c.z),3*u,0,7);ctx.fill();}
     ctx.strokeStyle='#d2b47c';ctx.setLineDash([5*u,4*u]);ctx.beginPath();ctx.moveTo(cxm,cym);for(let i=W.wp;i<W.wps.length;i++)ctx.lineTo(X(W.wps[i].x),Y(W.wps[i].z));ctx.stroke();ctx.setLineDash([]);
     W.wps.forEach((q,i)=>{ctx.strokeStyle=i===W.wp?HUDC:'#d2b47c';ctx.beginPath();ctx.arc(X(q.x),Y(q.z),4*u,0,7);ctx.stroke();});
     for(const k of W.friends){if(!k.alive||k.remote)continue;ctx.strokeStyle=HUDC;ctx.beginPath();ctx.arc(X(k.pos.x),Y(k.pos.z),4*u,0,7);ctx.stroke();}mapPeers(X,Y,u*0.85);
