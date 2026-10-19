@@ -1578,16 +1578,16 @@ function drawHUD(){tgpR=null;mfdR=null;mfdRR=null;if(W&&W.gtgt&&!W.gtgt.pt)podLa
       if(b.ccip){const s=proj(b.ccip.x,b.ccip.y,b.ccip.z);if(s.ok){ctx.beginPath();ctx.arc(s.x,s.y,10*u,0,7);ctx.stroke();ctx.beginPath();ctx.arc(s.x,s.y,1.8*u,0,7);ctx.fill();if(fp.ok){ctx.setLineDash([4*u,4*u]);line(fp.x,fp.y,s.x,s.y);ctx.setLineDash([]);}}
         else txt('CCIP ↓ DIVE',hx,hy+mh*0.13,'center',13,AMB);txt('TOF '+Math.round(b.ccip.t),hx+mh*0.24,hy+mh*0.15+14*u,'center',13);}
       const on=b.miss!=null&&b.miss<22;txt(b.low?'TOO LOW':b.miss!=null?(on?'ON TGT  REL':'MISS '+Math.round(b.miss)+' M'):'CCIP',hx,hy+mh*0.2,'center',on?20:15,on||b.miss==null&&!b.low?HUDC:AMB);}
-    else if(g&&b){{const ev=relEnv();if(ev){const ring=(R,dash)=>{ctx.setLineDash(dash);let pr=null;for(let i=0;i<=64;i++){const a=i/64*Math.PI*2,x=g.pos.x+Math.sin(a)*R,z=g.pos.z-Math.cos(a)*R,q=proj(x,terrainH(x,z)+3,z);
-          if(q.ok&&pr&&pr.ok&&Math.abs(q.x-pr.x)<vw*0.6&&Math.abs(q.y-pr.y)<vh*0.6)line(pr.x,pr.y,q.x,q.y);pr=q;}ctx.setLineDash([]);};
-        ctx.save();ctx.strokeStyle=ev.inside?HUDC:AMB;ctx.lineWidth=1.3*u;ring(ev.rmax,[]);if(ev.rmin>0)ring(ev.rmin,[5*u,5*u]);ctx.restore();ctx.strokeStyle=HUDC;}}
-      const s=proj(g.pos.x,g.pos.y+4,g.pos.z);if(locate(s)){const d=11*u;line(s.x,s.y-d,s.x+d,s.y,s.x,s.y+d,s.x-d,s.y,s.x,s.y-d);}
+    else if(g&&b){const s=proj(g.pos.x,g.pos.y+4,g.pos.z);if(locate(s)){const d=11*u;line(s.x,s.y-d,s.x+d,s.y,s.x,s.y+d,s.x-d,s.y,s.x,s.y-d);}
       const tf=tofOf(g),ix=ax+40*u,tfs=tf!=null?'TOF '+Math.max(0,Math.ceil(tf)):null,tfc=tf!=null&&tf<5&&blink?AMB:HUDC;
       /* the phone HUD is short, so the target block is packed into two lines that sit above the waypoint lines */
       if(touchOn){const iy=Math.min(hy+78*u,by-33*u);txt(g.name+'  '+(b.hd/NM).toFixed(1)+' NM',ix,iy,'right',14);txt(tfs||'MAX '+(b.rmax/NM).toFixed(1),ix,iy+17*u,'right',14,tfs?tfc:HUDC);}
       else{const iy=Math.min(hy+78*u,by-16*u-(tfs?51:34)*u);txt(g.name,ix,iy,'right',14);txt((b.hd/NM).toFixed(1)+' NM',ix,iy+17*u,'right',14);txt('MAX '+(b.rmax/NM).toFixed(1),ix,iy+34*u,'right',14);if(tfs)txt(tfs,ix,iy+51*u,'right',14,tfc);}
       if(W.missionId==='recon'){const sees=W.podSees(g)&&b.hd<32000;txt(g.shot?'PHOTO DONE':sees?'POD TRACK':'POD MASKED',hx,hy+mh*0.2,'center',15,g.shot||sees?HUDC:AMB);}
-      else{bar(b.hd,b.rmax,b.rmin,(b.hd/NM).toFixed(1));
+      else{/* release envelope as a 'bathtub' on the left: the box is the band of ranges from which the weapon reaches, the caret is the range now; inside the box, inside the envelope */
+        {const x=sx+48*u,w=10*u,y0=hy-mh*0.15,y1=hy+mh*0.15,top=Math.max(b.rmax*1.25,b.hd*1.08,1),Y=r=>y1-(y1-y0)*clamp(r/top,0,1),ya=Y(b.rmax),yb=Y(b.rmin||0),inn=b.hd<b.rmax&&b.hd>(b.rmin||0),col=inn?HUDC:AMB;
+          ctx.save();ctx.strokeStyle=col;line(x+w/2,y0,x+w/2,y1);if(inn){ctx.fillStyle='rgba(116,255,150,0.28)';ctx.fillRect(x,ya,w,yb-ya);}ctx.lineWidth=2*u;ctx.strokeRect(x,ya,w,yb-ya);ctx.lineWidth=1.6*u;
+          const yc=Y(b.hd);ctx.strokeStyle=HUDC;line(x-10*u,yc-5*u,x-1*u,yc,x-10*u,yc+5*u);txt('REL',x+w/2,y0-9*u,'center',11,col);txt((b.hd/NM).toFixed(1),x+w/2,y1+10*u,'center',12,col);ctx.restore();}
       txt(b.ok?'IN RNG':b.wrong?(W.plane.bomb.cruise==='AGM84'?'SHIPS ONLY':'LAND TGT ONLY'):b.emit===false?'NO EMISSION':b.hd>b.rmax?'OUT RNG':b.hd<b.rmin?'TOO CLOSE':'STEER TO TGT',hx,hy+mh*0.2,'center',b.ok?20:15,b.ok?HUDC:AMB);}}
     else txt('NO TARGET',hx,hy+mh*0.2,'center',15,AMB);
     for(const b2 of W.bombs){const s=proj(b2.pos.x,b2.pos.y,b2.pos.z);if(s.ok){ctx.beginPath();ctx.arc(s.x,s.y,3*u,0,7);ctx.stroke();}}}
