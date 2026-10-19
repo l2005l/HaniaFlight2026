@@ -120,6 +120,8 @@ details[open] summary{margin-bottom:10px}
 #achList{display:grid;grid-template-columns:repeat(auto-fill,minmax(9.5rem,1fr));gap:6px}
 .ach{border:1px solid var(--line);padding:6px 8px;display:flex;flex-direction:column;gap:2px;opacity:.38;font-size:.8rem}
 .ach.on{opacity:1;border-color:var(--sand)}.ach.on b{color:var(--sand)}.ach span{color:var(--dim);font-size:.72rem}
+#stations{border:1px solid var(--line);padding:8px 10px;margin:6px 0}#stations .sthead{display:flex;gap:10px;align-items:center;flex-wrap:wrap}#stations .sthead .note{margin-inline-end:auto}#stSvg{width:100%;max-width:420px;display:block;margin:4px auto}#stSvg .st{cursor:pointer}#stList{display:grid;grid-template-columns:repeat(auto-fill,minmax(11rem,1fr));gap:4px}#stList button{text-align:start;font-size:.82rem;padding:4px 8px}#stList button b{color:var(--sand)}
+#dKills{display:flex;flex-wrap:wrap;gap:6px;align-items:center}#dKills:empty{display:none}#dKills button{font-size:.82rem;padding:5px 9px}
 #dAch{display:flex;flex-direction:column;gap:4px}#dAch span{border:1px solid var(--sand);padding:5px 9px;font-size:.85rem}#dAch:empty{display:none}#dPts a{color:inherit;font-weight:700}
 #replay button[data-on="1"]{border-color:var(--red);color:var(--red)}
 @media (max-width:700px){#replay{flex-wrap:wrap}#replay input{flex-basis:100%;order:-1}}
@@ -214,7 +216,7 @@ details[open] summary{margin-bottom:10px}
   <div id="radio" aria-live="polite"></div>
   <div id="toast" role="status" aria-live="polite"></div>
   <button id="lookBack" hidden>חזרה למבט קדימה</button>
-  <div id="chips" hidden><button id="mfdBtn">מסך: מכ"ם ‹</button><button id="mfdBtnR">מסך ימין: איומים ‹</button><button id="panelBtn">לוח מתגים</button><button id="tiltBtn" hidden>כיול הטיה</button><button id="resetBtn" class="warn2" hidden>ריסט מערכות</button><button id="mapBtn" hidden>מפה מלאה</button><button id="ecmBtn" hidden>שיבוש</button><button id="wingBtn" hidden>שתיים</button><button id="padBtn" hidden>מבט למטרה</button><button id="nvgBtn" hidden>משקפת לילה</button><button id="micBtn" hidden>פקודה קולית</button><button id="wcamBtn" hidden>מצלמת החימוש</button><button id="pttBtn" class="radio" hidden>לחץ לדבר</button><button id="quickBtn" class="radio" hidden>הודעה</button><button id="doorBtn" hidden>פתח דלת תדלוק</button><button id="joinBtn" hidden>התקרבות אוטומטית</button><button id="hookBtn" hidden>וו בלימה</button><button id="relightBtn" class="warn" hidden>התנעה באוויר</button></div>
+  <div id="chips" hidden><button id="atcBtn" class="radio" hidden></button><button id="mfdBtn">מסך: מכ"ם ‹</button><button id="mfdBtnR">מסך ימין: איומים ‹</button><button id="panelBtn">לוח מתגים</button><button id="tiltBtn" hidden>כיול הטיה</button><button id="resetBtn" class="warn2" hidden>ריסט מערכות</button><button id="mapBtn" hidden>מפה מלאה</button><button id="ecmBtn" hidden>שיבוש</button><button id="wingBtn" hidden>שתיים</button><button id="padBtn" hidden>מבט למטרה</button><button id="nvgBtn" hidden>משקפת לילה</button><button id="micBtn" hidden>פקודה קולית</button><button id="wcamBtn" hidden>מצלמת החימוש</button><button id="pttBtn" class="radio" hidden>לחץ לדבר</button><button id="quickBtn" class="radio" hidden>הודעה</button><button id="doorBtn" hidden>פתח דלת תדלוק</button><button id="joinBtn" hidden>התקרבות אוטומטית</button><button id="hookBtn" hidden>וו בלימה</button><button id="relightBtn" class="warn" hidden>התנעה באוויר</button></div>
   <div id="check" hidden>
     <div class="chead"><b>רשימת תיוג להתנעה</b><button id="autoStart">התנעה אוטומטית</button></div>
     <ol id="checkList"></ol>
@@ -255,6 +257,7 @@ details[open] summary{margin-bottom:10px}
       <button id="mEscort" data-opt="mission" data-val="escort">ליווי</button>
       <button id="mCsar" data-opt="mission" data-val="csar">חילוץ</button>
       <button id="mCas" data-opt="mission" data-val="cas">סיוע קרוב</button>
+      <button id="mLow" data-opt="mission" data-val="low">חדירה נמוכה</button>
       <button id="mRecon" data-opt="mission" data-val="recon">צילום</button>
       <button id="mStealth" data-opt="mission" data-val="stealth">כטב"ם חמקן</button>
       <button id="mNaval" data-opt="mission" data-val="naval">תקיפה ימית</button>
@@ -341,6 +344,15 @@ details[open] summary{margin-bottom:10px}
         <li>הישאר בין המסוק לבין האויב. המיגים הולכים קודם כול על המסוק, והנורים שלו חלשים.</li>
         <li>האיסוף לוקח שתי דקות. בזמן הזה המסוק תלוי במקום ואין לו איך לברוח.</li>
         <li>המשימה מצליחה כשהמסוק חוצה בחזרה את קו הגבול עם הטייס.</li>
+      </ol>
+    </div>
+    <div id="briefLow" class="brief" hidden>
+      <h2>חדירה נמוכה</h2>
+      <p>תקיפת בונקר בעומק, בלי שיראו אותך בדרך. לאורך הציר יש שלושה מכ"מי התרעה. מטוס שעולה מעל הקרקע בטווח שלהם נראה תוך שלוש שניות, ואז מוזנק זוג מיגים והסוללה ליד המטרה מתעוררת.</p>
+      <ol class="steps">
+        <li>טוס נמוך, מתחת ל-500 רגל, בעמקים ומאחורי רכסים. על המפה מסומן הטווח של כל מכ"ם.</li>
+        <li>לכל נקודה יש זמן מתוכנן. ב-HUD מופיע <b>TOT</b>, הזמן מעל המטרה, כמה אתה מקדים או מאחר, ו-<b>REQ</b>, המהירות שצריך כדי להגיע בזמן.</li>
+        <li>פגיעה עד 10 שניות מה-TOT נחשבת בזמן. אחר כך חוזרים הביתה, נמוך.</li>
       </ol>
     </div>
     <div id="briefCas" class="brief" hidden>
@@ -471,10 +483,10 @@ details[open] summary{margin-bottom:10px}
     <div id="prepBox" class="brief">
       <h2>הכנת המטוס</h2>
       <div class="seg" role="group" aria-label="דלק פנימי"><span>דלק פנימי</span><button data-opt="fuelPct" data-val="60">60%</button><button data-opt="fuelPct" data-val="80">80%</button><button data-opt="fuelPct" data-val="100">מלא</button></div>
-      <div class="seg" role="group" aria-label="מכלים נתיקים"><span>מכלים נתיקים</span><button data-opt="tanks" data-val="0">בלי</button><button data-opt="tanks" data-val="1">1</button><button data-opt="tanks" data-val="2">2</button><button data-opt="tanks" data-val="3">3</button></div>
-      <div class="seg" role="group" aria-label="טילי אוויר־אוויר"><span>טילי אוויר־אוויר</span><button data-opt="aam" data-val="full">תצורה מלאה</button><button data-opt="aam" data-val="light">חצי, קל יותר</button></div>
+      <div id="stations"><div class="sthead"><b>תחנות חימוש</b><span class="note">לחיצה על תחנה מחליפה את מה שתלוי עליה</span><button id="stReset">ברירת מחדל</button></div>
+        <svg id="stSvg" viewBox="0 0 320 210" role="img" aria-label="המטוס מלמעלה, עם תחנות החימוש"></svg><div id="stList"></div></div>
       <p id="towLine" class="note"></p>
-      <p class="note">מכל נתיק מוסיף דלק, משקל וגרר. משליכים אותו במקש J (לפני הפצצות). במשימות תדלוק והדרכה אין מכלים.</p>
+      <p class="note">מכל נתיק מוסיף דלק, משקל וגרר. משליכים אותו במקש J (לפני הפצצות). במשימות תדלוק והדרכה אין מכלים. כמה פצצות נכנסות בתחנה תלוי בסוג החימוש שבחרת: פצצה כבדה אחת, שתי GBU-12, ארבע GBU-39.</p>
     </div>
     <div>
       <h3>תצורת חימוש</h3>
@@ -520,6 +532,16 @@ details[open] summary{margin-bottom:10px}
       <button data-opt="betty" data-val="on">פועלות</button>
       <button data-opt="betty" data-val="off">כבויות</button>
       <button id="bettyTest">השמע דוגמה</button>
+    </div>
+    <div class="seg" role="group" aria-label="מגדל">
+      <span>מגדל</span>
+      <button data-opt="atc" data-val="simple">פשוט</button>
+      <button data-opt="atc" data-val="full">מלא: מבקשים כל אישור</button>
+    </div>
+    <div class="seg" role="group" aria-label="בקר אווירי">
+      <span>בקר אווירי (איתם)</span>
+      <button data-opt="awacs" data-val="on">פועל</button>
+      <button data-opt="awacs" data-val="off">כבוי</button>
     </div>
     <div class="seg" role="group" aria-label="תעבורת קשר ברקע">
       <span>תעבורת קשר ברקע</span>
@@ -632,6 +654,18 @@ details[open] summary{margin-bottom:10px}
           <li><b>GBU-39</b> פצצה קטנה ומדויקת, הרבה על המטוס. טובה ליד כוחות שלנו. <b>GBU-28</b> חודרת בונקרים כבדה, רק לרעם, שתיים, מונחית לייזר. <b>רמפייג'</b> טיל על־קולי לטווח ארוך, טס גבוה וצולל על המטרה.</li>
           <li><b>MK-84</b> פצצה רגילה בלי הנחיה. ב-HUD מופיע עיגול <b>CCIP</b>, המקום שבו הפצצה תפגע אם תשחרר עכשיו. צוללים, מביאים את העיגול על המטרה ומשחררים. <b>ON TGT REL</b> פירושו שהעיגול על המטרה; <b>MISS</b> אומר בכמה מטרים מפספסים.</li>
         </ul></div>
+        <div><h4>חדירה נמוכה</h4><ul>
+          <li>שלושה מכ"מי התרעה לאורך הציר, והטווח שלהם מסומן במפה בקו מקווקו. מעל 110 מטר מהקרקע, בקו ראייה למכ"ם, מופיע <b>RADAR EXPOSED</b>. שלוש שניות כאלה, ומוזנקים מיגים.</li>
+          <li><b>TOT</b> הזמן המתוכנן מעל המטרה. לידו הנקודה הבאה וכמה שניות תקדים (מינוס) או תאחר (פלוס). <b>REQ</b> המהירות שצריך כדי להגיע אליה בזמן.</li>
+        </ul></div>
+        <div><h4>בקר אווירי ומגדל</h4><ul>
+          <li><b>איתם</b>, מטוס הבקרה, מדווח על כל קבוצת אויב חדשה: כיוון ממך, מרחק במייל, גובה באלפי רגל, ואם היא מתקרבת, מתרחקת או באגף. אפשר לכבות בהגדרות.</li>
+          <li>בהגדרות, "מגדל: מלא": מבקשים מהמגדל אישור התנעה, הסעה, המראה ונחיתה בכפתור "מגדל" למעלה, או בקול. אישור נחיתה ניתן בחמישה מייל בגישה. מה שנעשה בלי אישור נרשם בתחקיר.</li>
+        </ul></div>
+        <div><h4>תחנות חימוש וצפייה בפגיעה</h4><ul>
+          <li>בלשונית "הכנה" יש שרטוט של המטוס מלמעלה. לחיצה על תחנה מחליפה את מה שתלוי עליה: טילים, חימוש לקרקע, מכל דלק או כלום. המשקל וכמות הדלק מתעדכנים. "ברירת מחדל" מחזיר לתצורה הרגילה.</li>
+          <li>בתחקיר יש כפתור לכל הפלה ופגיעה. הצפייה מתחילה בשיגור, עוקבת אחרי הטיל או הפצצה, ומאטה לשלוש עשיריות בשניות האחרונות לפני הפגיעה.</li>
+        </ul></div>
         <div><h4>סיוע קרוב</h4><ul>
           <li>הבקר הקרקעי (JTAC) מסמן את הכוחות שלנו בעשן לבן. בכל מטרה הוא אומר מה היא, כמה מטרים ובאיזה כיוון מהעשן, למשל "נגמ"ש, 600 מטר צפון־מזרחית לעשן".</li>
           <li>מוצאים בפוד, נועלים, ומחכים ל"רשאי לתקוף". על מטרה לא נכונה הוא מתקן: כמה מטרים ולאן ממה שאתה מסתכל עליו.</li>
@@ -697,7 +731,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט. לחיצה על המוט השמאלי: וו בלימה, על הימני: מבט למטרה. Start מתחיל טיסה מהתפריט. באפליקציית האנדרואיד השלט עובד דרך האפליקציה עצמה.</p>
     </details>
-    <p class="note">גרסה 2.5 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
+    <p class="note">גרסה 2.6 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
     </div>
     <div id="dock">
     <div id="update" role="status" aria-live="polite" hidden>
@@ -799,7 +833,7 @@ details[open] summary{margin-bottom:10px}
     <div class="card">
       <div><div class="eyebrow">תחקיר</div><h2 id="dTitle"></h2></div>
       <p id="dReason"></p><p id="dCamp" class="note"></p><button id="campSkip" hidden>המשך במערכה בלי השלב הזה</button><div id="dAch"></div><p id="dPts" class="note" hidden></p>
-      <dl id="dStats"></dl>
+      <div id="dKills"></div><dl id="dStats"></dl>
       <div class="acts"><button id="again" class="go">טיסה נוספת</button><button id="watch">צפייה חוזרת</button><button id="back">לתדריך</button></div>
     </div>
   </section>
