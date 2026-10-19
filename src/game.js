@@ -1189,7 +1189,7 @@ function judge(){newAch.length=0;const s=W.stats,o=W.over,p=W.player,L=readLog()
   return best;}
 // Hania points: the first win of each mission pays 10 points to the person's Hania360 account
 // (signed in at pass.hania360.com; the cookie is shared across hania360.com).
-const HP_MISSIONS=['train','strike','intercept','duel','csar','convoy','sead','escort','recon','tanker','stealth','naval'];
+const HP_MISSIONS=['train','strike','intercept','duel','csar','convoy','sead','escort','recon','tanker','stealth','naval','cas'];
 function hpCsrf(){const c=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith('hp_csrf='));return c?c.slice(8):'';}
 function hpAward(){const el=$('dPts');if(!el)return;el.hidden=true;el.textContent='';
   if(!/(^|\.)hania360\.com$/.test(location.hostname)||!W.over.win||!HP_MISSIONS.includes(W.missionId))return;

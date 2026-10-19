@@ -710,7 +710,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט. לחיצה על המוט השמאלי: וו בלימה, על הימני: מבט למטרה. Start מתחיל טיסה מהתפריט. באפליקציית האנדרואיד השלט עובד דרך האפליקציה עצמה.</p>
     </details>
-    <p class="note">גרסה 2.5 (d2825cf, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
+    <p class="note">גרסה 2.5 (079718c, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
     </div>
     <div id="dock">
     <div id="update" role="status" aria-live="polite" hidden>
@@ -3633,7 +3633,7 @@ function judge(){newAch.length=0;const s=W.stats,o=W.over,p=W.player,L=readLog()
   return best;}
 // Hania points: the first win of each mission pays 10 points to the person's Hania360 account
 // (signed in at pass.hania360.com; the cookie is shared across hania360.com).
-const HP_MISSIONS=['train','strike','intercept','duel','csar','convoy','sead','escort','recon','tanker','stealth','naval'];
+const HP_MISSIONS=['train','strike','intercept','duel','csar','convoy','sead','escort','recon','tanker','stealth','naval','cas'];
 function hpCsrf(){const c=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith('hp_csrf='));return c?c.slice(8):'';}
 function hpAward(){const el=$('dPts');if(!el)return;el.hidden=true;el.textContent='';
   if(!/(^|\.)hania360\.com$/.test(location.hostname)||!W.over.win||!HP_MISSIONS.includes(W.missionId))return;
