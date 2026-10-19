@@ -117,7 +117,7 @@ details[open] summary{margin-bottom:10px}
 #achList{display:grid;grid-template-columns:repeat(auto-fill,minmax(9.5rem,1fr));gap:6px}
 .ach{border:1px solid var(--line);padding:6px 8px;display:flex;flex-direction:column;gap:2px;opacity:.38;font-size:.8rem}
 .ach.on{opacity:1;border-color:var(--sand)}.ach.on b{color:var(--sand)}.ach span{color:var(--dim);font-size:.72rem}
-#dAch{display:flex;flex-direction:column;gap:4px}#dAch span{border:1px solid var(--sand);padding:5px 9px;font-size:.85rem}#dAch:empty{display:none}
+#dAch{display:flex;flex-direction:column;gap:4px}#dAch span{border:1px solid var(--sand);padding:5px 9px;font-size:.85rem}#dAch:empty{display:none}#dPts a{color:inherit;font-weight:700}
 #replay button[data-on="1"]{border-color:var(--red);color:var(--red)}
 @media (max-width:700px){#replay{flex-wrap:wrap}#replay input{flex-basis:100%;order:-1}}
 #pilotBox{display:flex;gap:12px;align-items:center;border:1px solid var(--line);padding:10px}
@@ -742,7 +742,7 @@ details[open] summary{margin-bottom:10px}
   <section id="debrief" class="modal" hidden>
     <div class="card">
       <div><div class="eyebrow">תחקיר</div><h2 id="dTitle"></h2></div>
-      <p id="dReason"></p><p id="dCamp" class="note"></p><button id="campSkip" hidden>המשך במערכה בלי השלב הזה</button><div id="dAch"></div>
+      <p id="dReason"></p><p id="dCamp" class="note"></p><button id="campSkip" hidden>המשך במערכה בלי השלב הזה</button><div id="dAch"></div><p id="dPts" class="note" hidden></p>
       <dl id="dStats"></dl>
       <div class="acts"><button id="again" class="go">טיסה נוספת</button><button id="watch">צפייה חוזרת</button><button id="back">לתדריך</button></div>
     </div>
