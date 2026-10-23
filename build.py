@@ -24,7 +24,8 @@ APP = ('<link rel="manifest" href="manifest.webmanifest">\n<meta name="theme-col
        '<link rel="apple-touch-icon" href="icons/icon-192.png">\n<link rel="icon" href="icons/icon-192.png">\n')
 # Registers the service worker and runs the in-app update flow: a progress bar while a new version downloads,
 # then a reload (at once in the briefing, after the flight otherwise).
-SW = """<script>
+SW = """<script src="install.js" data-name="HaniaFlight" data-color="#1f6feb" data-menu-only="1" data-apk="https://github.com/l2005l/HaniaFlight2026/releases/download/android-latest/HaniaFlight.apk" defer></script>
+<script>
 if('serviceWorker' in navigator){(function(){
   var sw=navigator.serviceWorker,box=document.getElementById('update'),txt=document.getElementById('updText'),bar=document.getElementById('updBar'),btn=document.getElementById('updNow'),had=!!sw.controller,ready=false;
   function show(t,done){box.hidden=false;box.dataset.done=done?'1':'';txt.textContent=t;btn.hidden=!done;}
