@@ -764,7 +764,7 @@ function newGame(start,preview){
 const keys={},stick={x:0,y:0,r:0},touch={on:false,x:0,y:0,gun:false,cm:false,brk:false};let lever=0,trigG=false,trigP=false,safeT=-9;const tap={gun:false,pickle:false,cm:false},ap={on:false,alt:0,hdg:0},look={yaw:0,pitch:0,g:0,drag:false,id:null,px:0,py:0,panel:false};let toastT=0,checkSig='';
 const WSEL=['AIM120','PYTHON','GUN','SPICE'];
 let mapOn=false,mapBg=null,padlock=false,ejT=-9;
-function act(a){if(!W||state!=='fly')return;const p=W.player;
+function act(a){if(!W||state!=='fly')return;const p=W.player;if(a==='ufc'){ufc.on=!ufc.on;ufcTick(0);beep(900,0.03);return;}if(rear.act(a))return;
   if(a==='gear'||a==='flaps'||a==='arm'||a==='ardoor'||a==='rmode'||a==='rrng'||a==='rrngdn')W.sw(a);
   else if(a==='panel'){if(view===0)look.panel=!look.panel;}
   else if(a==='view')view^=1;
@@ -811,9 +811,9 @@ addEventListener('keydown',e=>{
   if(state==='photo'&&(e.code==='Escape'||e.code==='KeyP')){endPhoto();return;}
   if(state==='pause'&&(e.code==='Escape'||e.code==='KeyP')){resume();return;}
   if(state!=='fly')return;
-  if(/^(Space|Arrow|Tab|Enter|Backspace)/.test(e.code))e.preventDefault();
+  if(/^(Space|Arrow|Tab|Enter|Backspace|F4)/.test(e.code))e.preventDefault();
   keys[e.code]=true;if(e.repeat)return;if(e.code==='Backquote'&&mpg.on){mpVoice.key(true);return;}if(e.code==='F2'&&mpg.on){e.preventDefault();$('quickBox').hidden=!$('quickBox').hidden;return;}if(e.code==='Quote')tap.ch=true;if(mpg.on&&!$('quickBox').hidden&&/^Digit\d$/.test(e.code)){mpg.quick((+e.code[5]+9)%10);return;}if(e.code==='Space')tap.gun=true;if(e.code==='Enter'||e.code==='NumpadEnter')tap.pickle=true;if(e.code==='KeyC')tap.cm=true;if(e.code==='Quote'&&!mpg.on)tap.ch=true;
-  const m={KeyG:'gear',KeyL:'flaps',KeyV:'view',KeyT:'tgt',KeyU:'unlock',KeyO:'time',KeyM:'arm',Digit0:'mute',KeyN:'wp',KeyH:'ap',KeyJ:'jett',KeyK:'ardoor',KeyY:'rmode',Period:'rrng',Comma:'rrngdn',Digit5:'ecm',Digit7:'w_attack',Digit8:'w_cover',Digit9:'w_form',KeyX:'panel',KeyI:'nvg',Tab:'map',KeyZ:'padlock',Backspace:'eject',Digit6:'hook',Semicolon:'relight',Backslash:'join',BracketLeft:'mic',BracketRight:'mfd',Slash:'wcam'}[e.code];
+  const m={KeyG:'gear',KeyL:'flaps',KeyV:'view',KeyT:'tgt',KeyU:'unlock',KeyO:'time',KeyM:'arm',Digit0:'mute',KeyN:'wp',KeyH:'ap',KeyJ:'jett',KeyK:'ardoor',KeyY:'rmode',Period:'rrng',Comma:'rrngdn',Digit5:'ecm',Digit7:'w_attack',Digit8:'w_cover',Digit9:'w_form',KeyX:'panel',KeyI:'nvg',Tab:'map',KeyZ:'padlock',Backspace:'eject',Digit6:'hook',F4:'ufc',Semicolon:'relight',Backslash:'join',BracketLeft:'mic',BracketRight:'mfd',Slash:'wcam'}[e.code];
   if(m)act(m);else if(/^Digit[1-4]$/.test(e.code)){W.select(WSEL[+e.code[5]-1]);beep(900,0.04);}
   else if(e.code==='Escape'||e.code==='KeyP')pause();});
 addEventListener('keyup',e=>{keys[e.code]=false;if(e.code==='Backquote'&&MP.micOn)mpVoice.key(false);});
@@ -911,6 +911,7 @@ function beep(f,d,v,type){const ac=Snd.ac;if(!ac)return;const o=ac.createOscilla
 let rwrT=0,warnT=0,gunSnd=0;
 /*@VO@*/
 /*@NET@*/
+/*@UFC@*/
 /* cockpit voice warnings: one clip at a time, a more urgent one cuts in; each warning has its own repeat interval */
 const Betty={buf:{},src:null,pri:0,last:{},ready:false,
   load(){if(this.ready||!Snd.ac)return;this.ready=true;for(const k in VO_SRC){try{const b64=VO_SRC[k].split(',')[1],bin=atob(b64),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
@@ -1456,7 +1457,7 @@ function syncScene(dt){
     const hb=$('hookBtn'),hh=!(p.gear&&p.alive&&(p.brakeK<1||W.flags.airborne||p.hook)&&(p.agl<1500||p.onGround));if(hb.hidden!==hh)hb.hidden=hh;if(!hh){const t=p.hook?'וו: למטה':'וו בלימה';if(hb.textContent!==t)hb.textContent=t;hb.dataset.on=p.hook?'1':'';}
     {const vis=(id,on,t)=>{const b=$(id);if(b.hidden===on)b.hidden=!on;if(on&&t&&b.textContent!==t)b.textContent=t;};
       vis('padBtn',!!(W.lock&&W.lock.alive!==false)||padlock);vis('mapBtn',mfdPage===1||mfdPageR===3||mapOn,mapOn?'סגור מפה':'מפה מלאה');vis('ecmBtn',mfdPage===3||mfdPageR<=1,W.ecm?'שיבוש: פועל':'שיבוש: כבוי');
-      vis('panelBtn',view===0&&!look.panel&&p.alive&&!xr.on);{const rs=R.World.RESETTABLE.filter(k=>W.flt[k]),busy=rs.some(k=>W.flt[k].rt!=null);vis('resetBtn',rs.length>0&&p.alive,busy?'ריסט…':'ריסט מערכות');$('resetBtn').disabled=busy;}vis('tiltBtn',opts.tilt==='on'&&touchOn&&p.alive);
+      vis('panelBtn',view===0&&!look.panel&&p.alive&&!xr.on);vis('ufcBtn',p.alive&&!xr.on,ufc.on?'סגור UFC':'UFC');{const rs=R.World.RESETTABLE.filter(k=>W.flt[k]),busy=rs.some(k=>W.flt[k].rt!=null);vis('resetBtn',rs.length>0&&p.alive,busy?'ריסט…':'ריסט מערכות');$('resetBtn').disabled=busy;}vis('tiltBtn',opts.tilt==='on'&&touchOn&&p.alive);
       if(opts.tilt==='on'&&touchOn&&state==='fly'&&!tilt.warned&&performance.now()-startedAt>4000&&performance.now()-(tilt.seen||0)>3000){tilt.warned=true;toast('היגוי בהטיה לא מקבל נתונים מהחיישן. לחץ "כיול הטיה" כדי לאשר גישה.');}
       /* the left screen: tap it (touch) or the button under it to change page */
       const hb=$('mfdHit'),mb=$('mfdBtn');if(mfdR){hb.hidden=false;const st=hb.style,v=[mfdR.x,mfdR.y,mfdR.s].map(n=>n+'px');if(st.left!==v[0]||st.top!==v[1]||st.width!==v[2]){st.left=v[0];st.top=v[1];st.width=st.height=v[2];}}else if(!hb.hidden)hb.hidden=true;
@@ -1504,7 +1505,7 @@ function frame(now){if(!xr.on)requestAnimationFrame(frame);if(eco&&now-last<31&&
   if(state==='fly'&&!tour.on){
     readInput(dt);if(W.mwarn&&timeAcc>1)timeAcc=1;
     simAcc+=dt*timeAcc;const h=1/120;let n=0;
-    while(simAcc>=h&&n<48){W.trigger(trigG,trigP,h);if(trigG&&W.w.sel==='GUN')lastGunT=W.time;if(W.cmHeld){W.cmT-=h;if(W.cmT<=0){W.cmT=0.3;W.dispense(W.player,W.cmKind);}}else W.cmT=0;W.step(h);simAcc-=h;n++;}
+    while(simAcc>=h&&n<48){if(rear.seat==='wso')W.trigger(false,false,h);else W.trigger(trigG,trigP,h);if(trigG&&W.w.sel==='GUN')lastGunT=W.time;if(W.cmHeld){W.cmT-=h;if(W.cmT<=0){W.cmT=0.3;W.dispense(W.player,W.cmKind);}}else W.cmT=0;W.step(h);simAcc-=h;n++;}
     if(n===48)simAcc=0;if(n>0)tap.gun=tap.pickle=tap.cm=tap.ch=false;
     handleEvents();recT+=dt*timeAcc;if(recT>=0.1){recT=0;recFrame();}
     const p=W.player;gAcc=clamp(gAcc+(Math.max(0,p.g-6.5)*0.1-(p.g<5?0.3:0))*dt*timeAcc,0,1);
@@ -1512,7 +1513,7 @@ function frame(now){if(!xr.on)requestAnimationFrame(frame);if(eco&&now-last<31&&
   }
   if(state==='replay')stepReplay(wall);
   const sdt=state==='fly'&&!tour.on?dt*timeAcc:state==='pause'||state==='photo'?0:dt;
-  mpg.tick(dt);if(sdt>0)updParticles(sdt);syncScene(sdt);updWx();updRadio(dt);updCheck(dt);updAudio(dt);
+  mpg.tick(dt);rear.tick(dt);ufcTick(dt);if(sdt>0)updParticles(sdt);syncScene(sdt);updWx();updRadio(dt);updCheck(dt);updAudio(dt);
   if(xr.on&&W){const p=W.player;view=0;look.panel=false;xr.rig.position.copy(camera.position);xr.rig.quaternion.set(p.q.x,p.q.y,p.q.z,p.q.w);camera.position.set(0,0,0);camera.quaternion.identity();
     const vis=state==='fly'||state==='pause';vrHud.m.visible=vrHud.m2.visible=vis&&p.alive;if(vis&&p.alive){vrHud.m.position.set(0,0.02,-0.62);vrHud.m2.position.set(0,-0.3,-0.55);vrHud.m2.rotation.x=-0.5;drawVrHud();}}
   if(window.__cam)try{window.__cam(camera,W,T);}catch(e){}

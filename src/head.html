@@ -145,6 +145,14 @@ details[open] summary{margin-bottom:10px}
 #mfdBtn{color:#cfe4ff;border-color:rgba(127,184,255,.6)}
 #podBar{position:absolute;z-index:4;display:grid;grid-template-columns:repeat(3,1fr);gap:3px}#podBar[hidden]{display:none}#podBar[data-nar="1"]{grid-template-columns:repeat(2,1fr)}#podBar button{padding:3px 2px;font-size:.72rem;background:rgba(8,12,14,.72);white-space:nowrap}#podBar button[data-on="1"]{border-color:var(--red);color:#ffd0c8}
 #mfdHit{touch-action:none}#mfdHitR{position:absolute;z-index:3;background:transparent;border:0;padding:0;border-radius:0}#mfdHitR[hidden]{display:none}#mfdBtnR{color:#cfe4ff;border-color:rgba(127,184,255,.6)}
+#ufc{position:absolute;z-index:6;bottom:12px;left:12px;width:min(16.5rem,calc(100% - 24px));background:rgba(10,14,12,.9);border:1px solid #3c5a44;border-radius:8px;padding:6px;display:grid;gap:5px;font-family:var(--mono)}
+#ufc[hidden]{display:none}
+#ufcHead{display:flex;gap:3px;align-items:center}#ufcPages{display:flex;gap:3px;flex:1;direction:rtl}#ufcHead button{padding:2px 6px;font-size:.72rem}#ufcPages button[aria-pressed="true"]{border-color:#74ff96;color:#74ff96}
+#ufcSeat{font-size:.62rem;color:#9fdcae}
+#ufcScr{margin:0;background:#06120a;color:#74ff96;border:1px solid #1d3a25;border-radius:4px;padding:4px 6px;font-size:.7rem;line-height:1.3;min-height:6.6em;white-space:pre;overflow:hidden;text-shadow:0 0 4px rgba(116,255,150,.4)}
+#ufcSoft{display:flex;gap:3px;flex-wrap:wrap;direction:rtl}#ufcSoft button{flex:1;padding:3px 4px;font-size:.7rem;min-width:4em}
+#ufcPad{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}#ufcPad button{padding:3px 0;font-size:.78rem;font-family:var(--mono)}
+@media (max-height:520px){#ufc{bottom:6px;left:6px;width:min(15rem,calc(100% - 12px))}#ufcScr{min-height:6em;font-size:.64rem}#ufcPad button{padding:2px 0;font-size:.72rem}}
 #chips button.warn2{border-color:var(--amber);color:var(--amber)}
 @media (pointer:fine){#chips{top:44px;left:auto;transform:none;inset-inline-start:16px;flex-direction:column;align-items:flex-start;gap:4px}}
 .tb button[data-st="1"]{border-color:var(--sand);color:var(--sand)}
@@ -221,7 +229,7 @@ details[open] summary{margin-bottom:10px}
   <div id="radio" aria-live="polite"></div>
   <div id="toast" role="status" aria-live="polite"></div>
   <button id="lookBack" hidden>חזרה למבט קדימה</button>
-  <div id="chips" hidden><button id="atcBtn" class="radio" hidden></button><button id="mfdBtn">מסך: מכ"ם ‹</button><button id="mfdBtnR">מסך ימין: איומים ‹</button><button id="panelBtn">לוח מתגים</button><button id="tiltBtn" hidden>כיול הטיה</button><button id="resetBtn" class="warn2" hidden>ריסט מערכות</button><button id="mapBtn" hidden>מפה מלאה</button><button id="ecmBtn" hidden>שיבוש</button><button id="wingBtn" hidden>שתיים</button><button id="padBtn" hidden>מבט למטרה</button><button id="nvgBtn" hidden>משקפת לילה</button><button id="micBtn" hidden>פקודה קולית</button><button id="wcamBtn" hidden>מצלמת החימוש</button><button id="pttBtn" class="radio" hidden>לחץ לדבר</button><button id="quickBtn" class="radio" hidden>הודעה</button><button id="doorBtn" hidden>פתח דלת תדלוק</button><button id="joinBtn" hidden>התקרבות אוטומטית</button><button id="hookBtn" hidden>וו בלימה</button><button id="relightBtn" class="warn" hidden>התנעה באוויר</button></div>
+  <div id="chips" hidden><button id="atcBtn" class="radio" hidden></button><button id="mfdBtn">מסך: מכ"ם ‹</button><button id="mfdBtnR">מסך ימין: איומים ‹</button><button id="panelBtn">לוח מתגים</button><button id="ufcBtn">UFC</button><button id="tiltBtn" hidden>כיול הטיה</button><button id="resetBtn" class="warn2" hidden>ריסט מערכות</button><button id="mapBtn" hidden>מפה מלאה</button><button id="ecmBtn" hidden>שיבוש</button><button id="wingBtn" hidden>שתיים</button><button id="padBtn" hidden>מבט למטרה</button><button id="nvgBtn" hidden>משקפת לילה</button><button id="micBtn" hidden>פקודה קולית</button><button id="wcamBtn" hidden>מצלמת החימוש</button><button id="pttBtn" class="radio" hidden>לחץ לדבר</button><button id="quickBtn" class="radio" hidden>הודעה</button><button id="doorBtn" hidden>פתח דלת תדלוק</button><button id="joinBtn" hidden>התקרבות אוטומטית</button><button id="hookBtn" hidden>וו בלימה</button><button id="relightBtn" class="warn" hidden>התנעה באוויר</button></div>
   <div id="check" hidden>
     <div class="chead"><b>רשימת תיוג להתנעה</b><button id="autoStart">התנעה אוטומטית</button></div>
     <ol id="checkList"></ol>
@@ -720,6 +728,12 @@ details[open] summary{margin-bottom:10px}
           <li>מפעיל הבום מדבר איתך ברדיו כשאתה קרוב: "קדימה 4", "למעלה 2", "יציב". הזרוע עצמה זזה אליך ונכנסת לפתח שמאחורי התא. התקרבות מהירה מדי נגמרת ב"ברייקאוויי": מורידים כוח ונסוגים.</li>
           <li>בסיום סוגרים את הדלת ומתרחקים למטה ואחורה.</li>
         </ul></div>
+        <div><h4>UFC ונווט במושב האחורי</h4><ul>
+          <li><b>UFC</b> (כפתור UFC או <b>F4</b>) הוא לוח מקשים עם מסך ירוק, בארבעה דפים. <b>ניווט:</b> הנקודה הנוכחית, כיוון, מרחק וזמן אליה, הבית והדלק. <b>נ"צ:</b> המיקום שלך ברשת המפה, בקילומטרים מזרחה (E) וצפונה (N) מהבסיס. <b>חימוש:</b> מה נשאר בכל סוג, הנשק הנבחר, חימוש ראשי והמטרה. <b>GPS:</b> הלוויינים שהמקלט קולט, שגיאת המיקום המשוערת (EPE), ה־INS, ושיבוש.</li>
+          <li>הזנת נ"צ: מקלידים מספר ולוחצים <b>E</b>, מקלידים מספר ולוחצים <b>N</b> (מינוס לדרום או למערב). "מהפוד" מעתיק את הנקודה שהפוד מסתכל עליה, ו"מיקום שלי" את המיקום שלך. אחר כך "לנקודת ציון" מוסיף את הנקודה למסלול, ו"למטרה" הופך אותה למטרה לחימוש GPS.</li>
+          <li>חימוש GPS נוחת בערך בתוך ה־EPE מנקודת הכיוון. ליד סוללת מכ"ם של האויב (פחות מ־25 ק"מ) יש שיבוש: פחות לוויינים ושגיאה גדולה יותר. בתקלת GPS נשאר רק ה־INS, והשגיאה גדלה עם הזמן.</li>
+          <li><b>נווט במושב האחורי</b> (משחק עם חברים, במצב "יחד"): אורח בוחר בחדר "נווט אצל..." מטייס שטס ב־F-15I, F-16I או לביא. הנווט רואה את התא והתצוגות, ומפעיל את נעילת המכ"ם, את הפוד, את בחירת הנשק, את החימוש הראשי ואת ה־UFC. הוא גם יכול לשחרר חימוש בפיקל. את המטוס מטיס הטייס בלבד: כן נסע, מדפים, תדלוק וטייס אוטומטי נשארים אצלו.</li>
+        </ul></div>
         <div><h4>F-35C ונושאת המטוסים</h4><ul>
           <li>ה־F-35C (מטוס בדיוני בחיל האוויר, הגרסה הימית של ה־F-35) יוצא מנושאת מטוסים שמפליגה בים הפתוח, וחוזר אליה. נקודת הבית שלו היא <b>CVN</b>, והיא זזה עם הספינה.</li>
           <li><b>שיגור:</b> מתחילים מחוברים לקטפולטה. מצערת מלאה, ואחרי שתי שניות בכוח מלא הקטפולטה יורה: 95 מטר עד מהירות טיסה. אוספים כן נסע ומטפסים.</li>
@@ -762,7 +776,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט. לחיצה על המוט השמאלי: וו בלימה, על הימני: מבט למטרה. Start מתחיל טיסה מהתפריט. באפליקציית האנדרואיד השלט עובד דרך האפליקציה עצמה.</p>
     </details>
-    <p class="note">גרסה 2.7 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
+    <p class="note">גרסה 2.8 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
     </div>
     <div id="dock">
     <div id="update" role="status" aria-live="polite" hidden>
@@ -788,6 +802,9 @@ details[open] summary{margin-bottom:10px}
   <button id="mfdHit" aria-label="החלף תצוגה במסך השמאלי. גרירה מזיזה את הפוד" hidden></button>
   <div id="tour" hidden><div id="tourRing"></div><div id="tourBox" role="dialog" aria-live="polite"><p id="tourText"></p><div class="acts"><span id="tourN" class="note"></span><button id="tourSkip">דלג</button><button id="tourNext" class="go">הבא</button></div></div></div>
   <button id="mfdHitR" aria-label="החלף תצוגה במסך הימני" hidden></button>
+  <div id="ufc" hidden dir="ltr"><div id="ufcHead"><span id="ufcSeat"></span><div id="ufcPages"></div><button id="ufcX" aria-label="סגור">✕</button></div>
+    <pre id="ufcScr"></pre><div id="ufcSoft"></div>
+    <div id="ufcPad"><button>1</button><button>2</button><button>3</button><button>4</button><button>5</button><button>6</button><button>7</button><button>8</button><button>9</button><button>-</button><button>0</button><button>.</button><button data-k="clr">CLR</button><button data-k="ent" class="go">ENT</button></div></div>
   <div id="podBar" hidden><button data-pod="zoom">זום</button><button data-pod="trk">נעל</button><button data-pod="laser">לייזר</button><button data-pod="mode">TV</button><button data-pod="big">הגדל</button><button data-pod="auto">אוטומטי</button></div>
   <div id="quickBox" hidden></div>
   <div id="talkers" hidden></div>
@@ -805,6 +822,7 @@ details[open] summary{margin-bottom:10px}
         <ul id="mpPeers"></ul>
         <div class="seg" role="group" aria-label="מצב"><span>מצב</span><button data-mp="coop">יחד</button><button data-mp="pvp">כל אחד לבד</button><button data-mp="teams">כחול נגד אדום</button></div>
         <div class="seg" id="mpTeamRow" role="group" aria-label="צוות" hidden><span>הצוות שלך</span><button data-team="b">כחול</button><button data-team="r">אדום</button></div>
+        <div class="seg" id="mpSeatRow" role="group" aria-label="מושב" hidden><span>המושב שלך</span><span id="mpSeats"></span></div>
         <div class="seg" role="group" aria-label="התחלה"><span>התחלה</span><button data-mps="air">באוויר</button><button data-mps="runway">מהמסלול</button></div>
         <div class="seg" role="group" aria-label="תדר קשר"><span>תדר קשר</span><button data-ch="1">1 · כולם</button><button data-ch="2">2</button></div>
         <p id="mpInfo" class="note"></p>

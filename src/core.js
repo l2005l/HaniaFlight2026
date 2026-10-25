@@ -937,7 +937,7 @@ class World{
     else if(w.sel==='SPICE'&&this.plane.bomb.cruise){const b=this.bombSol();if(w.spice>0&&b&&b.ok){const m=new Cruise(STANDOFF[this.plane.bomb.cruise],p,this.gtgt,vadd(p.pos,vmul(qrot(p.q,UP),-2)),p.vel);this.missiles.push(m);this.events.push({type:'launch',m});w.spice--;this.stats.shots++;this.syncStores();this.casRel();}else this.events.push({type:'deny'});}
     else if(w.sel==='SPICE'&&this.plane.bomb.arm){const b=this.bombSol();if(w.spice>0&&b&&b.ok){this.launch(MSL.ARM,p,this.gtgt);w.spice--;this.stats.shots++;this.syncStores();}else this.events.push({type:'deny'});}
     else if(w.sel==='SPICE'&&this.plane.bomb.gps&&this.flt.gps){this.events.push({type:'deny'});this.msg('אין קליטת לוויינים: פצצת הלוויין לא תשוחרר.');}
-    else if(w.sel==='SPICE'){const b=this.bombSol();if(w.spice>0&&b&&b.ok){const bb=new Bomb(p,this.gtgt&&this.gtgt.alive?this.gtgt:{pos:b.ccip||p.pos,alive:false},vadd(p.pos,vmul(qrot(p.q,UP),-2)),p.vel,this.plane.bomb);if(this.flt.dud){bb.dud=true;delete this.flt.dud;}this.bombs.push(bb);this.casRel();w.spice--;this.stats.shots++;this.events.push({type:'release'});}else this.events.push({type:'deny'});}
+    else if(w.sel==='SPICE'){const b=this.bombSol();if(w.spice>0&&b&&b.ok){const bb=new Bomb(p,this.gtgt&&this.gtgt.alive?this.gtgt:{pos:b.ccip||p.pos,alive:false},vadd(p.pos,vmul(qrot(p.q,UP),-2)),p.vel,this.plane.bomb);if(this.flt.dud){bb.dud=true;delete this.flt.dud;}if(bb.gps){const e=this.gpsState().epe,a=Math.random()*Math.PI*2,r=e*Math.sqrt(Math.random());bb.aim.x+=Math.cos(a)*r;bb.aim.z+=Math.sin(a)*r;}this.bombs.push(bb);this.casRel();w.spice--;this.stats.shots++;this.events.push({type:'release'});}else this.events.push({type:'deny'});}
     this.syncStores();}
   /* emergency jettison of the air-to-ground stores */
   jettison(){const w=this.w,p=this.player;if(!p.alive||p.onGround)return false;
@@ -1250,7 +1250,7 @@ class World{
     if(C.s>=CV.stroke){this.cat=null;p.q=qeuler(cv.hdg,0.16,0);p.vel=vadd(p.vel,v3(0,3,0));p.om={p:0,q:0.05,r:0};p.onGround=false;p.wasAir=true;this.msg('קטפולטה: באוויר. אסוף כן נסע וטפס.');}}
   /* carrier operations: hitting the ship, the landing signal officer on the approach, the trap and the bolter */
   cvStep(dt){const cv=this.carrier,p=this.player;if(!cv)return;cv.step(dt);if(this.cvHome&&this.wps)for(const w of this.wps)if(w.n==='BASE'||w.n==='CVN'){w.n='CVN';w.x=cv.pos.x;w.z=cv.pos.z;}if(!p.alive)return;const f=this.flags;
-    if(!p.onGround&&!this.cat){const s=cv.ship(p.pos),I=CV.isl;
+    if(!p.onGround&&!this.cat&&!this.mirror){const s=cv.ship(p.pos),I=CV.isl;
       if((s.a>I[0]&&s.a<I[1]&&s.c>I[2]&&s.c<I[3]&&p.pos.y<CV.h+I[4])||(s.a>CV.len[0]-5&&s.a<CV.len[1]&&Math.abs(s.c+2)<20&&p.pos.y<CV.h-1&&p.pos.y>0)){p.die('התנגשות בנושאת');return;}}
     const g=cv.glide(p.pos);this.cvGS=null;
     if(p.gear&&!p.onGround&&g.d>0&&g.d<5600&&Math.abs(g.lu)<600&&p.pos.y<CV.h+500){this.cvGS=g;f.cvApp=true;
@@ -1262,12 +1262,19 @@ class World{
     if(p.onGround&&p.onDeck&&!this.cat&&f.cvApp){f.cvTouch=true;
       if(p.caught&&p.caught.wire&&vlen(vsub(p.vel,cv.vel))<1.5&&!f.trap){f.trap=p.caught.wire;this.stats.wire=p.caught.wire;this.stats.sink=p.touchSink;this.msg(`LSO: ${['','כבל אחת, קצת קצר','כבל שתיים, טוב','כבל שלוש, מצוין!','כבל ארבע, ארוך'][p.caught.wire]}. ברוך הבא הביתה.`);this.events.push({type:'trap'});}}
     if(f.cvTouch&&!p.onGround&&!f.trap){f.cvTouch=false;f.ball=false;f.cvApp=false;this.stats.bolter=(this.stats.bolter||0)+1;this.msg('LSO: בולטר, בולטר! כוח מלא, טפס והקף לגישה נוספת.');this.events.push({type:'bolter'});}}
+  /* the GPS receiver: satellites in view, the error estimate (EPE, metres). A GPS fault leaves the INS alone and its error grows;
+     an enemy radar site closer than 25 km jams, the closer the worse. A GPS bomb lands within about the EPE of its aim point. */
+  gpsState(){const p=this.player,t=this.time,F=this.flt||{};let jam=0;for(const s of this.sams||[]){if(!s.alive||!s.pos)continue;const q=s.pos;const d=Math.hypot(q.x-p.pos.x,q.z-p.pos.z);if(d<25000)jam=Math.max(jam,1-d/25000);}
+    if(F.gps){this.gpsLostT=this.gpsLostT??t;const dt=t-this.gpsLostT;return{sats:0,epe:Math.round(8+dt*0.6),jam,mode:'INS',ins:this.sys.ins};}this.gpsLostT=null;
+    const base=8+Math.round(1.5+1.5*Math.sin(t/97+p.pos.x/9e4)),sats=Math.max(0,Math.round(base*(1-jam*0.45))),epe=sats<4?Math.round(20+jam*20):Math.round(3+jam*12+Math.max(0,9-sats));
+    return{sats,epe,jam,mode:sats>=4?'BLEND':'INS',ins:this.sys.ins};}
   /* home: for the carrier jet, only a trap counts */
   homeD(p){return this.cvHome&&this.carrier?(this.flags.trap?0:1e9):Math.hypot(p.pos.x,p.pos.z);}
   step(dt){
     this.time+=dt;const p=this.player;
     p.turb=CLOUDS.length?turbAt(p.pos,this.wx==='storm'):0;
-    this.systems(dt);this.joinStep(dt);p.step(dt);this.catStep(dt);this.cvStep(dt);for(const k of this.friends)if(k.type==='TANKER')k.step(dt);if(this.helo&&this.net!=='guest')this.helo.step(dt,this);
+    /* in the back seat the jet is flown on the pilot's machine: here it only follows */
+    this.systems(dt);if(!this.mirror){this.joinStep(dt);p.step(dt);this.catStep(dt);}this.cvStep(dt);for(const k of this.friends)if(k.type==='TANKER')k.step(dt);if(this.helo&&this.net!=='guest')this.helo.step(dt,this);
     if(this.net==='guest'){for(const L of[this.migs,this.drones,this.strikers.map(k=>k.ac)])for(const m of L)if(m.alive&&m.vel)m.pos=vadd(m.pos,vmul(m.vel,dt));if(this.helo&&this.helo.vel)this.helo.pos=vadd(this.helo.pos,vmul(this.helo.vel,dt));}
     else{
     for(const ai of this.migAI)ai.update(dt,this);

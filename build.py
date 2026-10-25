@@ -11,7 +11,7 @@ read = lambda p: open(os.path.join(root, p), encoding='utf8').read()
 def write(p, s):
     os.makedirs(os.path.dirname(os.path.join(root, p)) or root, exist_ok=True)
     open(os.path.join(root, p), 'w', encoding='utf8').write(s)
-head, core, game = read('src/head.html'), read('src/core.js'), read('src/game.js').replace('/*@HD@*/', read('src/hd.js')).replace('/*@VO@*/', read('src/vo.js')).replace('/*@NET@*/', read('src/net.js'))
+head, core, game = read('src/head.html'), read('src/core.js'), read('src/game.js').replace('/*@HD@*/', read('src/hd.js')).replace('/*@VO@*/', read('src/vo.js')).replace('/*@NET@*/', read('src/net.js')).replace('/*@UFC@*/', read('src/ufc.js'))
 assert '</script' not in core and '</script' not in game
 CDN = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'
 def scripts(three):
