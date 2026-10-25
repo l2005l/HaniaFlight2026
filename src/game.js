@@ -30,7 +30,7 @@ const part=(g,m,x,y,z,par)=>{const me=new T.Mesh(g,m);me.position.set(x||0,y||0,
 function canvasTex(w,h,draw){const c=document.createElement('canvas');c.width=w;c.height=h;draw(c.getContext('2d'),w,h);const t=new T.CanvasTexture(c);return t;}
 /*@HD@*/
 /* night lights: soft glowing points that keep a minimum size on screen, fade in fog, and can flash in sequence */
-const glowMats=[],nightGlow=[];
+const glowMats=[],nightGlow=[],baseLife={},TREES={m:null,cx:1e9,cz:1e9};
 function glowPts(pos,col,o={}){const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('col',new T.Float32BufferAttribute(col,3));g.setAttribute('seq',new T.Float32BufferAttribute(o.seq||new Array(pos.length/3).fill(-1),1));
   const m=new T.ShaderMaterial({transparent:true,depthWrite:false,blending:T.AdditiveBlending,uniforms:{pr:{value:1},k:{value:o.k||2600},mn:{value:o.mn||1.6},mx:{value:o.mx||9},t:{value:0},vis:{value:1},fd:{value:1e-5},day:{value:o.day||0}},
     vertexShader:'attribute vec3 col;attribute float seq;varying vec3 vc;varying float va;uniform float k,mn,mx,t,vis,fd,pr;\n#include <common>\n#include <logdepthbuf_pars_vertex>\nvoid main(){vec4 mv=modelViewMatrix*vec4(position,1.);float d=-mv.z;gl_PointSize=clamp(k/d,mn,mx)*pr;vc=col;va=vis*exp(-d*d*fd*fd);if(seq>=0.){float f=fract(t*1.7-seq);va*=f<0.09?1.6:0.;}gl_Position=projectionMatrix*mv;\n#include <logdepthbuf_vertex>\n}',
@@ -40,7 +40,7 @@ const glowTex=canvasTex(64,64,(x,w)=>{const gr=x.createRadialGradient(32,32,0,32
 const navSprites=[],papi={pts:null,units:null};
 const landLight=new T.SpotLight(0xfff4e0,0,1400,0.3,0.55,1);scene.add(landLight);scene.add(landLight.target);
 const landGlow=new T.Sprite(new T.SpriteMaterial({map:null,color:0xfff2d8,blending:T.AdditiveBlending,depthWrite:false,sizeAttenuation:false,fog:false}));landGlow.scale.setScalar(0.05);landGlow.visible=false;scene.add(landGlow);function navLight(par,x,y,z,col){const s=new T.Sprite(new T.SpriteMaterial({map:glowTex,color:col,blending:T.AdditiveBlending,depthWrite:false,sizeAttenuation:false,fog:false}));s.scale.setScalar(0.016);s.position.set(x,y,z);s.visible=false;par.add(s);navSprites.push(s);return s;}
-let sky,sunSp,sunHalo,seaMat,tod='day',eco=false;const cloudMats=[],duskOnly=[],cloudSp=[],cloudDark=[],CLOUD=[],stormCells=[];
+let seaNorm=null,sky,sunSp,sunHalo,seaMat,tod='day',eco=false;const cloudMats=[],duskOnly=[],cloudSp=[],cloudDark=[],CLOUD=[],stormCells=[];
 const TOD={day:{zen:0x2c66ad,mid:0x86b4d6,hz:0xc3d2d6,hz2:0xc3d2d6,sun:[-0.45,0.62,0.5],sunCol:0xfff2d8,sunI:0.85,sky:0xdfeaf5,gnd:0x8a7a5c,hemiI:0.78,fog:1.25e-5,cloud:0xffffff,glow:0xfff6dc,halo:0.22,sea:0x2d6d8c},
   dusk:{zen:0x1f2f5c,mid:0x8e7f9c,hz:0xf2a868,hz2:0x6f7396,sun:[-0.9,0.11,0.3],sunCol:0xff9a55,sunI:1.15,sky:0xa3a6cc,gnd:0x6b5644,hemiI:0.78,fog:1.5e-5,cloud:0xffbf98,glow:0xff9a4a,halo:0.6,sea:0x2a4a6a},
   night:{zen:0x03050c,mid:0x070b16,hz:0x101726,hz2:0x0a0f1a,sun:[0.35,0.55,-0.6],sunCol:0x8fa6d8,sunI:0.2,sky:0x2a3550,gnd:0x0c0e12,hemiI:0.2,fog:1.1e-5,cloud:0x1a2030,glow:0xcfdcff,halo:0.07,sea:0x070d16}};const nightOnly=[];
@@ -220,9 +220,12 @@ const lerp3=(a,b,t)=>[lerp(a[0],b[0],t),lerp(a[1],b[1],t),lerp(a[2],b[2],t)];
     for(let i=0;i<700;i++){x.fillStyle=`rgba(45,45,45,${0.2+rnd()*0.3})`;x.beginPath();x.arc(rnd()*w,rnd()*w,0.8+rnd()*1.8,0,7);x.fill();}});
   det.wrapS=det.wrapT=T.RepeatWrapping;det.anisotropy=renderer.capabilities.getMaxAnisotropy();
   const tmat=new T.MeshLambertMaterial({vertexColors:true,map:det});
-  tmat.onBeforeCompile=s=>{s.fragmentShader=s.fragmentShader.replace('#include <map_fragment>',`vec2 u2=mat2(0.8,-0.6,0.6,0.8)*vUv;float dd=texture2D(map,vUv*9.0).g*texture2D(map,vUv).g*texture2D(map,u2*0.11+vec2(0.31,0.17)).g;diffuseColor.rgb*=dd*1.5;`);};
+  tmat.onBeforeCompile=s=>{s.fragmentShader=s.fragmentShader.replace('#include <map_fragment>',`vec2 u2=mat2(0.8,-0.6,0.6,0.8)*vUv;float dd=texture2D(map,vUv*9.0).g*texture2D(map,vUv).g*texture2D(map,u2*0.11+vec2(0.31,0.17)).g;float zc=1.0/gl_FragCoord.w,near=clamp(1.0-zc/2500.0,0.0,1.0);dd*=mix(1.0,texture2D(map,u2*61.0).g*1.12,near*0.85);diffuseColor.rgb*=dd*1.5;`);};
   const tm=new T.Mesh(g,tmat);tm.frustumCulled=false;tm.receiveShadow=true;scene.add(tm);
-  seaMat=new T.MeshPhongMaterial({color:0x2d6d8c,specular:0x8a96a0,shininess:80});
+  {const nm=canvasTex(256,256,(x,w)=>{const H=new Float32Array(w*w);for(let k=0;k<26;k++){const fx=(1+(rnd()*5|0))*2*Math.PI/w,fy=(1+(rnd()*5|0))*2*Math.PI/w,ph=rnd()*7,a=0.6+rnd();for(let j=0;j<w;j++)for(let i=0;i<w;i++)H[j*w+i]+=a*Math.sin(i*fx+j*fy+ph);}
+      const im=x.createImageData(w,w);for(let j=0;j<w;j++)for(let i=0;i<w;i++){const dx=H[j*w+(i+1)%w]-H[j*w+(i+w-1)%w],dy=H[((j+1)%w)*w+i]-H[((j+w-1)%w)*w+i],o=(j*w+i)*4;im.data[o]=128+dx*9;im.data[o+1]=128+dy*9;im.data[o+2]=255;im.data[o+3]=255;}x.putImageData(im,0,0);});
+    nm.wrapS=nm.wrapT=T.RepeatWrapping;nm.repeat.set(1800,1800);seaNorm=nm;}
+  seaMat=new T.MeshPhongMaterial({color:0x2d6d8c,specular:0x8f9ba4,shininess:90,normalMap:seaNorm,normalScale:new T.Vector2(0.22,0.22)});
   /* in Israel the sea stops west of the Jordan rift, which lies below sea level; the two lakes get their own water */
   if(theatre0==='israel'){const xs=R.ISR.seaX,xw=x0-300000,sea=new T.Mesh(new T.PlaneGeometry(xs-xw,900000),seaMat);sea.rotation.x=-Math.PI/2;sea.position.set((xs+xw)/2,0,z0+nz*cell/2);scene.add(sea);
     for(const L of R.LAKES){const m=new T.Mesh(new T.PlaneGeometry(L.x2-L.x1,L.z2-L.z1),seaMat);m.rotation.x=-Math.PI/2;m.position.set((L.x1+L.x2)/2,L.h+0.6,(L.z1+L.z2)/2);scene.add(m);}}
@@ -253,6 +256,17 @@ const BY=SITES.base.h;
   for(let i=0;i<8;i++){if(-480+i*80===R.PARK.x)continue;const g=new T.CylinderGeometry(15,15,34,14,1,false,0,Math.PI);g.rotateZ(Math.PI/2);g.rotateY(Math.PI/2);part(g,shel,-480+i*80,BY,470,scene);}
   part(new T.BoxGeometry(9,30,9),conc,260,BY+15,330,scene);part(new T.BoxGeometry(15,6,15),lam(0x394a52),260,BY+33,330,scene);
   for(let i=0;i<10;i++)part(new T.BoxGeometry(30+rnd()*40,6+rnd()*8,20+rnd()*20),conc,350+rnd()*500,BY+4,340+rnd()*260,scene);
+  /* base life: a windsock, the tower's radar turning, jets parked in front of the shelters, a fuel truck and a tug driving the apron */
+  {const pole=part(new T.CylinderGeometry(0.12,0.15,8,6),lam(0xd8d8d0),-900,BY+4,-60,scene);const ws=new T.Group();ws.position.set(-900,BY+7.6,-60);scene.add(ws);
+    const sock=new T.ConeGeometry(0.55,4,10,1,true);sock.rotateZ(-Math.PI/2);sock.translate(2,0,0);const sm=new T.Mesh(sock,new T.MeshLambertMaterial({map:canvasTex(64,16,(x,w,h)=>{for(let i=0;i<5;i++){x.fillStyle=i%2?'#f2f2ee':'#e8501c';x.fillRect(i*w/5,0,w/5,h);}}),side:T.DoubleSide}));ws.add(sm);baseLife.sock=ws;
+    const rad=new T.Group();rad.position.set(260,BY+37.5,330);scene.add(rad);part(new T.BoxGeometry(6,1.6,0.4),lam(0xe0e0d8),0,0,0,rad);baseLife.rad=rad;
+    baseLife.parkJets=()=>{for(const i of[1,3,6]){const j=buildJet({camo:i===3?'gray':'il',nose:0x5b6166,scale:0.88});j.userData.gear.visible=true;j.position.set(-480+i*80,BY+2.3,445);j.rotation.y=Math.PI;scene.add(j);}};
+    const truck=(c)=>{const g=new T.Group();part(new T.BoxGeometry(2.5,2.6,7),lam(c),0,1.8,0.5,g);part(new T.BoxGeometry(2.4,2.2,2.2),lam(0x2f3a2a),0,1.6,-3.6,g);for(const z of[-3.2,0,2.6])for(const s of[-1,1]){const w=new T.CylinderGeometry(0.55,0.55,0.4,10);w.rotateZ(Math.PI/2);part(w,lam(0x151515),s*1.2,0.55,z,g);}scene.add(g);return g;};
+    baseLife.cars=[{m:truck(0x6f7b55),s:0,sp:7,path:[[-420,330],[200,330],[200,420],[-420,420]]},{m:truck(0xc8a020),s:300,sp:5,path:[[-150,380],[400,380],[400,250],[-150,250]]}];
+    for(const c of baseLife.cars){c.m.scale.setScalar(c.m===baseLife.cars[1]?0.6:1);}}
+  /* trees and scrub: low-poly crowns on a fixed grid around the camera, regrown as it moves; forests in patches where the land is green */
+  {const NT=q0==='eco'?0:q0==='low'?2200:5000;if(NT){const crown=new T.IcosahedronGeometry(1,0),tm=new T.MeshLambertMaterial({color:0xffffff,flatShading:true}),ti=new T.InstancedMesh(crown,tm,NT);{const c0=new T.Color(0.2,0.3,0.15);for(let i=0;i<NT;i++)ti.setColorAt(i,c0);}ti.count=0;ti.frustumCulled=false;scene.add(ti);
+    TREES.m=ti;TREES.n=NT;TREES.d=new T.Object3D();TREES.c=new T.Color();}}
   /* towns */
   /* on the real map: the cities and towns where they really are, sized roughly by population */
 
@@ -659,6 +673,21 @@ const TYPES_GEAR=t=>R.TYPES[t].gearH;
 const traffic={jet:null,truck:null};
 {const tr=new T.Group();part(new T.BoxGeometry(2.6,2.4,7),lam(0xd8d4c4),0,1.9,1,tr);part(new T.BoxGeometry(2.5,2.2,2.2),lam(0xc23a28),0,1.7,-3.8,tr);for(const z of[-3.6,0,3])part(new T.BoxGeometry(2.8,1,1),lam(0x1c1c1a),0,0.5,z,tr);tr.visible=false;scene.add(tr);traffic.truck=tr;}
 const TPATH=[[-160,470,0],[-160,232,9],[-1300,232,14],[-1300,2,9],[-1250,0,6],[1100,0,0],[6000,0,0]];
+/* the grid of trees around the camera: each 90 m cell may hold one tree, decided by a hash of the cell so it never changes */
+function updTrees(){const T0=TREES;if(!T0.m)return;const cx=camera.position.x,cz=camera.position.z;if(Math.hypot(cx-T0.cx,cz-T0.cz)<1200)return;T0.cx=cx;T0.cz=cz;
+  const st=90,Rr=q0==='low'?3600:5200,hs=(i,j,k)=>{const v=Math.sin(i*127.1+j*311.7+k*74.7)*43758.5453;return v-Math.floor(v);};let n=0;const d=T0.d,c=T0.c;
+  for(let j=Math.floor((cz-Rr)/st);j<=Math.ceil((cz+Rr)/st)&&n<T0.n;j++)for(let i=Math.floor((cx-Rr)/st);i<=Math.ceil((cx+Rr)/st)&&n<T0.n;i++){
+    const x=(i+hs(i,j,1))*st,z=(j+hs(i,j,2))*st;if((x-cx)**2+(z-cz)**2>Rr*Rr)continue;
+    const forest=0.5+0.5*Math.sin(x/1700+Math.sin(z/1300)*2.2)*Math.sin(z/2100+Math.sin(x/1500)*1.7);const fz=sstep(forest,0.52,0.78);let p=theatre0==='north'?0.04+fz*0.95:theatre0==='far'?0.03+fz*0.7:theatre0==='israel'?0.03+fz*0.85:0.02+fz*0.15;
+    if(hs(i,j,3)>p)continue;const y=terrainH(x,z);if(y<2||R.isWater(x,z)||(Math.abs(z)<400&&Math.abs(x)<1600)||Math.hypot(x+150,z-380)<900||(theatre0==='north'&&y>1500))continue;
+    if(theatre0==='israel'){const q=isrCol(x,z,y,0.5);if(q[1]<q[0]*0.8&&hs(i,j,4)>0.15)continue;}
+    const desert=theatre0==='south'||theatre0==='israel'&&y<0,h=desert?2.5+hs(i,j,5)*2:8+hs(i,j,5)*9;d.position.set(x,y+h*0.5,z);d.scale.set(h*(desert?0.9:0.5),h*(desert?0.32:0.62),h*(desert?0.9:0.5));d.rotation.set(0,hs(i,j,6)*7,0);d.updateMatrix();T0.m.setMatrixAt(n,d.matrix);
+    const g=hs(i,j,7)*0.06;c.setRGB(desert?0.4:0.13+g,desert?0.4:0.2+g,desert?0.26:0.09+g*0.5);T0.m.setColorAt(n,c);n++;}
+  T0.m.count=n;T0.m.instanceMatrix.needsUpdate=true;if(T0.m.instanceColor)T0.m.instanceColor.needsUpdate=true;}
+function updBase(dt){updTrees();const B=baseLife;if(seaNorm){seaNorm.offset.x+=dt*0.004;seaNorm.offset.y+=dt*0.0025;}if(!B.rad)return;B.rad.rotation.y+=dt*1.6;
+  const w=W&&W.wind;B.sock.rotation.y=w?Math.atan2(w.z,-w.x)+Math.PI:clock*0.05%7;B.sock.children[0].rotation.z=w?0.0:-0.9+Math.sin(clock*0.7)*0.1;
+  for(const c of B.cars){const P=c.path;let L=0;const seg=P.map((a,i)=>{const b=P[(i+1)%P.length],l=Math.hypot(b[0]-a[0],b[1]-a[1]);L+=l;return l;});c.s=(c.s+c.sp*dt)%L;let s=c.s,i=0;while(s>seg[i]){s-=seg[i];i++;}
+    const a=P[i],b=P[(i+1)%P.length],t=s/seg[i],x=a[0]+(b[0]-a[0])*t,z=a[1]+(b[1]-a[1])*t;c.m.position.set(x,BY+0.3,z);c.m.rotation.y=Math.atan2(-(b[0]-a[0]),-(b[1]-a[1]));}}
 function updTraffic(dt){if(!W||state==='replay'||eco){if(traffic.jet)traffic.jet.visible=false;return;}
   if(!traffic.jet){traffic.jet=buildF16();scene.add(traffic.jet);}const j=traffic.jet,y0=SITES.base.h,tk=traffic.truck,pl=W.player;if(traffic.w!==W){traffic.w=W;traffic.t=190;}
   /* it gives way: it does not enter the runway area while the player is on the ground near the threshold */
@@ -1206,7 +1235,14 @@ function hpAward(){const el=$('dPts');if(!el)return;el.hidden=true;el.textConten
   if(!csrf){el.innerHTML='כל משימה ראשונה שמנצחים שווה 10 נקודות Hania. <a href="https://pass.hania360.com/?return='+encodeURIComponent(location.href)+'">כניסה ל־Hania360</a>';el.hidden=false;return;}
   fetch('https://pass.hania360.com/api/points/flight',{method:'POST',credentials:'include',headers:{'content-type':'application/json','x-csrf-token':csrf},body:JSON.stringify({mission:W.missionId})})
     .then(r=>r.ok?r.json():null).then(j=>{if(!j)return;el.textContent=j.added?`+${j.added} נקודות Hania · יש לך ${j.balance}`:`נקודות Hania: ${j.balance} (המשימה הזאת כבר זיכתה)`;el.hidden=false;}).catch(()=>{});}
-function debrief(){mpg.end();if(xr.on&&xr.session)xr.session.end().catch(()=>{});hush();state='debrief';writeLog();const best=judge();$('dCamp').textContent=[campResult(),dailyResult()].filter(Boolean).join(' · ');hpAward();$('dAch').innerHTML=newAch.map(id=>{const x=ACH.find(q=>q[0]===id);return `<span>הישג חדש: <b>${x[1]}</b> · ${x[2]}</span>`;}).join('');if(rec.length)recFrame();{const el=$('dKills');el.innerHTML=kills.length?'<span class="note">צפייה בפגיעה, בהילוך איטי:</span>'+kills.map((k,i)=>`<button data-kill="${i}">${esc(k.name)} · ${esc(k.wpn)}</button>`).join(''):'';for(const b of el.querySelectorAll('[data-kill]'))b.onclick=()=>startReplay(kills[+b.dataset.kill]);}$('watch').hidden=rec.length<20;const o=W.over,s=W.stats,p=W.player,mm=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
+/* the debrief map: the mission area with the path you flew, coloured by height, where you started and the kills */
+function drawDebriefMap(){const cv=$('dMap');if(!cv)return;requestAnimationFrame(()=>{const r=cv.getBoundingClientRect(),d=Math.min(2,window.devicePixelRatio||1);if(!r.width){cv.hidden=true;return;}cv.hidden=false;cv.width=r.width*d;cv.height=r.height*d;
+  const sc=ctx,sv=vw,sh=vh,su=u;try{ctx=cv.getContext('2d');ctx.setTransform(d,0,0,d,0,0);ctx.direction='ltr';ctx.textBaseline='middle';vw=r.width;vh=r.height;mapBox=true;const P=W.player;
+    drawMap(P,P.euler(),(X,Y)=>{ctx.lineWidth=2.2;for(let i=1;i<rec.length;i+=2){const a=rec[i-1].p,b=rec[i].p,h=clamp(b[1]/9000,0,1);ctx.strokeStyle=`hsl(${200-h*170},90%,60%)`;ctx.beginPath();ctx.moveTo(X(a[0]),Y(a[2]));ctx.lineTo(X(b[0]),Y(b[2]));ctx.stroke();}
+      if(rec.length){const s0=rec[0].p;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(X(s0[0]),Y(s0[2]),4,0,7);ctx.fill();}
+      for(const k of kills){const x=X(k.pos.x),y=Y(k.pos.z);ctx.strokeStyle='#ff5c4f';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x-5,y-5);ctx.lineTo(x+5,y+5);ctx.moveTo(x+5,y-5);ctx.lineTo(x-5,y+5);ctx.stroke();}});}
+  catch(e){}finally{ctx=sc;vw=sv;vh=sh;u=su;mapBox=false;}});}
+function debrief(){mpg.end();if(xr.on&&xr.session)xr.session.end().catch(()=>{});hush();state='debrief';writeLog();const best=judge();$('dCamp').textContent=[campResult(),dailyResult()].filter(Boolean).join(' · ');hpAward();$('dAch').innerHTML=newAch.map(id=>{const x=ACH.find(q=>q[0]===id);return `<span>הישג חדש: <b>${x[1]}</b> · ${x[2]}</span>`;}).join('');if(rec.length)recFrame();drawDebriefMap();{const el=$('dKills');el.innerHTML=kills.length?'<span class="note">צפייה בפגיעה, בהילוך איטי:</span>'+kills.map((k,i)=>`<button data-kill="${i}">${esc(k.name)} · ${esc(k.wpn)}</button>`).join(''):'';for(const b of el.querySelectorAll('[data-kill]'))b.onclick=()=>startReplay(kills[+b.dataset.kill]);}$('watch').hidden=rec.length<20;const o=W.over,s=W.stats,p=W.player,mm=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
   $('dTitle').textContent=o.title;$('dReason').textContent=o.reason||'';$('debrief').dataset.win=o.win?'1':'';
   const rows=W.missionId==='tanker'?[['דלק שהתקבל',`${Math.round(W.ar.taken).toLocaleString('en')} ק"ג`]]:W.missionId==='duel'?[[W.foeName+' שהופלו',`${s.mig} מתוך ${W.migs.length}`]]:W.missionId==='escort'?[['מטוסי תקיפה ששרדו',`${W.strikers.filter(k=>k.ac.alive).length} מתוך ${W.strikers.length}`],['מטרות שהושמדו',`${s.tgt} מתוך ${W.nPrimary}`],['מטוסי אויב שהופלו',`${s.mig} מתוך ${W.migs.length}`]]:W.missionId==='sead'?[['סוללות ששותקו',`${s.tgt} מתוך ${W.nPrimary}`],[W.foeName+' שהופלו',`${s.mig} מתוך ${W.migs.length}`]]:W.missionId==='convoy'?[['כלי רכב שהושמדו',`${s.tgt} מתוך ${W.nPrimary}`],['סוללת הליווי',s.sam?'הושמדה':'לא הושמדה']]:W.missionId==='naval'?[['ספינות שהוטבעו',`${s.tgt} מתוך 3`],['טילים ששוגרו',s.shots]]:W.missionId==='low'?[['המטרה',W.ground.find(g=>g.primary).alive?'לא הושמדה':'הושמדה'],['מול ה-TOT',W.low.hitT!=null?(()=>{const d=Math.round(W.low.hitT-W.tot);return Math.abs(d)<=10?'בזמן ('+(d>=0?'+':'')+d+' ש\')':(d>0?'איחור ':'הקדמה ')+Math.abs(d)+' ש\'';})():'—'],['זוהית במכ"ם',W.low.detected?'כן':'לא']]:W.missionId==='cas'?[['מטרות שהושמדו',`${s.casOk||0} מתוך 3`],['שחרורים בלי אישור',String(W.cas?W.cas.viol:0)],['פגיעה בכוחותינו',s.own?'כן':'לא']]:W.missionId==='csar'?[['המסוק',W.helo.alive?(W.helo.phase==='home'?'חזר עם הטייס':'עדיין באוויר'):'הופל'],[W.foeName+' שהופלו',`${s.mig} מתוך ${W.migs.length}`]]:W.missionId==='recon'?[['אתרים שצולמו',`${s.tgt} מתוך 3`],[W.foeName+' שהופלו',`${s.mig} מתוך ${W.migs.length}`]]:W.missionId==='stealth'?[['הכטב"ם החמקן',W.stealthUav.alive?(W.stealthUav.leaked?'חדר':'לא יורט'):'יורט'],['כטב"מי הטעיה שהופלו',`${s.uav-(W.stealthUav.alive?0:1)} מתוך 3`]]:W.missionId==='train'?[['מטרות אימון שהופלו',`${s.uav} מתוך 2`]]:W.missionId==='intercept'?[['איומים שהופלו',`${s.uav} מתוך ${W.nDrone}`],['חדרו',s.leak]]:[['כטב"מים שהופלו',`${s.uav} מתוך 4`+(s.leak?` (${s.leak} חדרו)`:'')],['מיג-29 שהופלו',`${s.mig} מתוך 2`],['מטרות אתר השיגור',`${s.tgt} מתוך 3`],['מכ"ם סוללת הנ"מ',s.sam?'הושמד':'לא הושמד']];
   if(W.atcFull)rows.push(['הפרות מגדל',W.atc.viol.length?W.atc.viol.map(k=>({start:'התנעה',taxi:'הסעה',to:'המראה',land:'נחיתה'})[k]+' ללא אישור').join(', '):'אין']);
@@ -1260,7 +1296,7 @@ let fxT=0;function airFx(p,dt){const G=FXG[W.plane.type]||FXG.F15I,at=(x,y,z)=>v
     if(!eco)for(const a of[...W.air,...W.friends])if(a.alive&&a.pos&&a.pos.y>8400&&a.q&&a.type!=='HELO'&&rnd()<0.5)spawn(vadd(a.pos,qrot(a.q,v3(0,0,9))),v3(),10,1.6,20,[0.97,0.97,0.99],0.36);}}
 function syncScene(dt){
   const p=W.player,ud=pMesh.userData;
-  pMesh.position.set(p.pos.x,p.pos.y,p.pos.z);setQ(pMesh,p.q);pMesh.visible=p.alive;const inPit=view===0&&(state==='fly'||state==='pause')&&p.alive&&!W.ejected;updChute(dt);updCrew(dt);updTraffic(dt);dchute.visible=!!p.dragChute&&state!=='replay';if(dchute.visible){dchute.position.set(p.pos.x,p.pos.y,p.pos.z);setQ(dchute,p.q);}for(const o of ud.front)o.visible=!inPit;
+  pMesh.position.set(p.pos.x,p.pos.y,p.pos.z);setQ(pMesh,p.q);pMesh.visible=p.alive;const inPit=view===0&&(state==='fly'||state==='pause')&&p.alive&&!W.ejected;updChute(dt);updCrew(dt);updTraffic(dt);updBase(dt);dchute.visible=!!p.dragChute&&state!=='replay';if(dchute.visible){dchute.position.set(p.pos.x,p.pos.y,p.pos.z);setQ(dchute,p.q);}for(const o of ud.front)o.visible=!inPit;
   ud.gear.visible=p.gearPos>0.3;for(const f of ud.ab){f.visible=p.eng>1.02;f.scale.set(1,1,0.5+(p.eng-1)*2.2+rnd()*0.22);}ud.sb.rotation.x=-p.brakePos*0.75;
   if(ud.stabs){const c=p.ctl,pv=state==='fly'?clamp(c.pitch,-1,1):0,rv=state==='fly'?clamp(c.roll,-1,1):0;for(const q of ud.stabs)q.h.rotation.x+=((-pv*0.34+q.side*rv*0.13)-q.h.rotation.x)*0.3;}
   {const fl=state==='fly'||state==='pause',parked=p.onGround&&p.V<1&&(state==='menu'||!W.flags.airborne);animMoving(ud,p,fl?p.ctl:{roll:0,yaw:0},p.flaps,state==='menu'?true:W.sys.canopy>0.3,parked);}
@@ -1431,7 +1467,7 @@ function mapPeers(X,Y,k){if(!W.remotes.length)return;ctx.save();ctx.direction='r
     ctx.save();ctx.translate(x,y);ctx.rotate(h);ctx.fillStyle=c;ctx.strokeStyle='#04140a';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,-8*k);ctx.lineTo(5*k,6*k);ctx.lineTo(0,3*k);ctx.lineTo(-5*k,6*k);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();
     const n=String(r.label||r.name||'');ctx.lineWidth=3;ctx.strokeStyle='rgba(0,0,0,0.75)';ctx.strokeText(n,x,y-11*k);ctx.fillStyle=c;ctx.fillText(n,x,y-11*k);}
   ctx.restore();}
-function drawMap(p,e){if(W.flt.map){ctx.save();ctx.fillStyle='rgba(2,6,8,0.7)';ctx.fillRect(0,0,vw,vh);txt('NO MAP DATA',vw/2,vh/2,'center',18,AMB);ctx.restore();return;}const{nx,nz,cell,x0,z0}=TER,WX=(nx-1)*cell,WZ=(nz-1)*cell;getMapBg();
+function drawMap(p,e,after){if(W.flt.map){ctx.save();ctx.fillStyle='rgba(2,6,8,0.7)';ctx.fillRect(0,0,vw,vh);txt('NO MAP DATA',vw/2,vh/2,'center',18,AMB);ctx.restore();return;}const{nx,nz,cell,x0,z0}=TER,WX=(nx-1)*cell,WZ=(nz-1)*cell;getMapBg();
   const top=mapBox?2:touchOn?8:46,bot=mapBox?2:touchOn?(opts.ui==='large'?166:136):20,AW=vw-24,AH=vh-top-bot;
   /* the whole country is too tall for a landscape screen: on the real map, show the area of the mission (you, the route and the threats) */
   let vx0=x0,vz0=z0,VW=WX,VZ=WZ;if(theatre0==='israel'){const P=[[p.pos.x,p.pos.z],[0,0],...W.wps.map(q=>[q.x,q.z]),...W.sams.filter(q=>q.alive&&!(q.silent&&!q.awake)).map(q=>[q.pos.x,q.pos.z])];
@@ -1458,7 +1494,7 @@ function drawMap(p,e){if(W.flt.map){ctx.save();ctx.fillStyle='rgba(2,6,8,0.7)';c
   ctx.fillStyle=SND;ctx.fillRect(X(RWY.x1),Y(0)-1.5,Math.max(8,(RWY.x2-RWY.x1)*s),3);
   for(const k of W.friends){if(!k.alive||k.remote)continue;ctx.strokeStyle=HUDC;ctx.beginPath();ctx.arc(X(k.pos.x),Y(k.pos.z),5,0,7);ctx.stroke();if(k.type==='HELO'){ctx.strokeStyle=HUDC;ctx.beginPath();ctx.arc(X(W.csarP.x),Y(W.csarP.z),4,0,7);ctx.stroke();}txt(k.type==='TANKER'?'TANKER':k.label||'2',X(k.pos.x),Y(k.pos.z)+14,'center',10);}
   for(const c of W.contacts){if(c.fr)continue;ctx.fillStyle=RED;ctx.fillRect(X(c.e.pos.x)-4,Y(c.e.pos.z)-2,8,4);if(c.e===W.lock){ctx.strokeStyle=RED;ctx.beginPath();ctx.arc(X(c.e.pos.x),Y(c.e.pos.z),8,0,7);ctx.stroke();}}
-  mapPeers(X,Y,u);ctx.translate(X(p.pos.x),Y(p.pos.z));ctx.rotate(e.hdg);ctx.fillStyle=HUDC;ctx.strokeStyle='#04140a';ctx.beginPath();ctx.moveTo(0,-11);ctx.lineTo(7,8);ctx.lineTo(0,4);ctx.lineTo(-7,8);ctx.closePath();ctx.fill();ctx.stroke();
+  mapPeers(X,Y,u);if(after)after(X,Y,s);ctx.translate(X(p.pos.x),Y(p.pos.z));ctx.rotate(e.hdg);ctx.fillStyle=HUDC;ctx.strokeStyle='#04140a';ctx.beginPath();ctx.moveTo(0,-11);ctx.lineTo(7,8);ctx.lineTo(0,4);ctx.lineTo(-7,8);ctx.closePath();ctx.fill();ctx.stroke();
   ctx.restore();ctx.shadowBlur=0;const wp=W.wps[W.wp],np0=W.navPos(),dw=Math.hypot(wp.x-np0.x,wp.z-np0.z),bw=(Math.atan2(wp.x-np0.x,-(wp.z-np0.z))*R2D+360)%360;
   txt(`MAP · N UP · GRID 50 KM`,ox+6,oy+mh2-10,'left',11,'#ebe6d6');txt(`${wp.n}  ${String(Math.round(bw)%360).padStart(3,'0')}° / ${(dw/NM).toFixed(0)} NM`,ox+mw-6,oy+mh2-10,'right',12,HUDC);u=su;}
 /* targeting pod picture: a second, zoomed camera drawn into a corner of the view */
@@ -1814,7 +1850,7 @@ const android=/Android/i.test(navigator.userAgent)&&!window.HFNative;$('apk').hi
 let instEv=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();if(android)return;instEv=e;$('install').hidden=false;});
 $('install').onclick=()=>{if(instEv){instEv.prompt();instEv=null;$('install').hidden=true;}};
 await prog(0.96);
-applyOpts();newGame('runway',true);requestAnimationFrame(frame);
+try{baseLife.parkJets&&baseLife.parkJets();}catch(e){console.error('parkJets',e);}applyOpts();newGame('runway',true);requestAnimationFrame(frame);
 try{if(localStorage.getItem('haniaflight-pend')==='camp2'){localStorage.removeItem('haniaflight-pend');setTimeout(()=>openBrief(2),400);}}catch(e){}
 {const n=$('loadMs');if(n)n.textContent=(performance.now()/1000).toFixed(1);}
 window.__mpPeers=()=>MP.peers.values();window.__mpMic=()=>({mic:!!MP.mic,live:MP.mic?MP.mic.readyState:null,on:mpg.on});window.__raam={get pMesh(){return pMesh;},ff:s=>{for(let i=0;i<s*120;i++){W.trigger(trigG,trigP,1/120);W.step(1/120);if(i%6===0)handleEvents();if(i%12===0)recFrame();}handleEvents();},kills:()=>kills,parts:()=>P.filter(q=>q.on).map(q=>[Math.round(q.x),Math.round(q.y),Math.round(q.z),+q.s0.toFixed(1),+q.a.toFixed(2)]),look,pod,podAct,podSlew:(dx,dy)=>podSlew(dx,dy,200),dbgBetty:()=>({bufs:Object.keys(Betty.buf),last:Betty.last,coll:hudWarn.coll,pull:hudWarn.pull}),dbg:()=>({cb:[cloudBall.visible,cloudBall.material.opacity,cloudBall.material.color.r,cloudIn(camera.position,W&&W.wx==='storm')],tgp:tgpR,fx:tgpFx.style.display,fov:tgpCam.fov,ll:landLight.visible,li:landLight.intensity,glow:nightGlow.map(g=>g.visible),tod,eco}),get W(){return W;},start,keys,setTOD,get cockpit(){return cockpit;},camera,act,opts,get state(){return state;},ready:true};

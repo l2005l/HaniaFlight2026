@@ -115,6 +115,8 @@ details[open] summary{margin-bottom:10px}
 #replay input{flex:1;min-width:60px;accent-color:var(--sand)}
 #replay button{padding:5px 12px;font-size:.85rem;white-space:nowrap}
 #replay span{font-family:var(--mono);font-size:.8rem;color:var(--dim)}
+#dMap{width:100%;height:200px;border:1px solid var(--line);background:#06101a;display:block;margin:6px 0}
+@keyframes tabIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}.tab:not([hidden]){animation:tabIn .22s ease-out}@media (prefers-reduced-motion:reduce){.tab:not([hidden]){animation:none}}
 #bMap{width:100%;height:230px;border:1px solid var(--line);background:#06101a;display:block}
 .card.wide{width:min(46rem,100%)}
 #achList{display:grid;grid-template-columns:repeat(auto-fill,minmax(9.5rem,1fr));gap:6px}
@@ -739,7 +741,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט. לחיצה על המוט השמאלי: וו בלימה, על הימני: מבט למטרה. Start מתחיל טיסה מהתפריט. באפליקציית האנדרואיד השלט עובד דרך האפליקציה עצמה.</p>
     </details>
-    <p class="note">גרסה 2.6 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
+    <p class="note">גרסה 2.7 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
     </div>
     <div id="dock">
     <div id="update" role="status" aria-live="polite" hidden>
@@ -841,7 +843,7 @@ details[open] summary{margin-bottom:10px}
     <div class="card">
       <div><div class="eyebrow">תחקיר</div><h2 id="dTitle"></h2></div>
       <p id="dReason"></p><p id="dCamp" class="note"></p><button id="campSkip" hidden>המשך במערכה בלי השלב הזה</button><div id="dAch"></div><p id="dPts" class="note" hidden></p>
-      <div id="dKills"></div><dl id="dStats"></dl>
+      <canvas id="dMap" dir="ltr" aria-label="המסלול שטסת"></canvas><div id="dKills"></div><dl id="dStats"></dl>
       <div class="acts"><button id="again" class="go">טיסה נוספת</button><button id="watch">צפייה חוזרת</button><button id="back">לתדריך</button></div>
     </div>
   </section>
