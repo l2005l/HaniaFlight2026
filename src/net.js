@@ -121,7 +121,7 @@ const mpg={on:false,cfg:null,room:{mode:'coop',start:'air'},ch:1,team:null,
     for(const id of order){if(id===MP.id)continue;const P=MP.peers.get(id),st=P&&P.st,ty=(P&&P.plane)||'F15I';
       const foe=c.mode==='pvp'||(c.mode==='teams'&&(c.teams||{})[id]!==(c.teams||{})[MP.id]);
       const e={remote:true,id,name:(P&&P.name)||'טייס',kind:'air',type:ty,label:(P&&P.call)||(P&&P.name)||'2',side:foe?1:0,alive:true,pos:st?{...st.pos}:v3(p.pos.x,p.pos.y,p.pos.z+400),vel:v3(),q:{x:0,y:0,z:0,w:1},
-        eng:1,gearPos:0,rcs:ty==='F35I'?0.4:5,hp:100,onGround:false,t:null,tgt:null};
+        eng:1,gearPos:0,rcs:/^F35/.test(ty)?0.4:5,hp:100,onGround:false,t:null,tgt:null};
       W.remotes.push(e);(foe?W.air:W.friends).push(e);
       const m=mkPlayer(ty);m.userData.wing=true;dyn.add(m);meshOf.set(e,m);const lb=labelSprite(e.label,foe?0:2);lb.position.set(0,7,0);m.add(lb);e.lbl=lb;}
     recObj=[...W.air,...W.friends];
@@ -137,7 +137,7 @@ const mpg={on:false,cfg:null,room:{mode:'coop',start:'air'},ch:1,team:null,
       e.pos=d>400?tp:vadd(e.pos,vmul(vsub(tp,e.pos),Math.min(1,dt*8)));e.vel=t.vel;const qa=new T.Quaternion(e.q.x,e.q.y,e.q.z,e.q.w),qb=new T.Quaternion(t.q[0],t.q[1],t.q[2],t.q[3]);qa.slerp(qb,Math.min(1,dt*10));e.q={x:qa.x,y:qa.y,z:qa.z,w:qa.w};
       e.eng=t.e;e.gearPos=t.g;e.onGround=!!t.gd;e.ld=t.ld;e.laser=t.ls&&e.side===0?{x:t.ls[0],y:t.ls[1],z:t.ls[2]}:null;
       if(t.gun&&state==='fly'){e.gunT=(e.gunT||0)-dt;if(e.gunT<=0){e.gunT=1/14;const f=qrot(e.q,FWD);W.bullets.push({pos:vadd(e.pos,vmul(f,8)),vel:vadd(e.vel,vmul(f,1000)),t:0,owner:e,ghost:true});}}
-      if(t.lk===MP.id&&p.alive&&e.side===1){const fl=W.missiles.some(m=>m.alive&&m.owner===e&&m.target===p);W.netThreats.push({sym:({F15I:'15',F15C:'15',F16I:'16',F35I:'35',M346:'46'})[e.type]||'F',pos:e.pos,lvl:fl?2:1});}}
+      if(t.lk===MP.id&&p.alive&&e.side===1){const fl=W.missiles.some(m=>m.alive&&m.owner===e&&m.target===p);W.netThreats.push({sym:({F15I:'15',F15C:'15',F16I:'16',F35I:'35',F35C:'35',M346:'46'})[e.type]||'F',pos:e.pos,lvl:fl?2:1});}}
     /* my bombs: send a copy so the others see them fall */
     for(const b of W.bombs)if(b.owner===p&&!b.netId&&!b.ghost){b.netId=MP.id+':'+(mpg.netN++);MP.send({t:'b',p:[b.pos.x,b.pos.y,b.pos.z],v:[b.vel.x,b.vel.y,b.vel.z],tg:mpg.ref(b.target),lgb:b.lgb,gps:b.gps,ld:b.ld},true);}
     /* missiles decided here that the others hold as copies */

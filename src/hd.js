@@ -146,7 +146,7 @@ function buildF16HD(){const G=new T.Group(),ud=G.userData,M=hdm(),body=stdMat({m
   return hdFinish(G);}
 
 /* F-35I Adir: blended body with chines, caret intakes, canted twin tails, one engine, nothing hanging outside */
-function buildF35HD(){const G=new T.Group(),ud=G.userData,M=hdm(),body=stdMat({map:skin('ghost'),roughness:0.7,metalness:0.08});ud.ab=[];ud.bombs=[];ud.aams=[];
+function buildF35HD(o){o=o||{};const C=!!o.c,G=new T.Group(),ud=G.userData,M=hdm(),body=stdMat({map:skin('ghost'),roughness:0.7,metalness:0.08});ud.ab=[];ud.bombs=[];ud.aams=[];
   const fwd=[[-7.7,0.02,0.01,0.01,0,2],[-7.1,0.32,0.18,0.18,0,1.6],[-6.2,0.62,0.34,0.3,0,1.55],[-5.2,0.86,0.5,0.4,0.03,1.6],[-4.2,1.0,0.66,0.46,0.06,1.7],[-3.0,1.15,0.74,0.5,0.06,1.8]].map(([z,w,ht,hb,y,n])=>({z,w,ht,hb,y,n}));
   const nose=new T.Mesh(outward(loftGeo(fwd.slice(0,4),28)),body),front=new T.Mesh(outward(loftGeo(fwd.slice(3),28)),body);G.add(nose,front);
   const aft=[[-3.4,1.1,0.72,0.5,0.06,1.8],[-1.5,1.55,0.78,0.6,0.04,2.4],[1.0,1.7,0.74,0.62,0.02,2.8],[4.0,1.6,0.68,0.6,0.04,2.8],[6.0,1.25,0.6,0.6,0.05,2.5],[7.3,0.8,0.56,0.56,0.05,2.1],[7.8,0.7,0.56,0.56,0.05,2]].map(([z,w,ht,hb,y,n])=>({z,w,ht,hb,y,n}));
@@ -154,16 +154,18 @@ function buildF35HD(){const G=new T.Group(),ud=G.userData,M=hdm(),body=stdMat({m
   for(const s of[-1,1]){
     const it=[[-3.0,0.42,0.5,0.5,-0.05],[-1.2,0.48,0.52,0.5,-0.05],[1.0,0.36,0.4,0.42,-0.05]].map(([z,w,ht,hb,y])=>({x:s*1.42,z,w,ht,hb,y,n:2.6}));G.add(new T.Mesh(outward(loftGeo(it,22)),body));
     const mo=part(new T.CircleGeometry(1,16),M.dark,s*1.42,-0.05,-2.99,G);mo.scale.set(0.38,0.46,1);mo.rotation.y=Math.PI;
-    const wg=outward(foilGeo({span:1.4,y:0.12,le:-1.2,te:5.6,t:0.045},{span:5.35,y:0.12,le:3.4,te:4.4,t:0.035}));G.add(new T.Mesh(s>0?wg:mirX(wg),body));
+    const wg=outward(C?foilGeo({span:1.4,y:0.12,le:-1.4,te:5.8,t:0.045},{span:6.55,y:0.12,le:3.2,te:4.5,t:0.035}):foilGeo({span:1.4,y:0.12,le:-1.2,te:5.6,t:0.045},{span:5.35,y:0.12,le:3.4,te:4.4,t:0.035}));G.add(new T.Mesh(s>0?wg:mirX(wg),body));
     const st=outward(foilGeo({span:1.3,y:0,le:5.4-7.2,te:8.0-7.2,t:0.04},{span:3.5,y:0,le:7.4-7.2,te:8.3-7.2,t:0.035})),sh=new T.Group();sh.position.set(0,0.1,7.2);sh.add(new T.Mesh(s>0?st:mirX(st),body));G.add(sh);(ud.stabs=ud.stabs||[]).push({h:sh,side:s});
     const fg=new T.Group();fg.position.set(s*1.2,0.55,0);fg.rotation.z=-s*0.42;fg.add(new T.Mesh(outward(foilGeo({span:0,x:0,le:4.6,te:7.4,t:0.045},{span:2.9,x:0,le:7.1,te:8.2,t:0.035},true)),body));G.add(fg);
     const rd=part(new T.CircleGeometry(0.6,24),new T.MeshLambertMaterial({map:roundel,color:0xb8bcc0,polygonOffset:true,polygonOffsetFactor:-4}),s*3.4,0.19,3.1,G);rd.rotation.x=-Math.PI/2;
-    part(new T.SphereGeometry(0.09,8,6),new T.MeshBasicMaterial({color:s<0?0xff3030:0x30ff60}),s*5.35,0.14,4.0,G);
+    part(new T.SphereGeometry(0.09,8,6),new T.MeshBasicMaterial({color:s<0?0xff3030:0x30ff60}),s*(C?6.55:5.35),0.14,4.0,G);
     /* weapons bay doors along the belly */
     part(new T.BoxGeometry(0.9,0.02,3.6),stdMat({color:0x5f666c,roughness:0.75}),s*0.62,-0.6,1.4,G);}
   const can=part(new T.SphereGeometry(1,28,14,0,Math.PI*2,0,Math.PI/2),M.gold,0,0.7,-3.9,G);can.scale.set(0.5,0.46,2.2);can.renderOrder=3;
   ud.front=[nose,front,can,...hdPilot(G,-4.2,0.98)];ud.sb=new T.Group();G.add(ud.sb);
-  dressJet(G,{noPitot:true,tip:[5.3,0.14,4.0],nose:-7.7,spine:1.05,spineZ:2.2,noz:[],player:true,tanks:[],fins:[]});
+  /* the C's tail hook: an arm under the tail, folded flat, lowered for landing */
+  if(C){const hk=new T.Group();hk.position.set(0,-0.5,5.6);const arm=new T.CylinderGeometry(0.06,0.05,2.3,8);arm.rotateX(Math.PI/2);part(arm,M.dark,0,0,1.15,hk);part(new T.BoxGeometry(0.28,0.12,0.2),stdMat({color:0xd8c020,roughness:0.5}),0,-0.03,2.3,hk);G.add(hk);ud.hook=hk;}
+  dressJet(G,{noPitot:true,tip:[C?6.5:5.3,0.14,4.0],nose:-7.7,spine:1.05,spineZ:2.2,noz:[],player:true,tanks:[],fins:[]});
   ud.gear=new T.Group();G.add(ud.gear);hdGearLeg(ud.gear,0,-4.4,-0.55,1.0,0.33,0.2,false);hdGearLeg(ud.gear,-1.5,1.5,-0.5,1.04,0.36,0.25,false);hdGearLeg(ud.gear,1.5,1.5,-0.5,1.04,0.36,0.25,false);
   return hdFinish(G);}
 
@@ -340,6 +342,7 @@ function updCockpit(dt,p,W,cu){if(!cu.gauges)return;ckT+=dt;
 const CSPEC={F15:{w:[1.3,5.7,0.28,6.52,5.0,0.18],ail:[4.7,6.3],flap:[1.6,4.4],ch:0.55,fins:[[-1.82,0.7,8.9,4.0,9.3],[1.82,0.7,8.9,4.0,9.3]],ry:[0.35,0.85]},
   F16:{w:[0.9,3.9,0.06,4.75,3.4,0.06],ail:[1.0,3.7],flaperon:true,ch:0.5,fins:[[0,0.85,7.2,3.55,7.5]],ry:[0.3,0.9]},
   F35:{w:[1.4,5.6,0.12,5.35,4.4,0.12],ail:[1.7,4.7],flaperon:true,ch:0.55,fins:[]},
+  F35C:{w:[1.4,5.8,0.12,6.55,4.5,0.12],ail:[4.7,6.4],flap:[1.7,4.5],ch:0.55,fins:[]},
   M346:{w:[0.8,2.7,0.12,4.8,3.0,0.08],ail:[3.0,4.6],flap:[1.0,2.9],ch:0.42,fins:[[0,0.45,5.5,2.75,5.75]],ry:[0.3,0.85]}};
 function addMoving(G,key){const S=CSPEC[key],ud=G.userData;if(!S)return G;let body=null;G.traverse(o=>{if(!body&&o.isMesh&&o.material&&o.material.map&&o.material.map===(SKIN.desert||SKIN.gray||SKIN.ghost||SKIN.mig)&&o.material.map)body=o.material;});
   if(!body)G.traverse(o=>{if(!body&&o.isMesh&&o.material&&o.material.map)body=o.material;});const w=S.w,te=x=>w[1]+(w[4]-w[1])*(x-w[0])/(w[3]-w[0]),yy=x=>w[2]+(w[5]-w[2])*(x-w[0])/(w[3]-w[0]);
@@ -354,7 +357,7 @@ function addMoving(G,key){const S=CSPEC[key],ud=G.userData;if(!S)return G;let bo
     const lad=new T.Group(),mt=stdMat({color:0xc8c8c0,roughness:0.4,metalness:0.6}),top=hy-0.25,bot=-2.4,lx=-0.95;for(const dz of[-0.18,0.18])part(new T.BoxGeometry(0.03,top-bot,0.03),mt,lx,(top+bot)/2,cz0+dz,lad);
     for(let i=1;i<7;i++)part(new T.BoxGeometry(0.03,0.025,0.36),mt,lx,bot+(top-bot)*i/7,cz0,lad);lad.rotation.z=-0.12;lad.visible=false;G.add(lad);ud.ladder=lad;}
   return G;}
-function animMoving(ud,p,c,flaps,canOpen,parked){const k=0.25;if(ud.ail)for(const q of ud.ail){const t=q.side*clamp(c.roll,-1,1)*0.35+(ud.flaperon&&flaps?0.3:0);q.h.rotation.x+=(t-q.h.rotation.x)*k;}
+function animMoving(ud,p,c,flaps,canOpen,parked){if(ud.hook)ud.hook.rotation.x+=((p.hook?0.5:0)-ud.hook.rotation.x)*0.06;const k=0.25;if(ud.ail)for(const q of ud.ail){const t=q.side*clamp(c.roll,-1,1)*0.35+(ud.flaperon&&flaps?0.3:0);q.h.rotation.x+=(t-q.h.rotation.x)*k;}
   if(ud.flap)for(const q of ud.flap)q.h.rotation.x+=((flaps?0.55:0)-q.h.rotation.x)*k*0.4;
   if(ud.rud)for(const q of ud.rud)q.h.rotation.y+=(clamp(c.yaw,-1,1)*-0.4-q.h.rotation.y)*k;
   if(ud.hinge)ud.hinge.rotation.x+=((canOpen?-0.85:0)-ud.hinge.rotation.x)*0.06;if(ud.ladder)ud.ladder.visible=!!parked&&canOpen;}
