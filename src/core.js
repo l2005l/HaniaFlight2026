@@ -658,7 +658,12 @@ class World{
     this.helo=null;this.hoverT=120;if(csar){this.helo=new Helo(24000,Math.round(CP.z*0.4),CP);this.friends.push(this.helo);}
     this.wing=null;if(o.wing&&(strike||icpt||duel||sead||conv||esc||csar||cas||low||recon||stl||naval)){const p=this.player,gnd=p.onGround,wa=new Aircraft(pl.type,gnd?{x:RWY.x1+96,y:SITES.base.h+TYPES[pl.type].gearH,z:19,hdg:Math.PI/2,speed:0,throttle:0,gear:true,flaps:true,onGround:true}:{x:p.pos.x-22,y:p.pos.y+6,z:p.pos.z+50,hdg:Math.PI/2,pitch:0.05,speed:250,throttle:0.9});
       this.wing=new WingAI(wa,pl);this.wing.gnd=gnd;this.friends.push(wa);}
-    this.wx=o.wx==='wind'||o.wx==='storm'||o.wx==='fog'?o.wx:'clear';this.wind=this.wx==='storm'?v3(-3,0,9):this.wx==='wind'?v3(-2,0,7):null;this.player.wind=this.wind;
+    this.wx=o.wx==='wind'||o.wx==='storm'||o.wx==='fog'?o.wx:'clear';this.wind=this.wx==='storm'?v3(-3,0,9):this.wx==='wind'?v3(-2,0,7):null;this.player.wind=this.wind;this.wxF=1;
+    /* weather that changes during the sortie: a front with thunderstorms coming in from the sea, a crosswind building over the base
+       with gusts, or fog forming on the ground. Announced on the radio a couple of minutes before; it arrives over 40 seconds. */
+    this.wxPlan=[];if(o.wxDyn&&!o.net&&!train&&!tank){const r=o.rng||Math.random,mk=(k,at)=>this.wxPlan.push({k,at,warn:at-110});
+      const opts=[];if(this.wx!=='storm')opts.push('storm');if(this.wx!=='fog')opts.push('fog');opts.push('gust');
+      const a=opts[Math.floor(r()*opts.length)];mk(a,300+r()*240);if(r()<0.5){const b=opts.filter(x=>x!==a&&!(a==='storm'&&x==='fog')&&!(a==='fog'&&x==='storm'))[0];if(b)mk(b,this.wxPlan[0].at+240+r()*180);}}
     /* random faults: not every sortie; when there are any, one or two at random times */
     this.flt={};this.insErr={x:0,z:0};this.fltN=o.fail?(Math.random()<0.4?0:Math.random()<0.7?1:2):0;this.failT=this.fltN?150+Math.random()*420:null;this.birdAt=o.fail&&!tank&&!train&&Math.random()<0.35?(air||Math.random()<0.5?'app':'climb'):null;this.sig=Math.min(1,Math.pow(this.player.rcs/5,0.25));this.arm=air&&!train;this.contacts=[];this.lock=null;this.gtgt=null;this.irTgt=null;this.dlz=null;this.migsActive=duel;
     this.stats={uav:0,leak:0,mig:0,tgt:0,sam:!!this.stats0sam,shots:0,start:air?'air':cold?'cold':'runway'};this.over=null;this.flags={};this.tS=0;this.tM=0;this.tD=0;this.gunT=0;this.cmT=0;this.stopT=0;
@@ -1268,11 +1273,21 @@ class World{
     if(F.gps){this.gpsLostT=this.gpsLostT??t;const dt=t-this.gpsLostT;return{sats:0,epe:Math.round(8+dt*0.6),jam,mode:'INS',ins:this.sys.ins};}this.gpsLostT=null;
     const base=8+Math.round(1.5+1.5*Math.sin(t/97+p.pos.x/9e4)),sats=Math.max(0,Math.round(base*(1-jam*0.45))),epe=sats<4?Math.round(20+jam*20):Math.round(3+jam*12+Math.max(0,9-sats));
     return{sats,epe,jam,mode:sats>=4?'BLEND':'INS',ins:this.sys.ins};}
+  wxStep(dt){const t=this.time;if(this.wxF<1)this.wxF=Math.min(1,this.wxF+dt/40);
+    for(const e of this.wxPlan){
+      if(!e.warned&&t>=e.warn){e.warned=true;this.msg(e.k==='storm'?'בקר: חזית סוערת עם סופות רעמים מתקרבת מהים. תגיע לאזור בעוד כשתי דקות.':e.k==='fog'?'בקר: ערפל נוצר על הקרקע ומתעבה. בבסיס הראות יורדת, התכונן לנחיתה במכשירים.':'בקר: הרוח מתחזקת. בבסיס רוח צד מצפון, משבים חזקים. הערכה: עד 25 קשר.',true);}
+      if(!e.done&&t>=e.at){e.done=true;if(e.k==='gust'){this.windT=v3(-3,0,10);if(!this.wind){this.wind=v3(0,0,0);this.player.wind=this.wind;}}
+        else{this.wx=e.k;this.wxF=0;if(e.k==='storm'){this.windT=v3(-3,0,9);if(!this.wind){this.wind=v3(0,0,0);this.player.wind=this.wind;}}}
+        this.events.push({type:'wx',k:e.k});}}
+    /* the wind eases to its new strength over a minute, then blows in gusts */
+    if(this.windT&&this.wind){const w=this.wind,k=Math.min(1,dt/30);this.windB=this.windB||{...w};for(const a of['x','z'])this.windB[a]+=(this.windT[a]-this.windB[a])*k;
+      this.gT=(this.gT||0)-dt;if(this.gT<=0){this.gT=2+Math.random()*4;this.gK=0.8+Math.random()*0.45;}this.gk=(this.gk??1)+((this.gK||1)-(this.gk??1))*Math.min(1,dt*0.8);
+      w.x=this.windB.x*this.gk;w.z=this.windB.z*this.gk;}}
   /* home: for the carrier jet, only a trap counts */
   homeD(p){return this.cvHome&&this.carrier?(this.flags.trap?0:1e9):Math.hypot(p.pos.x,p.pos.z);}
   step(dt){
     this.time+=dt;const p=this.player;
-    p.turb=CLOUDS.length?turbAt(p.pos,this.wx==='storm'):0;
+    this.wxStep(dt);p.turb=CLOUDS.length?turbAt(p.pos,this.wx==='storm')*(this.wx==='storm'?this.wxF:1):0;
     /* in the back seat the jet is flown on the pilot's machine: here it only follows */
     this.systems(dt);if(!this.mirror){this.joinStep(dt);p.step(dt);this.catStep(dt);}this.cvStep(dt);for(const k of this.friends)if(k.type==='TANKER')k.step(dt);if(this.helo&&this.net!=='guest')this.helo.step(dt,this);
     if(this.net==='guest'){for(const L of[this.migs,this.drones,this.strikers.map(k=>k.ac)])for(const m of L)if(m.alive&&m.vel)m.pos=vadd(m.pos,vmul(m.vel,dt));if(this.helo&&this.helo.vel)this.helo.pos=vadd(this.helo.pos,vmul(this.helo.vel,dt));}

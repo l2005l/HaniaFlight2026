@@ -79,7 +79,7 @@ function ufcShow(){const b=$('ufc');if(!b)return;const vis=ufc.on&&state==='fly'
   $('ufcSoft').innerHTML=S.map(([l,k])=>`<button data-sk="${k}">${l}</button>`).join('');for(const x of $('ufcSoft').querySelectorAll('button'))x.onclick=()=>ufcSoft(x.dataset.sk);
   $('ufcSeat').textContent=rear.seat==='wso'?'BACK SEAT':rear.wso?'FRONT · WSO ON':'';ufc.last='';ufcDraw();}
 function ufcFlash(t){ufc.flash=t;ufc.flashT=2.2;ufc.last='';}
-function ufcSoft(k){beep(1000,0.02);const p=W.player,num=parseFloat(ufc.buf);
+function ufcSoft(k){click(0.6);const p=W.player,num=parseFloat(ufc.buf);
   if(k==='wp'||k==='wpPrev'){rear.cmd({a:k});if(rear.seat!=='wso')ufcFlash('WPT '+(W.wps[W.wp]||{}).n);}
   else if(k==='setE'||k==='setN'){if(!ufc.buf||isNaN(num)){ufcFlash('ENTER A NUMBER FIRST');return;}if(k==='setE')ufc.e=num;else ufc.n=num;ufc.buf='';ufcFlash(k==='setE'?'EAST SET':'NORTH SET');}
   else if(k==='here'){ufc.e=+(p.pos.x/1000).toFixed(1);ufc.n=+(-p.pos.z/1000).toFixed(1);ufcFlash('OWN POSITION');}
@@ -87,7 +87,7 @@ function ufcSoft(k){beep(1000,0.02);const p=W.player,num=parseFloat(ufc.buf);
   else if(k==='wpt'||k==='tgt'){if(ufc.e==null||ufc.n==null){ufcFlash('SET E AND N');return;}rear.cmd({a:'ufc',u:{k,e:ufc.e,n:ufc.n}});ufcFlash(k==='wpt'?'WAYPOINT ADDED':'TARGET SET');}
   else if(k==='wpn')rear.cmd({a:'wpn'});else if(k==='arm')(rear.seat==='wso'?rear.cmd({a:'sw',id:'arm'}):W.sw('arm'));
   ufcDraw();}
-function ufcKey(k){if(!ufc.on)return;beep(1300,0.015);if(k==='clr'){ufc.buf=ufc.buf.slice(0,-1);}else if(k==='ent'){if(ufc.page!=='crd')return;ufcFlash('PRESS E OR N');}else if(k==='-'){ufc.buf=ufc.buf.startsWith('-')?ufc.buf.slice(1):'-'+ufc.buf;}else if(ufc.buf.length<7&&!(k==='.'&&ufc.buf.includes('.')))ufc.buf+=k;ufc.last='';ufcDraw();}
+function ufcKey(k){if(!ufc.on)return;click(0.6);if(k==='clr'){ufc.buf=ufc.buf.slice(0,-1);}else if(k==='ent'){if(ufc.page!=='crd')return;ufcFlash('PRESS E OR N');}else if(k==='-'){ufc.buf=ufc.buf.startsWith('-')?ufc.buf.slice(1):'-'+ufc.buf;}else if(ufc.buf.length<7&&!(k==='.'&&ufc.buf.includes('.')))ufc.buf+=k;ufc.last='';ufcDraw();}
 function ufcDraw(){if(!ufc.on||!W)return;const p=W.player,w=W.w,L=[];
   if(ufc.page==='nav'){const q=W.wps[W.wp]||{n:'---',x:p.pos.x,z:p.pos.z},br=(x,z)=>{let b=Math.atan2(x-p.pos.x,-(z-p.pos.z))*R2D;if(b<0)b+=360;return String(Math.round(b)%360).padStart(3,'0');},rg=Math.hypot(q.x-p.pos.x,q.z-p.pos.z),gs=Math.max(30,Math.hypot(p.vel.x,p.vel.z));
     const H=W.carrier&&W.cvHome?{n:'CVN',x:W.carrier.pos.x,z:W.carrier.pos.z}:{n:'BASE',x:0,z:0};
