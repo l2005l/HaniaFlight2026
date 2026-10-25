@@ -10,15 +10,18 @@
    and only followed here. What the back seater does is sent to the pilot's machine as commands; what the jet carries,
    locks and aims at comes back five times a second. */
 const TWO_SEAT=['F15I','F16I','M346'];
-const rear={seat:null,pilot:null,wso:null,csT:0,podT:0,podSig:'',tgt:null,pickPrev:false,
+const rear={userT:-1e9,seat:null,pilot:null,wso:null,csT:0,podT:0,podSig:'',tgt:null,pickPrev:false,
   /* set up for a network game: who flies with whom */
   setup(cfg){rear.seat=null;rear.pilot=null;rear.wso=null;const c=cfg&&cfg.crew||{};
     for(const w in c){if(w===MP.id){rear.seat='wso';rear.pilot=c[w];}if(c[w]===MP.id)rear.wso=w;}
     if(rear.seat==='wso'&&W){W.mirror=true;W.cat=null;const p=W.player;p.hp=p.hpMax=1e9;
       /* the controls that belong to the front seat are sent there */
-      const ALLOW=['arm','rmode','rrng','rrngdn','ecm','radar','lights','ins'];
-      W.sw=id=>{if(ALLOW.includes(id)){rear.cmd({a:'sw',id});beep(1000,0.03);}else toast('רק הטייס במושב הקדמי');};
-      W.cycleTarget=()=>rear.cmd({a:'tgt'});W.unlock=()=>rear.cmd({a:'unlock'});W.select=k=>rear.cmd({a:'sel',k});W.resetFaults=()=>{rear.cmd({a:'reset'});return true;};
+      const ALLOW=['arm','rmode','rrng','rrngdn','ecm','radar','lights'];
+      /* only what the back seater does with his own hands goes forward: the world and the game here also call these by themselves
+         (an automatic start-up, a lost lock), and those calls must not reach the pilot's jet */
+      const mine=()=>performance.now()-rear.userT<500;W.autoStart=false;
+      W.sw=id=>{if(!mine())return false;if(ALLOW.includes(id)){rear.cmd({a:'sw',id});beep(1000,0.03);}else toast('רק הטייס במושב הקדמי');return false;};
+      W.cycleTarget=()=>{if(mine())rear.cmd({a:'tgt'});};W.unlock=()=>{if(mine())rear.cmd({a:'unlock'});};W.select=k=>{if(mine())rear.cmd({a:'sel',k});};W.resetFaults=()=>{if(mine())rear.cmd({a:'reset'});return true;};
       W.wingCmd=c2=>rear.cmd({a:'wing',c:c2});W.eject=()=>{rear.cmd({a:'eject'});return false;};
       ufc.on=true;ufc.page='wpn';ufcShow();}
     else if(rear.wso)ufc.on=false;},
@@ -77,7 +80,7 @@ function ufcShow(){const b=$('ufc');if(!b)return;const vis=ufc.on&&state==='fly'
   for(const x of $('ufcPages').querySelectorAll('button'))x.onclick=()=>{ufc.page=x.dataset.up;ufc.last='';ufcShow();beep(1100,0.02);};
   const S={nav:[['הקודם','wpPrev'],['הבא','wp']],crd:[['E','setE'],['N','setN'],['מיקום שלי','here'],['מהפוד','pod'],['לנקודת ציון','wpt'],['למטרה','tgt']],wpn:[['בחר נשק','wpn'],['חימוש ראשי','arm']],gps:[]}[ufc.page];
   $('ufcSoft').innerHTML=S.map(([l,k])=>`<button data-sk="${k}">${l}</button>`).join('');for(const x of $('ufcSoft').querySelectorAll('button'))x.onclick=()=>ufcSoft(x.dataset.sk);
-  $('ufcSeat').textContent=rear.seat==='wso'?'BACK SEAT':rear.wso?'FRONT · WSO ON':'';ufc.last='';ufcDraw();}
+  b.dataset.pad=ufc.page==='crd'?'1':'';b.dataset.t=touchOn?'1':'';$('ufcSeat').textContent=rear.seat==='wso'?'BACK SEAT':rear.wso?'FRONT · WSO ON':'';ufc.last='';ufcDraw();}
 function ufcFlash(t){ufc.flash=t;ufc.flashT=2.2;ufc.last='';}
 function ufcSoft(k){click(0.6);const p=W.player,num=parseFloat(ufc.buf);
   if(k==='wp'||k==='wpPrev'){rear.cmd({a:k});if(rear.seat!=='wso')ufcFlash('WPT '+(W.wps[W.wp]||{}).n);}
@@ -109,3 +112,5 @@ $('ufcX').onclick=()=>{ufc.on=false;ufcTick(0);};$('ufcBtn').onclick=()=>{ufc.on
 addEventListener('keydown',e=>{if(!ufc.on||state!=='fly')return;const t=e.target;if(t&&t.closest&&t.closest('input,textarea'))return;
   const k=/^(Digit|Numpad)([0-9])$/.exec(e.code);if(k){ufcKey(k[2]);e.stopImmediatePropagation();e.preventDefault();return;}
   if(e.code==='Period'||e.code==='NumpadDecimal'){ufcKey('.');e.stopImmediatePropagation();}else if(e.code==='Minus'||e.code==='NumpadSubtract'){ufcKey('-');e.stopImmediatePropagation();}else if(e.code==='Backspace'){ufcKey('clr');e.stopImmediatePropagation();e.preventDefault();}},true);
+
+for(const ev of['pointerdown','keydown','touchstart'])addEventListener(ev,()=>{rear.userT=performance.now();},true);

@@ -764,7 +764,7 @@ function newGame(start,preview){
 const keys={},stick={x:0,y:0,r:0},touch={on:false,x:0,y:0,gun:false,cm:false,brk:false};let lever=0,trigG=false,trigP=false,safeT=-9;const tap={gun:false,pickle:false,cm:false},ap={on:false,alt:0,hdg:0},look={yaw:0,pitch:0,g:0,drag:false,id:null,px:0,py:0,panel:false};let toastT=0,checkSig='';
 const WSEL=['AIM120','PYTHON','GUN','SPICE'];
 let mapOn=false,mapBg=null,padlock=false,ejT=-9;
-function act(a){if(!W||state!=='fly')return;const p=W.player;if(view===0&&!['view','mute','time','map'].includes(a))click(0.7);if(a==='ufc'){ufc.on=!ufc.on;ufcTick(0);beep(900,0.03);return;}if(rear.act(a))return;
+function act(a){if(!W||state!=='fly')return;const p=W.player;if(view===0&&!['view','mute','time','map'].includes(a))click(0.7);if(a==='ufc'){ufc.on=!ufc.on;ufcTick(0);beep(900,0.03);return;}rear.userT=performance.now();if(rear.act(a))return;
   if(a==='gear'||a==='flaps'||a==='arm'||a==='ardoor'||a==='rmode'||a==='rrng'||a==='rrngdn')W.sw(a);
   else if(a==='panel'){if(view===0)look.panel=!look.panel;}
   else if(a==='view')view^=1;
