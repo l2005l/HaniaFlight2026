@@ -522,9 +522,13 @@ function buildTanker(){const G=new T.Group(),bd=lam(0xb4b8bc),dk=lam(0x4c5258);
     part(new T.SphereGeometry(0.2,8,6),new T.MeshBasicMaterial({color:s<0?0xff3030:0x30ff60}),s*21.5,-0.5,10.4,G);}
   part(finGeo([[16,1.5],[23,1.5],[24.5,9.5],[21.5,9.5]],0.4),bd,0.2,0,0,G);
   /* refuelling boom, from the tail down to the contact position */
-  const a=new T.Vector3(0,-1.6,20.5),b=new T.Vector3(0,-6.2,30),d=b.clone().sub(a),boom=part(new T.CylinderGeometry(0.22,0.16,d.length(),8),lam(0xd8d8d4),0,0,0,G);
-  boom.position.copy(a).addScaledVector(d,0.5);boom.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),d.clone().normalize());
-  for(const s of[-1,1])part(new T.BoxGeometry(1.6,0.06,0.7),lam(0xd8d8d4),s*0.8,-5.5,28.6,G);
+  /* it hangs from a pivot under the tail: the operator flies it with its small wings and runs the inner tube out to the receiver */
+  const bm=lam(0xd8d8d4),piv=new T.Group();piv.position.set(0,-1.6,20.5);G.add(piv);
+  let bg=new T.CylinderGeometry(0.26,0.22,8,10);bg.rotateX(Math.PI/2);part(bg,bm,0,0,4,piv);
+  for(const s of[-1,1])part(new T.BoxGeometry(1.6,0.06,0.7),bm,s*0.8,0,7.3,piv).rotation.z=s*0.6;
+  bg=new T.CylinderGeometry(0.13,0.13,8,8);bg.rotateX(Math.PI/2);const inner=part(bg,lam(0xa8aaa8),0,0,6.6,piv);
+  const tip=part(new T.SphereGeometry(0.18,8,6),new T.MeshBasicMaterial({color:0xffe8a0}),0,0,4,inner);tip.visible=false;
+  G.userData.boom={piv,inner,tip,rest:new T.Vector3(0,-4.6,9.5),cur:new T.Vector3(0,-4.6,9.5)};
   /* pilot director lights under the belly: left bar up/down, right bar forward/back. The lit cell tells the receiver where to move. */
   const pdi=[[],[]];for(let b=0;b<2;b++)for(let i=0;i<5;i++){const m=part(new T.BoxGeometry(0.42,0.06,0.62),new T.MeshBasicMaterial({color:0x202020,fog:false}),b?1.15:-1.15,-1.95,-9+i*0.75,G);pdi[b].push(m);}
   for(const x of[-1.15,1.15])part(new T.BoxGeometry(0.6,0.04,4.1),lam(0x2a2d30),x,-1.9,-7.5,G);G.userData.pdi=pdi;
@@ -1103,13 +1107,13 @@ function noteKill(T,ground){if(!T||!T.pos||kills.length>=12)return;const p=W.pla
   const nm=T.name&&!/^(SAM|LNCH)$/.test(T.name)?T.name:T.type==='UAV'?'כטב"ם':T.type==='CM'?'טיל שיוט':T.type||'מטרה';
   kills.push({t:W.time,t0:best?best.t0:Math.max(0,W.time-6),rid:best?best.rid:0,pos:{...T.pos},name:nm,wpn:best?(best.o.s&&best.o.s.name||W.plane.bomb.name||'פצצה'):'תותח'});}
 const rp={t:0,i:0,ev:0,play:true,speed:1,az:0.7,el:0.22,dist:70,drag:false,px:0,py:0,pool:[],ui:-1,cam:0,vel:{x:0,y:0,z:-1},fly:null,recd:null};
-const RCAM=[['orbit','מצלמה: סיבוב'],['chase','מצלמה: מאחור'],['nose','מצלמה: אף'],['flyby','מצלמה: מעבר'],['weapon','מצלמה: חימוש']];
+const RCAM=[['orbit','מצלמה: סיבוב'],['chase','מצלמה: מאחור'],['nose','מצלמה: אף'],['flyby','מצלמה: מעבר'],['weapon','מצלמה: חימוש'],['top','מצלמה: מלמעלה']];
 function recFrame(){if(rec.length>36000)return;const p=W.player,o=new Float32Array(recObj.length*8);recObj.forEach((e,i)=>{const k=i*8;o[k]=e.pos.x;o[k+1]=e.pos.y;o[k+2]=e.pos.z;o[k+3]=e.q.x;o[k+4]=e.q.y;o[k+5]=e.q.z;o[k+6]=e.q.w;o[k+7]=e.alive?1:0;});
   const ms=[];for(const L of[W.missiles,W.bombs])for(const m of L)if(m.alive){if(!m._rid){m._rid=++ridN;if(m.owner===p&&!m.ghost)myW.push({rid:m._rid,o:m,t0:W.time});}ms.push(m.pos.x,m.pos.y,m.pos.z,m.vel.x,m.vel.y,m.vel.z,m._rid);}
   rec.push({t:W.time,p:[p.pos.x,p.pos.y,p.pos.z,p.q.x,p.q.y,p.q.z,p.q.w,p.eng,p.gearPos,p.alive?1:0,p.brakePos],o,m:ms});}
 const mmss=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
 function startReplay(k){if(rec.length<5)return;rp.kill=null;rp.last=null;for(const L of[W.missiles,W.bombs])for(const m of L)m.alive=false;W.bullets=[];emitters.length=0;chute.visible=false;for(const q of P)q.on=false;
-  rp.t=rec[0].t;rp.i=0;rp.ev=0;rp.play=true;rp.speed=1;rp.dist=70;rp.ui=-1;rp.cam=0;rp.fly=null;$('rpCam').textContent=RCAM[0][1];state='replay';show('debrief',false);show('replay',true);$('toast').dataset.on='';radioQ.length=0;$('radio').textContent='';$('rpPlay').textContent='השהה';$('rpSpeed').textContent='×1';
+  rp.foc=-1;rp.t=rec[0].t;rp.i=0;rp.ev=0;rp.play=true;rp.speed=1;rp.dist=70;rp.ui=-1;rp.cam=0;rp.fly=null;$('rpCam').textContent=RCAM[0][1];state='replay';show('debrief',false);show('replay',true);$('toast').dataset.on='';radioQ.length=0;$('radio').textContent='';$('rpPlay').textContent='השהה';$('rpSpeed').textContent='×1';
   if(k&&k.t){rp.kill=k;rp.t=Math.max(rec[0].t,(k.rid?k.t0:k.t-6)-0.5);rp.cam=k.rid?4:1;$('rpCam').textContent=RCAM[rp.cam][1];while(rp.i<rec.length-2&&rec[rp.i+1].t<=rp.t)rp.i++;}}
 function endReplay(){if(rp.recd)rp.recd.stop();for(const m of rp.pool)m.visible=false;state='debrief';show('replay',false);show('debrief',true);}
 function nq(a,i,b,j,k){let d=a[i]*b[j]+a[i+1]*b[j+1]+a[i+2]*b[j+2]+a[i+3]*b[j+3],sg=d<0?-1:1,x=lerp(a[i],b[j]*sg,k),y=lerp(a[i+1],b[j+1]*sg,k),z=lerp(a[i+2],b[j+2]*sg,k),w=lerp(a[i+3],b[j+3]*sg,k),l=Math.hypot(x,y,z,w)||1;return{x:x/l,y:y/l,z:z/l,w:w/l};}
@@ -1126,6 +1130,30 @@ function stepReplay(wall){const t1=rec[rec.length-1].t;if(rp.kill){const k=rp.ki
   while(rp.ev>0&&recEv[rp.ev-1].t>rp.t)rp.ev--;while(rp.ev<recEv.length&&recEv[rp.ev].t<=rp.t){const e=recEv[rp.ev++];if(rp.play&&rp.t-e.t<1.5)explosion(e.pos,e.size,e.ground);}
   const ui=rp.t*4|0;if(ui!==rp.ui){rp.ui=ui;const t0=rec[0].t;if(document.activeElement!==$('rpSeek'))$('rpSeek').value=String(Math.round((rp.t-t0)/Math.max(0.1,t1-t0)*1000));$('rpTime').textContent=mmss(rp.t)+' / '+mmss(t1);}}
 $('rpCam').onclick=()=>{rp.cam=(rp.cam+1)%RCAM.length;rp.fly=null;$('rpCam').textContent=RCAM[rp.cam][1];};
+/* Tacview-style view of the replay: every aircraft and weapon labelled with height and speed, its track for the last 40 seconds,
+   a drop line to the ground; tap a label to fly the camera round that one */
+function rpFocus(){if(rp.foc>=0){const e=recObj[rp.foc];if(e&&e.alive)return e.pos;}return W.player.pos;}
+const tacName=e=>e.type==='TANKER'?'TANKER':e.type==='HELO'?'HELO':e.type==='UAV'?'UAV':e.type==='CM'?'CRUISE':e.label||e.name||e.type||'?';
+function drawTac(){const A=rec[rp.i];if(!A)return;const i0=rp.i,step=10,N=40,p=W.player,cp=camera.position;rp.lbl=[];u=clamp(Math.min(vw,vh)/600,0.95,1.3);
+  ctx.save();ctx.lineWidth=1.4;ctx.textBaseline='middle';ctx.shadowColor='rgba(0,0,0,0.9)';ctx.shadowBlur=3;
+  const vel=(j,o)=>{const B=rec[Math.min(i0+1,rec.length-1)],P=rec[Math.max(0,i0-1)],dt=Math.max(0.05,B.t-P.t),a=o<0?P.p:P.o,b=o<0?B.p:B.o,k=o<0?0:o*8;if(!a||!b||b.length<=k+2)return 0;return Math.hypot(b[k]-a[k],b[k+1]-a[k+1],b[k+2]-a[k+2])/dt;};
+  const track=(get,col)=>{ctx.strokeStyle=col;ctx.globalAlpha=0.75;ctx.beginPath();let pen=false;for(let n=N;n>=0;n--){const j=i0-n*step;if(j<0)continue;const q=get(rec[j]);if(!q){pen=false;continue;}const s=proj(q[0],q[1],q[2]);if(!s.ok){pen=false;continue;}if(pen)ctx.lineTo(s.x,s.y);else ctx.moveTo(s.x,s.y);pen=true;}
+    const q=get(A);if(q&&pen){const s=proj(q[0],q[1],q[2]);if(s.ok)ctx.lineTo(s.x,s.y);}ctx.stroke();ctx.globalAlpha=1;};
+  const tag=(x,y,z,name,col,spd,id)=>{const s=proj(x,y,z);if(!s.ok)return;const g=proj(x,terrainH(x,z),z);ctx.strokeStyle=col;ctx.globalAlpha=0.35;if(g.ok)line(s.x,s.y,g.x,g.y);ctx.globalAlpha=1;
+    const r=5;ctx.beginPath();ctx.moveTo(s.x,s.y-r);ctx.lineTo(s.x+r,s.y);ctx.lineTo(s.x,s.y+r);ctx.lineTo(s.x-r,s.y);ctx.closePath();ctx.stroke();
+    if(id===rp.foc){ctx.beginPath();ctx.arc(s.x,s.y,11,0,7);ctx.stroke();}
+    const d=Math.hypot(x-cp.x,y-cp.y,z-cp.z);txt(name,s.x+9,s.y-8,'left',14,col);txt(`${Math.round(y*FT/100)*100}FT ${Math.round(spd*KT)}KT`+(id!==-1&&id!==-9?` ${(Math.hypot(x-p.pos.x,y-p.pos.y,z-p.pos.z)/NM).toFixed(1)}NM`:''),s.x+9,s.y+8,'left',12,col);
+    if(id!==-9)rp.lbl.push({x:s.x,y:s.y,id});};
+  const BLUE='#7cc4ff',REDC='#ff7a6e',WHT='#f2f2ea';
+  if(p.alive){track(F=>F.p.slice(0,3),BLUE);tag(p.pos.x,p.pos.y,p.pos.z,W.call||'OWN',BLUE,vel(0,-1),-1);}
+  recObj.forEach((e,i)=>{if(!e.alive)return;const c=e.side?REDC:BLUE;track(F=>F.o.length>i*8+7&&F.o[i*8+7]>0?[F.o[i*8],F.o[i*8+1],F.o[i*8+2]]:null,c);tag(e.pos.x,e.pos.y,e.pos.z,tacName(e),c,vel(0,i),i);});
+  /* weapons: their tracks are found by id in the earlier frames */
+  const n=A.m.length/7;for(let k=0;k<n;k++){const rid=A.m[k*7+6];track(F=>{for(let j=0;j<F.m.length;j+=7)if(F.m[j+6]===rid)return[F.m[j],F.m[j+1],F.m[j+2]];return null;},WHT);
+    tag(A.m[k*7],A.m[k*7+1],A.m[k*7+2],'WPN',WHT,Math.hypot(A.m[k*7+3],A.m[k*7+4],A.m[k*7+5]),-9);}
+  ctx.restore();}
+$('rpTac').onclick=()=>{rp.tac=!rp.tac;$('rpTac').dataset.on=rp.tac?'1':'';if(!rp.tac)rp.foc=-1;};
+glc.addEventListener('pointerup',e=>{if(state!=='replay'||!rp.tac||!rp.lbl)return;if(Math.hypot(e.clientX-rp.dx0,e.clientY-rp.dy0)>8)return;const r=glc.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
+  let b=null,bd=34;for(const l of rp.lbl){const d=Math.hypot(l.x-x,l.y-y);if(d<bd){bd=d;b=l;}}if(b){rp.foc=b.id;if(RCAM[rp.cam][0]!=='orbit'&&RCAM[rp.cam][0]!=='top'){rp.cam=0;$('rpCam').textContent=RCAM[0][1];}}});
 /* saving a clip: records the 3D view while the replay plays, where the browser can do it */
 const canClip=!NAT&&typeof MediaRecorder!=='undefined'&&!!glc.captureStream;$('rpRec').hidden=!canClip;
 $('rpRec').onclick=()=>{if(rp.recd){rp.recd.stop();return;}try{const parts=[],mr=new MediaRecorder(glc.captureStream(30));rp.recd=mr;$('rpRec').textContent='עצור ושמור';$('rpRec').dataset.on='1';
@@ -1134,7 +1162,7 @@ $('rpRec').onclick=()=>{if(rp.recd){rp.recd.stop();return;}try{const parts=[],mr
 $('watch').onclick=()=>startReplay();$('rpExit').onclick=endReplay;$('rpPlay').onclick=()=>{if(!rp.play&&rp.t>=rec[rec.length-1].t-0.05){rp.t=rec[0].t;rp.ev=0;}rp.play=!rp.play;$('rpPlay').textContent=rp.play?'השהה':'נגן';};
 $('rpSpeed').onclick=()=>{rp.speed=rp.speed>=8?1:rp.speed*2;$('rpSpeed').textContent='×'+rp.speed;};$('rpIn').onclick=()=>{rp.dist=Math.max(18,rp.dist*0.7);};$('rpOut').onclick=()=>{rp.dist=Math.min(4000,rp.dist*1.45);};
 $('rpSeek').oninput=e=>{const t0=rec[0].t,t1=rec[rec.length-1].t;rp.t=t0+(+e.target.value/1000)*(t1-t0);};
-glc.addEventListener('pointerdown',e=>{if(state!=='replay')return;rp.drag=true;rp.px=e.clientX;rp.py=e.clientY;try{glc.setPointerCapture(e.pointerId);}catch(_){}});
+glc.addEventListener('pointerdown',e=>{if(state!=='replay')return;rp.drag=true;rp.dx0=e.clientX;rp.dy0=e.clientY;rp.px=e.clientX;rp.py=e.clientY;try{glc.setPointerCapture(e.pointerId);}catch(_){}});
 glc.addEventListener('pointermove',e=>{if(state!=='replay'||!rp.drag)return;rp.az-=(e.clientX-rp.px)*0.006;rp.el=clamp(rp.el+(e.clientY-rp.py)*0.005,-0.3,1.4);rp.px=e.clientX;rp.py=e.clientY;});
 for(const ev of['pointerup','pointercancel'])glc.addEventListener(ev,()=>{rp.drag=false;});
 glc.addEventListener('wheel',e=>{if(state!=='replay')return;e.preventDefault();rp.dist=clamp(rp.dist*(e.deltaY>0?1.15:0.87),18,4000);},{passive:false});
@@ -1274,12 +1302,19 @@ function handleEvents(){const p=W.player,cp=camera.position;
     else if(e.type==='iff'){toast('זיהוי עמית־טורף: המטרה ידידותית. השיגור נחסם.');beep(240,0.2,0.07);}
     else if(e.type==='hurt'){shake=2;buzz([120,60,120]);for(let i=0;i<3;i++)setTimeout(()=>beep(880,0.12,0.09),i*220);}
     else if(e.type==='contact'||e.type==='lock'){beep(1300,0.08,0.06);buzz(30);}
+    else if(e.type==='breakaway'){beep(900,0.12,0.08,'square');setTimeout(()=>beep(900,0.12,0.08,'square'),220);buzz([60,40,60]);}
     else if(e.type==='deny'){beep(220,0.15,0.06);buzz([20,50,20]);}}
   W.events.length=0;}
 /* ================= frame ================= */
 const tv=new T.Vector3(),tq=new T.Quaternion(),tv2=new T.Vector3(),tq2=new T.Quaternion(),headE=new T.Euler(),HEAD_PITCH=-0.17;let camMode=1,hudM=400;
 function setQ(o,q){o.quaternion.set(q.x,q.y,q.z,q.w);}
 function aim(o,vel){tv.set(-vel.x,-vel.y,-vel.z).normalize();o.quaternion.setFromUnitVectors(tv2.set(0,0,1),tv);}
+/* the boom follows the receiver's receptacle (on the spine, behind the cockpit) when it is close behind; otherwise it trails at rest */
+function updBoom(m,k,dt){const B=m.userData.boom,p=W.player,a=W.ar,want=B.rest.clone();
+  if(W.sys.arDoor&&p.alive&&a.dist<40){const r=vadd(p.pos,qrot(p.q,v3(0,1.1,-2.5))),l=qrotInv(k.q,vsub(r,k.pos));tv.set(l.x,l.y,l.z).sub(B.piv.position);
+    const L=tv.length();if(L>7&&L<22&&tv.z>3){tv.multiplyScalar(Math.min(L,17)/L);tv.x=clamp(tv.x,-0.3*tv.z,0.3*tv.z);want.copy(tv);}}
+  B.cur.lerp(want,Math.min(1,dt*(a.state==='contact'?12:2.2)));const L=B.cur.length();
+  B.piv.quaternion.setFromUnitVectors(tv2.set(0,0,1),tv.copy(B.cur).normalize());B.inner.position.z=Math.max(4.2,L-4);B.tip.visible=a.state==='contact'||(W.sys.arDoor&&a.dist<40&&(clock*3|0)%2===0);}
 function updPdi(m){/* director lights: index 0 is the front of each bar */
       const a=W.ar,on=W.sys.arDoor&&a.dist<500,cell=(v,k)=>clamp(Math.round(v/k),-2,2);const up=on?cell(-a.rel.y,1.6*(a.box||1)):null,fa=on?cell(-a.rel.z,2.6*(a.box||1)):null;
       m.userData.pdi.forEach((bar,b)=>{const c=b?fa:up;bar.forEach((q,i)=>{const lit=c!=null&&(b?i===2-c:i===2-c);q.material.color.setHex(!lit?0x1c1c1c:c===0?0x40ff70:Math.abs(c)===1?0xffc040:0xff4030);});});}
@@ -1305,7 +1340,7 @@ function syncScene(dt){
   let di=0;const cp=camera.position;
   for(const[e,m]of meshOf){
     if(e.kind==='air'){if(!e.alive)continue;m.position.set(e.pos.x,e.pos.y,e.pos.z);setQ(m,e.q);
-      if(m.userData.pdi)updPdi(m);if(m.userData.ab)for(const f of m.userData.ab)f.visible=e.eng>1.02;if(m.userData.rot){m.userData.rot.rotation.y+=dt*27;m.userData.trot.rotation.x+=dt*60;if(dt>0&&e.pos.y-terrainH(e.pos.x,e.pos.z)<40&&rnd()<0.5)spawn(v3(e.pos.x+(rnd()-0.5)*16,terrainH(e.pos.x,e.pos.z)+1,e.pos.z+(rnd()-0.5)*16),v3((rnd()-0.5)*14,2,(rnd()-0.5)*14),2,5,20,terrainH(e.pos.x,e.pos.z)<1?[0.9,0.93,0.95]:[0.72,0.66,0.55],0.25);}if(e.remote&&e.ld&&m.userData.bombs){const ud2=m.userData,L={aim120:e.ld[0],python:e.ld[1]};ud2.bombs.forEach((b,i)=>b.visible=i<e.ld[2]);ud2.aams.forEach(b=>b.visible=(L[b.userData.k]||0)>b.userData.th);if(ud2.tanks)ud2.tanks.forEach((t,i)=>t.visible=i<e.ld[3]);}if(m.userData.wing&&e.gearPos!=null)m.userData.gear.visible=e.gearPos>0.3;
+      if(m.userData.pdi)updPdi(m);if(m.userData.boom)updBoom(m,e,dt);if(m.userData.ab)for(const f of m.userData.ab)f.visible=e.eng>1.02;if(m.userData.rot){m.userData.rot.rotation.y+=dt*27;m.userData.trot.rotation.x+=dt*60;if(dt>0&&e.pos.y-terrainH(e.pos.x,e.pos.z)<40&&rnd()<0.5)spawn(v3(e.pos.x+(rnd()-0.5)*16,terrainH(e.pos.x,e.pos.z)+1,e.pos.z+(rnd()-0.5)*16),v3((rnd()-0.5)*14,2,(rnd()-0.5)*14),2,5,20,terrainH(e.pos.x,e.pos.z)<1?[0.9,0.93,0.95]:[0.72,0.66,0.55],0.25);}if(e.remote&&e.ld&&m.userData.bombs){const ud2=m.userData,L={aim120:e.ld[0],python:e.ld[1]};ud2.bombs.forEach((b,i)=>b.visible=i<e.ld[2]);ud2.aams.forEach(b=>b.visible=(L[b.userData.k]||0)>b.userData.th);if(ud2.tanks)ud2.tanks.forEach((t,i)=>t.visible=i<e.ld[3]);}if(m.userData.wing&&e.gearPos!=null)m.userData.gear.visible=e.gearPos>0.3;
       const d=Math.hypot(e.pos.x-cp.x,e.pos.y-cp.y,e.pos.z-cp.z);if(d>500&&d<(e.type==='UAV'?5000:15000)&&di<16){dp[di*3]=e.pos.x;dp[di*3+1]=e.pos.y;dp[di*3+2]=e.pos.z;di++;}}
     else if(e.kind==='msl'||e.kind==='bomb'){
       if(!e.alive){dyn.remove(m);meshOf.delete(e);continue;}
@@ -1355,7 +1390,8 @@ function syncScene(dt){
     else if(wm){tv.set(0,2.5,16).applyQuaternion(wm.quaternion);floor(wm.position.x+tv.x,wm.position.y+tv.y,wm.position.z+tv.z);tv.set(0,0,-200).applyQuaternion(wm.quaternion);camera.lookAt(wm.position.x+tv.x,wm.position.y+tv.y,wm.position.z+tv.z);if(rp.kill)rp.last={x:camera.position.x,y:camera.position.y,z:camera.position.z};}
     /* the weapon has hit: hold the camera where it was and watch the target go */
     else if(mode==='weapon'&&rp.kill&&rp.last&&rp.t>rp.kill.t-1){const L=rp.last,K=rp.kill.pos,dx=L.x-K.x,dy=L.y-K.y,dz=L.z-K.z,d=Math.hypot(dx,dy,dz)||1,r=Math.min(d,140);floor(K.x+dx/d*r,K.y+Math.max(25,dy/d*r),K.z+dz/d*r);camera.lookAt(K.x,K.y+3,K.z);}
-    else{const a=rp.az,el=rp.el,ce=Math.cos(el),x=p.pos.x+Math.sin(a)*ce*rp.dist,z=p.pos.z+Math.cos(a)*ce*rp.dist;floor(x,p.pos.y+Math.sin(el)*rp.dist,z);camera.lookAt(p.pos.x,p.pos.y,p.pos.z);}}
+    else if(mode==='top'){const f=rpFocus(),h=clamp(rp.dist*45,1500,90000);camera.position.set(f.x,f.y+h,f.z+h*0.02);camera.up.set(0,0,-1);camera.lookAt(f.x,f.y,f.z);}
+    else{const f=rpFocus(),a=rp.az,el=rp.el,ce=Math.cos(el),x=f.x+Math.sin(a)*ce*rp.dist,z=f.z+Math.cos(a)*ce*rp.dist;floor(x,f.y+Math.sin(el)*rp.dist,z);camera.lookAt(f.x,f.y,f.z);}}
   else if(state==='menu'){const a=clock*0.12+0.9;camera.position.set(p.pos.x+Math.cos(a)*34,p.pos.y+7+Math.sin(clock*0.2)*2,p.pos.z+Math.sin(a)*34);camera.up.set(0,1,0);camera.lookAt(p.pos.x,p.pos.y+0.6,p.pos.z);}
   else if(!p.alive){camera.up.set(0,1,0);tv.set(p.pos.x,p.pos.y,p.pos.z);if(camera.position.distanceTo(tv)<60)camera.position.set(p.pos.x-90,p.pos.y+40,p.pos.z+60);camera.lookAt(tv);}
   else if(view===0){const ey=W.plane.eye,e=qrot(p.q,v3(ey[0],ey[1],ey[2])),bob=clamp((p.g-1)*0.006,-0.02,0.05),up=qrot(p.q,UP);
@@ -1557,7 +1593,7 @@ function renderTgp(){const g=podTgt(),on=!!tgpR&&state==='fly'&&!!g&&!xr.on;tgpF
   const cv=cockpit.visible,pv=pMesh.visible,y=vh-r.y-r.s;cockpit.visible=false;pMesh.visible=false;renderer.setScissorTest(true);renderer.setScissor(r.x,y,r.s,r.s);renderer.setViewport(r.x,y,r.s,r.s);renderer.render(scene,tgpCam);
   renderer.setScissorTest(false);renderer.setViewport(0,0,vw,vh);cockpit.visible=cv;pMesh.visible=pv;for(const m of hid)m.visible=true;pmat.uniforms.scale.value=ps;}
 function drawHUD(){tgpR=null;mfdR=null;mfdRR=null;if(W&&W.gtgt&&!W.gtgt.pt)podLast=W.gtgt;
-  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.direction='ltr';ctx.clearRect(0,0,vw,vh);if(state!=='fly'&&state!=='pause'||!W){if(!$('podBar').hidden)$('podBar').hidden=true;return;}podFrame();
+  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.direction='ltr';ctx.clearRect(0,0,vw,vh);if(state==='replay'&&rp.tac&&W)drawTac();if(state!=='fly'&&state!=='pause'||!W){if(!$('podBar').hidden)$('podBar').hidden=true;return;}podFrame();
   const p=W.player,w=W.w,m=Math.min(vw,vh),cx=vw/2,cy=vh/2;u=clamp(m/700,touchOn?0.72:0.62,1.3);
   const e=p.euler(),kcas=p.V*Math.sqrt((p.rho||1.225)/1.225)*KT,altF=p.pos.y*FT,blink=(clock*4|0)%2===0;
   {const pb=placeBelow(p);if(pb&&!mapOn){ctx.save();ctx.direction='rtl';ctx.font=`600 ${Math.round(15*u)}px Assistant,Arial,sans-serif`;ctx.textAlign='center';ctx.fillStyle='rgba(241,234,216,0.9)';ctx.shadowColor='rgba(0,0,0,0.8)';ctx.shadowBlur=4;ctx.fillText('מעל '+pb,cx,touchOn?92*u:108*u);ctx.restore();}}

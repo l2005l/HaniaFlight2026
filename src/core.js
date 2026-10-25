@@ -862,6 +862,14 @@ class World{
     const assist=this.diff==='hard'?0:1,bx=this.diff==='easy'?1.7:this.diff==='normal'?1.3:1,pull=this.diff==='easy'?70:this.diff==='normal'?45:0;a.box=bx;
     if(a.state!=='contact'){
       if(a.dist<700&&!a.called){a.called=true;this.msg('מתדלק: רואה אותך. התקרב לעמדת המגע, מאחורי הזנב ומתחתיו.');}
+      /* the boom operator talks the receiver in: the biggest error first, in metres; too fast a closure is a breakaway */
+      if(a.dist<45&&!this.arJoin){a.opT=(a.opT||0)-dt;const clos=-qrotInv(tk.q,rv).z;
+        if(a.dist<25&&clos>3.5&&(a.brkT??-99)<this.time-8){a.brkT=this.time;a.opT=4;this.msg('בום: ברייקאוויי, ברייקאוויי! הורד כוח ורד אחורה.');this.events.push({type:'breakaway'});}
+        else if(a.opT<=0){a.opT=3.2;const ex=rel.x,ey=rel.y,ez=rel.z,m=Math.max(Math.abs(ex)/(5*bx),Math.abs(ey)/(4*bx),Math.abs(ez)/(7*bx));
+          if(m<1)this.msg('בום: יציב. החזק.');
+          else{const n=v=>Math.max(1,Math.round(Math.abs(v)));let t;
+            if(Math.abs(ez)/(7*bx)>=m-1e-6)t=ez>0?`קדימה ${n(ez)}`:`אחורה ${n(ez)}`;else if(Math.abs(ey)/(4*bx)>=m-1e-6)t=ey<0?`למעלה ${n(ey)}`:`למטה ${n(ey)}`;else t=ex>0?`שמאלה ${n(ex)}`:`ימינה ${n(ex)}`;
+            this.msg('בום: '+t+'.');}}}
       if(Math.abs(rel.x)<5*bx&&Math.abs(rel.y)<4*bx&&Math.abs(rel.z)<7*bx&&vlen(rv)<7){a.t+=dt;if(a.t>1.5){a.state='contact';a.full=false;this.msg('מתדלק: מגע. דלק זורם.');this.events.push({type:'contact'});}}else a.t=0;
       if(assist&&!this.arJoin&&a.dist<pull)p.vel=vadd(p.vel,vadd(vmul(rv,-1.1*dt),v3(-relW.x*0.22*dt,-relW.y*0.9*dt,-relW.z*0.22*dt)));
     }else{
