@@ -22,7 +22,11 @@ function skinTex(scheme,seed){let sd=seed||7;const rr=()=>{sd=(sd*16807)%2147483
     x.strokeStyle='rgba(30,30,28,0.2)';for(let i=0;i<34;i++){const a=rr()*w,b=rr()*w,c=14+rr()*60,d=10+rr()*40;x.strokeRect(a,b,c,d);}
     x.fillStyle='rgba(20,20,18,0.22)';for(let i=0;i<5200;i++){const a=(rr()*16|0)/16*w+(rr()<0.5?3:-3),b=rr()*w;x.fillRect(a,b,1.6,1.6);}
     x.fillStyle='rgba(40,34,26,0.07)';for(let i=0;i<120;i++){x.fillRect(rr()*w,rr()*w,4+rr()*10,40+rr()*160);}
-    for(let i=0;i<9000;i++){const g=rr()<0.5?0:255;x.fillStyle=`rgba(${g},${g},${g},0.035)`;x.fillRect(rr()*w,rr()*w,2,2);}});}
+    for(let i=0;i<9000;i++){const g=rr()<0.5?0:255;x.fillStyle=`rgba(${g},${g},${g},0.035)`;x.fillRect(rr()*w,rr()*w,2,2);}
+    /* wear: fluid and exhaust streaks running aft, worn paint along panel edges, a few touched-up patches */
+    for(let i=0;i<70;i++){const a=rr()*w,b=rr()*w,l=40+rr()*220,g=x.createLinearGradient(a,b,a+l,b);g.addColorStop(0,'rgba(25,22,18,0.16)');g.addColorStop(1,'rgba(25,22,18,0)');x.fillStyle=g;x.fillRect(a,b,l,2+rr()*4);}
+    for(let i=0;i<260;i++){x.fillStyle=`rgba(210,210,200,${0.05+rr()*0.08})`;x.fillRect((rr()*16|0)/16*w+(rr()-0.5)*6,rr()*w,1+rr()*3,1+rr()*2);}
+    for(let i=0;i<10;i++){x.fillStyle=`rgba(${rr()<0.5?255:0},${rr()<0.5?255:0},0,0.025)`;x.fillRect(rr()*w,rr()*w,20+rr()*50,14+rr()*30);}});}
 const SKIN={};function skin(s){return SKIN[s]||(SKIN[s]=skinTex(s,{desert:11,gray:23,ghost:37,mig:41}[s]));}
 /* a body lofted through cross-sections: superellipses with separate top and bottom heights */
 function loftGeo(secs,seg=28){const P=[],UV=[],I=[],z0=secs[0].z,L=secs[secs.length-1].z-z0||1;
@@ -246,11 +250,33 @@ function ckDrawLamps(L,p,W,single){const on=CKL.map(([n,f],i)=>{if(single&&i===1
   const x=L.ctx;x.fillStyle='#050505';x.fillRect(0,0,256,128);x.font='700 15px monospace';x.textAlign='center';x.textBaseline='middle';
   CKL.forEach(([n],i)=>{const cx=4+(i%3)*84,cy=4+(i/3|0)*31,lit=on[i],red=i<3||i===11;x.fillStyle=lit?(red?(blink||i>1?'#ff3a28':'#7a1408'):'#ffb020'):'#161616';x.fillRect(cx,cy,80,27);x.fillStyle=lit?'#1a0a00':'#3b3b36';x.fillText(single&&i===0?'FIRE':n,cx+40,cy+14);});return true;}
 /* a glove: palm, four fingers curled round a grip, a thumb, the cuff and the sleeve going back to the pilot */
-function ckGlove(mirror,mat,sleeve){const G=new T.Group(),s=mirror?-1:1;part(new T.BoxGeometry(0.07,0.032,0.085),mat,0,0,0.02,G);
-  for(let i=0;i<4;i++){const f=new T.CylinderGeometry(0.0095,0.009,0.05,8);f.rotateX(Math.PI/2);const m=part(f,mat,-0.026+i*0.0175,-0.014,-0.035,G);m.rotation.x=0.9;}
-  const th=new T.CylinderGeometry(0.011,0.01,0.05,8);th.rotateX(Math.PI/2);const t=part(th,mat,s*0.04,0.008,-0.01,G);t.rotation.y=s*0.6;
-  const cu=new T.CylinderGeometry(0.036,0.034,0.05,12);cu.rotateX(Math.PI/2);part(cu,mat,0,0.004,0.085,G);
-  const sl=new T.CylinderGeometry(0.046,0.04,0.3,12);sl.rotateX(Math.PI/2);const sm=part(sl,sleeve,s*0.02,-0.03,0.25,G);sm.rotation.x=-0.25;return G;}
+/* the pilot: fabric and leather textures, a hand with jointed fingers curled round a grip, a sleeve with folds, legs with knees,
+   a G-suit over the thighs and flying boots. Everything is smooth-shaded so it reads as cloth and leather, not boxes. */
+function ckFabric(k,base,dark,opt){return ckTex(k,256,256,(x,w,h)=>{x.fillStyle=base;x.fillRect(0,0,w,h);
+  for(let i=0;i<9000;i++){const v=Math.random();x.fillStyle=v<0.5?`rgba(0,0,0,${0.05*Math.random()})`:`rgba(255,255,255,${0.04*Math.random()})`;x.fillRect(Math.random()*w,Math.random()*h,1+Math.random()*2,1);}
+  for(let y=0;y<h;y+=3){x.fillStyle='rgba(0,0,0,0.035)';x.fillRect(0,y,w,1);}
+  x.strokeStyle=dark;x.lineWidth=1.4;x.setLineDash([3,2]);for(const sx of opt&&opt.seams||[]){x.beginPath();x.moveTo(sx*w,0);x.lineTo(sx*w,h);x.stroke();}x.setLineDash([]);
+  if(opt&&opt.pocket){x.strokeStyle=dark;x.lineWidth=2;x.strokeRect(w*0.55,h*0.25,w*0.3,h*0.35);x.fillStyle='rgba(0,0,0,0.12)';x.fillRect(w*0.55,h*0.25,w*0.3,h*0.05);x.fillStyle='#777';x.fillRect(w*0.56,h*0.255,w*0.28,2);}
+  if(opt&&opt.lace){x.strokeStyle='rgba(20,20,16,0.7)';x.lineWidth=1.5;for(let y=10;y<h;y+=14){x.beginPath();x.moveTo(w*0.46,y);x.lineTo(w*0.54,y+7);x.moveTo(w*0.54,y);x.lineTo(w*0.46,y+7);x.stroke();}}
+  if(opt&&opt.leather){for(let i=0;i<500;i++){x.strokeStyle=`rgba(0,0,0,${0.06*Math.random()})`;x.beginPath();const a=Math.random()*w,b=Math.random()*h;x.moveTo(a,b);x.lineTo(a+Math.random()*10-5,b+Math.random()*4);x.stroke();}}});}
+const tube=(pts,r,mat,seg)=>new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts.map(q=>new T.Vector3(q[0],q[1],q[2]))),seg||14,r,10,false),mat);
+const ball=(r,mat,x,y,z,sx,sy,sz)=>{const m=new T.Mesh(new T.SphereGeometry(r,16,12),mat);m.position.set(x,y,z);m.scale.set(sx||1,sy||1,sz||1);return m;};
+function lathe(prof,mat,seg){const g=new T.LatheGeometry(prof.map(q=>new T.Vector2(q[0],q[1])),seg||20);return new T.Mesh(g,mat);}
+/* a hand in its own frame: palm down at the origin, fingers towards -z, curling down round an axis along x at y=-0.02, z=-0.045;
+   the thumb on -x for a right hand (mirror for the left) */
+function ckGlove(mirror,mat,sleeve,curl){const G=new T.Group(),s=mirror?-1:1,R=0.021,c=curl??1;
+  const palmMat=mat.leather,backMat=mat.back;
+  G.add(ball(0.046,backMat,0,0.004,-0.006,1,0.42,1.12));G.add(ball(0.043,palmMat,0,-0.006,-0.004,0.96,0.34,1.08));
+  [[-0.025,0.062,0.0088],[-0.0085,0.07,0.0094],[0.0085,0.066,0.009],[0.024,0.052,0.0082]].forEach(([fx,L,r])=>{fx*=-s;const a=L/R*c,P=[];for(let k=0;k<=8;k++){const t=a*k/8;P.push([fx,-R+R*Math.cos(t)+0.002,-0.045-R*Math.sin(t)]);}
+    P.unshift([fx,0.002,-0.03]);G.add(tube(P,r,backMat,16));G.add(ball(r*1.02,backMat,P[P.length-1][0],P[P.length-1][1],P[P.length-1][2]));G.add(ball(r*1.15,backMat,fx,0.006,-0.042));
+    G.add(ball(r*1.18,palmMat,fx,-0.004,-0.05,1,0.7,0.8));});
+  const tx=0.038*s;G.add(tube([[tx*0.6,-0.004,0.01],[tx,-0.01,-0.012],[tx*1.05,-0.022,-0.034],[tx*0.75,-0.032,-0.05],[tx*0.45,-0.036,-0.06]],0.0105,palmMat,14));G.add(ball(0.0108,palmMat,tx*0.45,-0.036,-0.06));
+  const cu=lathe([[0.0,0],[0.036,0],[0.04,0.01],[0.041,0.05],[0.038,0.06],[0,0.06]],backMat,18);cu.rotation.x=Math.PI/2;cu.position.set(0,0.0,0.035);G.add(cu);
+  return G;}
+/* a sleeve (or any limb) from a to b with folds along it */
+function ckLimb(a,b,r0,r1,mat,folds){const d=new T.Vector3(b[0]-a[0],b[1]-a[1],b[2]-a[2]),L=d.length(),P=[];const n=folds?18:6;
+  for(let i=0;i<=n;i++){const t=i/n,r=r0+(r1-r0)*t+(folds?Math.sin(t*Math.PI*folds)*0.004*(1-Math.abs(0.5-t)):0);P.push([r,t*L]);}P.unshift([0.001,0]);P.push([0.001,L]);
+  const m=lathe(P,mat,20);const q=new T.Quaternion().setFromUnitVectors(new T.Vector3(0,1,0),d.normalize());m.quaternion.copy(q);m.position.set(a[0],a[1],a[2]);return m;}
 function dressCockpit(G,kind,panel){const ud=G.userData,f35=kind==='F35I',f16=kind==='F16I',side=f16||f35,classic=kind==='F15C';
   const base=classic?'#1d2329':f35?'#16181a':kind==='M346'?'#25282a':'#1b1d1f';
   /* the panel faces and the consoles get textures */
@@ -273,16 +299,19 @@ function dressCockpit(G,kind,panel){const ud=G.userData,f35=kind==='F35I',f16=ki
   /* warning-light panel */
   {const w=classic?0.16:0.14;const x0=classic?0.5:f35?0.36:0.52,y0=classic?-0.2:f35?-0.2:0.06;part(new T.BoxGeometry(w+0.01,w*0.5+0.01,0.012),stdMat({color:0x0a0a0a}),x0,y0,0.022,panel);part(new T.PlaneGeometry(w,w*0.5),ckLamps(ud),x0,y0,0.03,panel);}
   /* ejection handle, legs in flight-suit green and a kneeboard on the right thigh with the route */
-  const suit=stdMat({color:0x4f5640,roughness:0.95}),boot=stdMat({color:0x151515,roughness:0.7});
-  {const h=new T.TorusGeometry(0.05,0.009,6,16,Math.PI);const hm2=stdMat({map:ckTex('eject',64,8,(x,w,h)=>{for(let i=0;i<8;i++){x.fillStyle=i%2?'#111':'#e8c020';x.fillRect(i*8,0,8,h);}}),roughness:0.6});const e=part(h,hm2,0,-0.78,-0.08,G);e.rotation.x=-0.3;}
-  for(const s of[-1,1]){const th=new T.CylinderGeometry(0.068,0.062,0.46,12);th.rotateX(Math.PI/2);const t=part(th,suit,s*0.15,-0.95,-0.16,G);t.rotation.x=-0.1;
-    const sh=new T.CylinderGeometry(0.052,0.048,0.42,12);const m=part(sh,suit,s*0.15,-1.08,-0.5,G);m.rotation.x=0.5;part(new T.BoxGeometry(0.1,0.08,0.22),boot,s*0.15,-1.24,-0.66,G);}
-  {const c=document.createElement('canvas');c.width=192;c.height=256;const t=new T.CanvasTexture(c);t.minFilter=T.LinearFilter;ud.knee={ctx:c.getContext('2d'),tex:t,sig:null};const kb=part(new T.PlaneGeometry(0.14,0.19),new T.MeshLambertMaterial({map:t}),0.15,-0.882,-0.2,G);kb.rotation.x=-Math.PI/2+0.12;}
-  /* gloved hands */
-  const glove=stdMat({color:0x8a8266,roughness:0.92}),sleeve=suit;
-  /* right hand round the stick grip: palm turned in, fingers round the front; left hand resting on the throttle grip */
-  {const r=ckGlove(false,glove,sleeve);r.rotation.set(0.15,0,Math.PI/2);r.scale.setScalar(side?0.85/0.62:0.85);r.position.set(side?0.045:0.028,side?0.1:0.35,side?0.012:0.012);ud.stick.add(r);}
-  {const l=ckGlove(true,glove,sleeve);l.scale.setScalar(0.8);l.position.set(0,0.052,0.02);l.rotation.x=0.12;ud.thr.add(l);}
+  const suit=stdMat({map:ckFabric('suit','#56604a','rgba(30,34,24,0.7)',{seams:[0.5],pocket:true}),roughness:0.97}),gsuit=stdMat({map:ckFabric('gsuit','#4a5040','rgba(25,28,20,0.8)',{lace:true}),roughness:0.95}),
+    boot=stdMat({map:ckFabric('boot','#1c1b19','rgba(0,0,0,0.6)',{leather:true}),roughness:0.55,metalness:0.05});
+  {const h=new T.TorusGeometry(0.05,0.009,8,20,Math.PI);const hm2=stdMat({map:ckTex('eject',64,8,(x,w,h)=>{for(let i=0;i<8;i++){x.fillStyle=i%2?'#111':'#e8c020';x.fillRect(i*8,0,8,h);}}),roughness:0.6});const e=part(h,hm2,0,-0.8,-0.06,G);e.rotation.x=-0.3;}
+  for(const s of[-1,1]){const hip=[s*0.15,-0.98,0.12],knee=[s*0.16,-0.86,-0.36],ank=[s*0.15,-1.22,-0.62];
+    G.add(ckLimb(hip,knee,0.085,0.062,suit,3));G.add(ckLimb([hip[0],hip[1]+0.005,hip[2]-0.04],[knee[0],knee[1]+0.004,knee[2]+0.06],0.093,0.072,gsuit,0));
+    G.add(ball(0.066,suit,knee[0],knee[1],knee[2],1,0.95,1.05));G.add(ckLimb(knee,ank,0.06,0.045,suit,4));
+    G.add(ckLimb([ank[0],ank[1]+0.1,ank[2]+0.06],ank,0.055,0.052,boot,0));G.add(ball(0.06,boot,ank[0],ank[1]-0.03,ank[2]-0.09,0.9,0.6,1.8));}
+  {const c=document.createElement('canvas');c.width=192;c.height=256;const t=new T.CanvasTexture(c);t.minFilter=T.LinearFilter;ud.knee={ctx:c.getContext('2d'),tex:t,sig:null};const kb=part(new T.PlaneGeometry(0.13,0.18),new T.MeshLambertMaterial({map:t}),0.155,-0.79,-0.17,G);kb.rotation.x=-Math.PI/2+0.25;
+    const strap=part(new T.BoxGeometry(0.2,0.004,0.025),stdMat({color:0x202018,roughness:0.9}),0.155,-0.79,-0.1,G);strap.rotation.x=0.25;}
+  const glove={back:stdMat({map:ckFabric('gback','#6f6d55','rgba(30,30,20,0.6)',{seams:[0.3,0.7]}),roughness:0.95}),leather:stdMat({map:ckFabric('gpalm','#9a8462','rgba(40,30,20,0.6)',{leather:true}),roughness:0.75})};
+  {const r=ckGlove(false,glove,suit,1.05),k=side?1/0.62:1;r.rotation.set(0,0,-Math.PI/2);r.scale.setScalar(k*0.95);const gy=side?0.1:0.36;r.position.set(0.02*k,gy,0.045*k);ud.stick.add(r);
+    const w=[0.02*k,gy,0.1*k],el=side?[0.2*k,-0.15*k,0.42*k]:[0.14,gy-0.32,0.36];ud.stick.add(ckLimb(w,el,0.04*k,0.05*k,suit,4));}
+  {const l=ckGlove(true,glove,suit,0.8);l.scale.setScalar(0.92);l.position.set(0,0.034,0.016);ud.thr.add(l);ud.thr.add(ckLimb([0,0.034,0.07],[-0.08,-0.2,0.4],0.04,0.05,suit,4));}
   /* panel lights at night, and the canopy: sun glare and rain */
   ud.plight=new T.PointLight(0x9fd8b0,0,1.8,1.5);ud.plight.position.set(0,-0.25,-0.35);G.add(ud.plight);
   ud.glare=part(new T.PlaneGeometry(2.4,1.3),new T.MeshBasicMaterial({map:ckTex('glare',256,128,(x,w,h)=>{const g=x.createRadialGradient(w*0.7,h*0.25,2,w*0.7,h*0.25,w*0.6);g.addColorStop(0,'rgba(255,250,235,0.9)');g.addColorStop(0.2,'rgba(255,245,225,0.25)');g.addColorStop(1,'rgba(255,245,225,0)');x.fillStyle=g;x.fillRect(0,0,w,h);x.strokeStyle='rgba(255,255,255,0.12)';x.lineWidth=6;x.beginPath();x.moveTo(w*0.1,h*0.9);x.lineTo(w*0.5,h*0.1);x.stroke();}),transparent:true,opacity:0,depthWrite:false,blending:T.AdditiveBlending,fog:false}),0,0.05,-0.66,G);ud.glare.renderOrder=6;
@@ -304,3 +333,26 @@ function updCockpit(dt,p,W,cu){if(!cu.gauges)return;ckT+=dt;
   const f=new T.Vector3(0,0,-1).applyQuaternion(camera.quaternion),sd=Math.max(0,f.dot(sunDir));cu.glare.material.opacity=tod==='night'?0:Math.pow(sd,4)*0.35*(tod==='dusk'?1.3:1);
   const wet=W.wx==='storm'&&(camera.position.y<DECK||(typeof cloudIn==='function'&&cloudIn(camera.position,true).s));cu.rain.material.opacity+=((wet?0.75:0)-cu.rain.material.opacity)*Math.min(1,dt*(wet?2:0.4));
   if(cu.rain.material.opacity>0.01){cu.rain.material.map.offset.y+=dt*(0.05+p.V/400);cu.rain.material.map.offset.x+=dt*0.01;}}
+
+/* ================= moving parts outside: ailerons or flaperons, flaps, rudders, an opening canopy and a boarding ladder ================= */
+const CSPEC={F15:{w:[1.3,5.7,0.28,6.52,5.0,0.18],ail:[4.7,6.3],flap:[1.6,4.4],ch:0.55,fins:[[-1.82,0.7,8.9,4.0,9.3],[1.82,0.7,8.9,4.0,9.3]],ry:[0.35,0.85]},
+  F16:{w:[0.9,3.9,0.06,4.75,3.4,0.06],ail:[1.0,3.7],flaperon:true,ch:0.5,fins:[[0,0.85,7.2,3.55,7.5]],ry:[0.3,0.9]},
+  F35:{w:[1.4,5.6,0.12,5.35,4.4,0.12],ail:[1.7,4.7],flaperon:true,ch:0.55,fins:[]},
+  M346:{w:[0.8,2.7,0.12,4.8,3.0,0.08],ail:[3.0,4.6],flap:[1.0,2.9],ch:0.42,fins:[[0,0.45,5.5,2.75,5.75]],ry:[0.3,0.85]}};
+function addMoving(G,key){const S=CSPEC[key],ud=G.userData;if(!S)return G;let body=null;G.traverse(o=>{if(!body&&o.isMesh&&o.material&&o.material.map&&o.material.map===(SKIN.desert||SKIN.gray||SKIN.ghost||SKIN.mig)&&o.material.map)body=o.material;});
+  if(!body)G.traverse(o=>{if(!body&&o.isMesh&&o.material&&o.material.map)body=o.material;});const w=S.w,te=x=>w[1]+(w[4]-w[1])*(x-w[0])/(w[3]-w[0]),yy=x=>w[2]+(w[5]-w[2])*(x-w[0])/(w[3]-w[0]);
+  const surf=(x0,x1,s,list)=>{const z0=te(x0),z1=te(x1),o=new T.Group(),h=new T.Group(),L=x1-x0;o.position.set(s*(x0+x1)/2,yy((x0+x1)/2)+0.005,(z0+z1)/2-S.ch);o.rotation.y=-s*Math.atan2(z1-z0,L);G.add(o);o.add(h);
+    const m=part(new T.BoxGeometry(L,0.035,S.ch),body,0,0,S.ch/2,h);m.castShadow=true;part(new T.BoxGeometry(L,0.012,0.012),stdMat({color:0x1a1b1c}),0,0.019,0.004,h);list.push({h,side:s});};
+  ud.ail=[];ud.flap=[];ud.rud=[];for(const s of[-1,1]){surf(S.ail[0],S.ail[1],s,ud.ail);if(S.flap)surf(S.flap[0],S.flap[1],s,ud.flap);}ud.flaperon=!!S.flaperon;
+  for(const[fx,r0,t0,r1,t1]of S.fins){const ya=r0+(r1-r0)*S.ry[0],yb=r0+(r1-r0)*S.ry[1],za=t0+(t1-t0)*S.ry[0],zb=t0+(t1-t0)*S.ry[1],ch=0.6,o=new T.Group(),h=new T.Group();o.position.set(fx,(ya+yb)/2,(za+zb)/2-ch);o.rotation.x=Math.atan2(zb-za,yb-ya);G.add(o);o.add(h);
+    const m=part(new T.BoxGeometry(0.05,yb-ya,ch),body,0,0,ch/2,h);m.castShadow=true;ud.rud.push({h});}
+  /* canopy on a hinge at its rear; a ladder that hangs on the left when the jet is parked open */
+  let can=null;G.traverse(o=>{if(!can&&o.isMesh&&o.geometry.type==='SphereGeometry'&&(o.material===HDM.glass||o.material===HDM.gold)&&o.scale.z>1.5)can=o;});
+  if(can){const cz0=can.position.z,hz=can.position.z+can.scale.z*0.92,hy=can.position.y,hg=new T.Group();hg.position.set(0,hy,hz);G.add(hg);for(const o of[can,ud.fr].filter(Boolean)){o.position.y-=hy;o.position.z-=hz;G.remove(o);hg.add(o);}ud.hinge=hg;
+    const lad=new T.Group(),mt=stdMat({color:0xc8c8c0,roughness:0.4,metalness:0.6}),top=hy-0.25,bot=-2.4,lx=-0.95;for(const dz of[-0.18,0.18])part(new T.BoxGeometry(0.03,top-bot,0.03),mt,lx,(top+bot)/2,cz0+dz,lad);
+    for(let i=1;i<7;i++)part(new T.BoxGeometry(0.03,0.025,0.36),mt,lx,bot+(top-bot)*i/7,cz0,lad);lad.rotation.z=-0.12;lad.visible=false;G.add(lad);ud.ladder=lad;}
+  return G;}
+function animMoving(ud,p,c,flaps,canOpen,parked){const k=0.25;if(ud.ail)for(const q of ud.ail){const t=q.side*clamp(c.roll,-1,1)*0.35+(ud.flaperon&&flaps?0.3:0);q.h.rotation.x+=(t-q.h.rotation.x)*k;}
+  if(ud.flap)for(const q of ud.flap)q.h.rotation.x+=((flaps?0.55:0)-q.h.rotation.x)*k*0.4;
+  if(ud.rud)for(const q of ud.rud)q.h.rotation.y+=(clamp(c.yaw,-1,1)*-0.4-q.h.rotation.y)*k;
+  if(ud.hinge)ud.hinge.rotation.x+=((canOpen?-0.85:0)-ud.hinge.rotation.x)*0.06;if(ud.ladder)ud.ladder.visible=!!parked&&canOpen;}

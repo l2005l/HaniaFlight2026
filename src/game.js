@@ -616,7 +616,7 @@ function buildF35(){const G=new T.Group(),body=lam(0x6d747b),dk=lam(0x555b61),da
   return G;}
 function buildCruise(){const G=new T.Group(),m=lam(0x8d9296);let g=new T.CylinderGeometry(0.3,0.3,5.2,8);g.rotateX(Math.PI/2);part(g,m,0,0,0,G);g=new T.ConeGeometry(0.3,0.9,8);g.rotateX(-Math.PI/2);part(g,m,0,0,-3.05,G);
   part(new T.BoxGeometry(3.0,0.06,0.6),m,0,0.1,0.2,G);part(new T.BoxGeometry(1.2,0.05,0.4),m,0,0,2.3,G);part(new T.BoxGeometry(0.05,0.6,0.4),m,0,0.3,2.3,G);G.userData.gear=new T.Group();return G;}
-const mkPlayer=t=>t==='M346'?buildM346HD():t==='F16I'?buildF16HD():t==='F35I'?buildF35HD():t==='F15C'?buildF15HD({camo:'gray',player:true,no:'688'}):buildF15HD({camo:'il',cft:true,two:true,player:true});
+const mkPlayer=t=>t==='M346'?addMoving(buildM346HD(),'M346'):t==='F16I'?addMoving(buildF16HD(),'F16'):t==='F35I'?addMoving(buildF35HD(),'F35'):t==='F15C'?addMoving(buildF15HD({camo:'gray',player:true,no:'688'}),'F15'):addMoving(buildF15HD({camo:'il',cft:true,two:true,player:true}),'F15');
 const mkDrone=d=>d.type==='CM'?buildCruise():buildDrone();
 /* ground crew: a crew chief who signals with wands, and two mechanics who pull the chocks */
 function buildPerson(vest,wands){const G=new T.Group(),skin=lam(0xc9a27e),suit=lam(0x3f4a3a),ud=G.userData;
@@ -1263,6 +1263,7 @@ function syncScene(dt){
   pMesh.position.set(p.pos.x,p.pos.y,p.pos.z);setQ(pMesh,p.q);pMesh.visible=p.alive;const inPit=view===0&&(state==='fly'||state==='pause')&&p.alive&&!W.ejected;updChute(dt);updCrew(dt);updTraffic(dt);dchute.visible=!!p.dragChute&&state!=='replay';if(dchute.visible){dchute.position.set(p.pos.x,p.pos.y,p.pos.z);setQ(dchute,p.q);}for(const o of ud.front)o.visible=!inPit;
   ud.gear.visible=p.gearPos>0.3;for(const f of ud.ab){f.visible=p.eng>1.02;f.scale.set(1,1,0.5+(p.eng-1)*2.2+rnd()*0.22);}ud.sb.rotation.x=-p.brakePos*0.75;
   if(ud.stabs){const c=p.ctl,pv=state==='fly'?clamp(c.pitch,-1,1):0,rv=state==='fly'?clamp(c.roll,-1,1):0;for(const q of ud.stabs)q.h.rotation.x+=((-pv*0.34+q.side*rv*0.13)-q.h.rotation.x)*0.3;}
+  {const fl=state==='fly'||state==='pause',parked=p.onGround&&p.V<1&&(state==='menu'||!W.flags.airborne);animMoving(ud,p,fl?p.ctl:{roll:0,yaw:0},p.flaps,state==='menu'?true:W.sys.canopy>0.3,parked);}
   if(ud.strobe)ud.strobe.visible=(clock%1.3)<0.09&&W.sys.lights;if(ud.tanks)ud.tanks.forEach((t,i)=>t.visible=i<(W.w.tanks||0));
   const w=W.w;ud.bombs.forEach((b,i)=>b.visible=i<w.spice);ud.aams.forEach(b=>b.visible=w[b.userData.k]>b.userData.th);
   let di=0;const cp=camera.position;
@@ -1400,6 +1401,7 @@ function frame(now){if(!xr.on)requestAnimationFrame(frame);if(eco&&now-last<31&&
   mpg.tick(dt);if(sdt>0)updParticles(sdt);syncScene(sdt);updWx();updRadio(dt);updCheck(dt);updAudio(dt);
   if(xr.on&&W){const p=W.player;view=0;look.panel=false;xr.rig.position.copy(camera.position);xr.rig.quaternion.set(p.q.x,p.q.y,p.q.z,p.q.w);camera.position.set(0,0,0);camera.quaternion.identity();
     const vis=state==='fly'||state==='pause';vrHud.m.visible=vrHud.m2.visible=vis&&p.alive;if(vis&&p.alive){vrHud.m.position.set(0,0.02,-0.62);vrHud.m2.position.set(0,-0.3,-0.55);vrHud.m2.rotation.x=-0.5;drawVrHud();}}
+  if(window.__cam)try{window.__cam(camera,W,T);}catch(e){}
   renderer.render(scene,camera);renderTgp();drawHUD();}
 /* ================= HUD ================= */
 const HUDC='#74ff96',AMB='#ffbe55',RED='#ff5c4f',hudWarn={pull:false,stall:false,coll:false};let u=1;
@@ -1815,7 +1817,7 @@ await prog(0.96);
 applyOpts();newGame('runway',true);requestAnimationFrame(frame);
 try{if(localStorage.getItem('haniaflight-pend')==='camp2'){localStorage.removeItem('haniaflight-pend');setTimeout(()=>openBrief(2),400);}}catch(e){}
 {const n=$('loadMs');if(n)n.textContent=(performance.now()/1000).toFixed(1);}
-window.__mpPeers=()=>MP.peers.values();window.__mpMic=()=>({mic:!!MP.mic,live:MP.mic?MP.mic.readyState:null,on:mpg.on});window.__raam={ff:s=>{for(let i=0;i<s*120;i++){W.trigger(trigG,trigP,1/120);W.step(1/120);if(i%6===0)handleEvents();if(i%12===0)recFrame();}handleEvents();},kills:()=>kills,parts:()=>P.filter(q=>q.on).map(q=>[Math.round(q.x),Math.round(q.y),Math.round(q.z),+q.s0.toFixed(1),+q.a.toFixed(2)]),look,pod,podAct,podSlew:(dx,dy)=>podSlew(dx,dy,200),dbgBetty:()=>({bufs:Object.keys(Betty.buf),last:Betty.last,coll:hudWarn.coll,pull:hudWarn.pull}),dbg:()=>({cb:[cloudBall.visible,cloudBall.material.opacity,cloudBall.material.color.r,cloudIn(camera.position,W&&W.wx==='storm')],tgp:tgpR,fx:tgpFx.style.display,fov:tgpCam.fov,ll:landLight.visible,li:landLight.intensity,glow:nightGlow.map(g=>g.visible),tod,eco}),get W(){return W;},start,keys,setTOD,get cockpit(){return cockpit;},camera,act,opts,get state(){return state;},ready:true};
+window.__mpPeers=()=>MP.peers.values();window.__mpMic=()=>({mic:!!MP.mic,live:MP.mic?MP.mic.readyState:null,on:mpg.on});window.__raam={get pMesh(){return pMesh;},ff:s=>{for(let i=0;i<s*120;i++){W.trigger(trigG,trigP,1/120);W.step(1/120);if(i%6===0)handleEvents();if(i%12===0)recFrame();}handleEvents();},kills:()=>kills,parts:()=>P.filter(q=>q.on).map(q=>[Math.round(q.x),Math.round(q.y),Math.round(q.z),+q.s0.toFixed(1),+q.a.toFixed(2)]),look,pod,podAct,podSlew:(dx,dy)=>podSlew(dx,dy,200),dbgBetty:()=>({bufs:Object.keys(Betty.buf),last:Betty.last,coll:hudWarn.coll,pull:hudWarn.pull}),dbg:()=>({cb:[cloudBall.visible,cloudBall.material.opacity,cloudBall.material.color.r,cloudIn(camera.position,W&&W.wx==='storm')],tgp:tgpR,fx:tgpFx.style.display,fov:tgpCam.fov,ll:landLight.visible,li:landLight.intensity,glow:nightGlow.map(g=>g.visible),tod,eco}),get W(){return W;},start,keys,setTOD,get cockpit(){return cockpit;},camera,act,opts,get state(){return state;},ready:true};
 if(demFail){opts.theatre='south';try{localStorage.setItem('haniaflight-opts',JSON.stringify(opts));}catch(e){}toast('מפת ישראל לא נטענה (אין חיבור?). חזרתי לזירת הדרום.');}
 $('loading').hidden=true;$('guide2').innerHTML=$('guide').innerHTML;
 /* first run: time a few frames of the menu scene and pick the graphics level that this device can hold; never over a choice the player made */
