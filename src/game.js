@@ -803,7 +803,10 @@ for(const ev of['pointerup','pointercancel'])glc.addEventListener(ev,e=>{if(e.po
 $('lookBack').onclick=()=>{look.panel=false;};$('nvgBtn').onclick=()=>act('nvg');$('mapBtn').onclick=()=>act('map');$('ecmBtn').onclick=()=>act('ecm');$('wingBtn').onclick=()=>act('wing');$('padBtn').onclick=()=>act('padlock');$('hookBtn').onclick=()=>act('hook');$('micBtn').onclick=()=>{if(voice.busy)micStop();else listen();};$('joinBtn').onclick=()=>act('join');
 $('bettyTest').onclick=()=>{Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();Betty.load();const k=['pull','bingo','coll','msl'][(Betty.tn=(Betty.tn||0)+1)%4];setTimeout(()=>{delete Betty.last[k];if(!Betty.say(k,10,0))toast(opts.betty==='off'?'ההתרעות הקוליות כבויות':'הצליל עוד נטען, נסה שוב');},350);};$('doorBtn').onclick=()=>act('ardoor');{const hb=$('mfdHit');let st=null;hb.addEventListener('pointerdown',e=>{try{hb.setPointerCapture(e.pointerId);}catch(x){}st={x:e.clientX,y:e.clientY,mv:false};});
   hb.addEventListener('pointermove',e=>{if(!st)return;const dx=e.clientX-st.x,dy=e.clientY-st.y;if(!st.mv&&Math.hypot(dx,dy)<8)return;if(!tgpR&&!pod.free&&!pod.trk&&mfdPage!==4)return;st.mv=true;podSlew(dx,dy,mfdR?mfdR.s:200);st.x=e.clientX;st.y=e.clientY;});
-  hb.addEventListener('pointerup',()=>{if(st&&!st.mv)act('mfd');st=null;});hb.addEventListener('pointercancel',()=>{st=null;});}
+  hb.addEventListener('pointerup',e=>{if(st&&!st.mv){const r=hb.getBoundingClientRect(),S2=sar.rect;
+      /* on the SAR page: the tab strip changes page, the title shoots a new picture (or changes scale), the picture designates */
+      if(mfdPage===5&&S2&&e.clientY<r.bottom-16*u){const lx=e.clientX-r.left+mfdR.x,ly=e.clientY-r.top+mfdR.y;if(ly<S2.y){if(e.clientX-r.left<r.width/2){sar.zi=(sar.zi+1)%SARZ.length;}sar.busy=performance.now()/1000+1.6;sar.img=null;}else sarTap(clamp((lx-S2.x)/S2.m,0,1),clamp((ly-S2.y)/S2.m,0,1));}
+      else if(mfdPage===5&&!sar.img&&e.clientY<r.bottom-16*u)sar.busy=performance.now()/1000+1.6;else act('mfd');}st=null;});hb.addEventListener('pointercancel',()=>{st=null;});}
 $('mfdHitR').onclick=()=>act('mfdR');$('mfdBtnR').onclick=()=>act('mfdR');
 for(const b of $('podBar').querySelectorAll('button'))b.addEventListener('click',()=>podAct(b.dataset.pod));$('mfdBtn').onclick=()=>act('mfd');$('panelBtn').onclick=()=>act('panel');$('resetBtn').onclick=()=>act('reset');$('tiltBtn').onclick=()=>{if(!tilt.on)tiltOn(true);tilt.p0=tilt.pit??null;toast('הטיה: המצב הנוכחי הוא עכשיו "ישר"');};
 $('wcamBtn').onclick=()=>act('wcam');$('relightBtn').onclick=()=>act('relight');
@@ -1596,7 +1599,7 @@ function drawMap(p,e,after){if(W.flt.map){ctx.save();ctx.fillStyle='rgba(2,6,8,0
 let tgpR=null;const tgpCam=new T.PerspectiveCamera(3,1,20,260000),tgpFx=document.createElement('div');
 tgpFx.style.cssText='position:absolute;pointer-events:none;display:none;backdrop-filter:grayscale(1) contrast(1.3) brightness(0.82);-webkit-backdrop-filter:grayscale(1) contrast(1.3) brightness(0.82)';hudc.parentNode.insertBefore(tgpFx,hudc);
 /* what the targeting pod shows: the live target, or for a few seconds after it dies the spot where it was, so the hit can be seen */
-let tgpHold=null,podLast=null,wcam=null,lowT=-99,mfdPage=0,mfdR=null;let mfdPageR=0,mfdRR=null,mfdAuto={sel:null,mw:false,thr:0};const MFDPR=['TEWS','EW','RDR','MAP','WPN'],MFDNR=['איומים','ל"א','מכ"ם','מפה','חימוש'];const MFDP=['RDR','MAP','WPN','EW','POD'],MFDN=['מכ"ם','מפה','חימוש','ל"א','פוד'];
+let tgpHold=null,podLast=null,wcam=null,lowT=-99,mfdPage=0,mfdR=null;let mfdPageR=0,mfdRR=null,mfdAuto={sel:null,mw:false,thr:0};const MFDPR=['TEWS','EW','RDR','MAP','WPN'],MFDNR=['איומים','ל"א','מכ"ם','מפה','חימוש'];const MFDP=['RDR','MAP','WPN','EW','POD','SAR'],MFDN=['מכ"ם','מפה','חימוש','ל"א','פוד','מכ"ם קרקע'];
 function camWpn(){const p=W.player;for(const b of W.bombs)if(b.alive&&b.owner===p&&!b.lgb&&!b.gps)return b;for(const m of W.missiles)if(m.alive&&m.cruise&&m.owner===p)return m;return null;}
 /* the targeting pod can be flown by hand: slew it (drag on its window), zoom, track a point or an aircraft, lase, change the picture */
 const pod={free:false,dir:null,zoom:1,trk:null,mode:0,big:false,laser:false},PODZ=[22,6,1.6],PODM=['TV','WHT','BHT'],PODF=['grayscale(1) contrast(1.3) brightness(0.82)','grayscale(1) contrast(1.9) brightness(0.62)','grayscale(1) invert(1) contrast(1.6) brightness(0.92)'];
@@ -1651,6 +1654,32 @@ function renderTgp(){const g=podTgt(),on=!!tgpR&&state==='fly'&&!!g&&!xr.on;tgpF
   const hid=[];for(const L of[W.bombs,W.missiles])for(const q of L){const m=meshOf.get(q);if(m&&m.visible&&(q===v.wpn||vdist(q.pos,src)<600)){m.visible=false;hid.push(m);}}
   const cv=cockpit.visible,pv=pMesh.visible,y=vh-r.y-r.s;cockpit.visible=false;pMesh.visible=false;renderer.setScissorTest(true);renderer.setScissor(r.x,y,r.s,r.s);renderer.setViewport(r.x,y,r.s,r.s);renderer.render(scene,tgpCam);
   renderer.setScissorTest(false);renderer.setViewport(0,0,vw,vh);cockpit.visible=cv;pMesh.visible=pv;for(const m of hid)m.visible=true;pmat.uniforms.scale.value=ps;}
+/* SAR: the radar paints a picture of the ground, through cloud and in the dark. One shot images a square patch (10, 5 or 2.5 km)
+   around the target, or 20 km ahead; the beam must look at least 10 degrees off the nose (straight ahead there is no Doppler
+   spread to make the picture from). Slopes facing the jet return brightly, water and radar shadow are dark, vehicles and
+   buildings are bright points. Tapping the picture designates that point: it becomes the target and the pod looks there. */
+const sar={img:null,at:0,S:10000,zi:0,busy:0,msg:''},SARZ=[10000,5000,2500];
+function sarShoot(){const p=W.player,g=W.gtgt&&W.gtgt.alive?W.gtgt.pos:null,f=qrot(p.q,FWD),fh=vnorm(v3(f.x,0,f.z));
+  if(!W.sys.radar||W.dmgRadar){sar.msg='RADAR OFF';return;}
+  const c=g?{x:g.x,z:g.z}:{x:p.pos.x+fh.x*20000,z:p.pos.z+fh.z*20000},dx=c.x-p.pos.x,dz=c.z-p.pos.z,Rg=Math.hypot(dx,dz);
+  if(Rg>80000){sar.msg='OUT OF RANGE';return;}const sq=Math.acos(clamp((dx*fh.x+dz*fh.z)/(Rg||1),-1,1))*R2D;
+  /* line of sight is "up" in the picture */
+  const ux=dx/(Rg||1),uz=dz/(Rg||1),N=128,S=SARZ[sar.zi],cv=document.createElement('canvas');cv.width=cv.height=N;const x2=cv.getContext('2d'),im=x2.createImageData(N,N),d=im.data,blur=sq<10;
+  const hy=p.pos.y;for(let j=0;j<N;j++)for(let i=0;i<N;i++){const a=(i/(N-1)-0.5)*S,b=(0.5-j/(N-1))*S,wx=c.x+ux*b-uz*a,wz=c.z+uz*b+ux*a,h=terrainH(wx,wz),k=(j*N+i)*4;
+      let v;if(R.isWater(wx,wz))v=8+Math.random()*10;else{const e=6,hx=terrainH(wx+e,wz)-terrainH(wx-e,wz),hz=terrainH(wx,wz+e)-terrainH(wx,wz-e),nx=-hx/(2*e),nz=-hz/(2*e),nl=Math.hypot(nx,1,nz),
+        lx=p.pos.x-wx,ly=hy-h,lz=p.pos.z-wz,ll=Math.hypot(lx,ly,lz),cosI=(nx*lx+ly+nz*lz)/(nl*ll);v=clamp(30+Math.pow(Math.max(0,cosI),0.7)*180+(Math.random()-0.5)*34,0,225);
+        /* radar shadow: a ridge between the jet and this point */
+        const t=0.985,sx=wx+lx*(1-t),sz=wz+lz*(1-t);if(terrainH(sx,sz)>h+ly*(1-t)+3)v*=0.15;}
+      if(blur)v=v*0.3+60+Math.random()*40;d[k]=v*0.82;d[k+1]=v;d[k+2]=v*0.86;d[k+3]=255;}
+  x2.putImageData(im,0,0);
+  /* hard returns: anything man-made in the patch */
+  const pts=[];if(!blur){x2.fillStyle='#f4fff4';for(const o of[...W.ground,...(W.troops||[])]){if(!o.alive||!o.pos)continue;const rx=o.pos.x-c.x,rz=o.pos.z-c.z,a=-uz*rx+ux*rz,b=ux*rx+uz*rz;if(Math.abs(a)>S/2||Math.abs(b)>S/2)continue;
+      const px=(a/S+0.5)*(N-1),py=(0.5-b/S)*(N-1),r=Math.max(1.6,(o.kind==='site'?90:o.kind==='ship'?60:18)/S*N);x2.fillStyle='rgba(244,255,244,0.35)';x2.fillRect(px-r*2,py-r*2,4*r,4*r);x2.fillStyle='#f8fff8';x2.fillRect(px-r,py-r,2*r,2*r);pts.push({o,px,py});}}
+  sar.img={cv,c,ux,uz,S,N,t:W.time,blur,pts,R:Rg};sar.msg=blur?'NOTCH: TURN 10° OFF':'';}
+function sarTap(fx,fy){const I=sar.img;if(!I){sar.busy=performance.now()/1000+1.6;return;}const a=(fx-0.5)*I.S,b=(0.5-fy)*I.S,wx=I.c.x+I.ux*b-I.uz*a,wz=I.c.z+I.uz*b+I.ux*a;
+  let best=null,bd=I.S/40+40;for(const q of I.pts){const d=vdist(q.o.pos,{x:wx,y:q.o.pos.y,z:wz});if(d<bd){bd=d;best=q.o;}}
+  const pos=best?best.pos:{x:wx,y:terrainH(wx,wz),z:wz};if(best&&W.w.sel==='SPICE')W.gtgt=best;else W.gtgt={pos:{...pos},alive:true,name:'SAR PT',kind:'pt',vel:v3(),pt:true};
+  pod.trk=best?{e:best}:{p:{...pos}};pod.free=true;ufc.e=+(pos.x/1000).toFixed(1);ufc.n=+(-pos.z/1000).toFixed(1);beep(1300,0.05);toast(best?'מכ"ם קרקע: מטרה סומנה, הפוד מכוון אליה':'מכ"ם קרקע: נקודה סומנה, הפוד מכוון אליה');}
 function drawHUD(){tgpR=null;mfdR=null;mfdRR=null;if(W&&W.gtgt&&!W.gtgt.pt)podLast=W.gtgt;
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.direction='ltr';ctx.clearRect(0,0,vw,vh);if(state==='replay'&&rp.tac&&W)drawTac();if(state!=='fly'&&state!=='pause'||!W){if(!$('podBar').hidden)$('podBar').hidden=true;return;}podFrame();
   const p=W.player,w=W.w,m=Math.min(vw,vh),cx=vw/2,cy=vh/2;u=clamp(m/700,touchOn?0.72:0.62,1.3);
@@ -1845,7 +1874,14 @@ function drawHUD(){tgpR=null;mfdR=null;mfdRR=null;if(W&&W.gtgt&&!W.gtgt.pt)podLa
   const deadS=k=>W.flt.mfd&&W.flt.mfd.s===k;
   const tabsR=(x,y0,ms)=>{const n=MFDPR.length,bw=ms/n;ctx.fillStyle='rgba(0,0,0,0.45)';ctx.fillRect(x+1,y0+ms-15*u,ms-2,14*u);for(let i=0;i<n;i++)txt(MFDPR[i],x+bw*(i+0.5),y0+ms-8*u,'center',9,i===mfdPageR?'#f2f2ea':'rgba(116,255,150,0.45)');};
   const mfdRight=(x,y0,ms)=>{if(deadS('R'))return dark(x,y0,ms,ms);[mfdRwr,mfdEw,mfdRadar,mfdMap,mfdWpn][mfdPageR](x,y0,ms);if(pw&&mfdPageR!==0)tabsR(x,y0,ms);};
-  const mfdLeft=(x,y0,ms)=>{if(deadS('L'))return dark(x,y0,ms,ms);if(mfdPage===4){bg(x,y0,ms,ms,'POD');txt('VIDEO ON HUD',x+ms/2,y0+ms/2,'center',12);}else [mfdRadar,mfdMap,mfdWpn,mfdEw][mfdPage](x,y0,ms);if(pw)tabs(x,y0,ms);};
+  const mfdSar=(x,y0,ms)=>{if(!pw||!W.sys.radar||W.dmgRadar){dark(x,y0,ms,ms);txt('SAR · RADAR OFF',x+ms/2,y0+ms/2,'center',11,AMB);return;}bg(x,y0,ms,ms,'SAR '+SARZ[sar.zi]/1000+' KM');
+    if(sar.busy){if(performance.now()/1000<sar.busy){txt('PROCESSING',x+ms/2,y0+ms/2,'center',12,AMB);return;}sar.busy=0;sarShoot();}
+    const I=sar.img;if(!I){txt('TAP TO MAP',x+ms/2,y0+ms/2,'center',12);if(sar.msg)txt(sar.msg,x+ms/2,y0+ms/2+16*u,'center',11,AMB);return;}
+    const m=ms-34*u,ix=x+(ms-m)/2,iy=y0+17*u;ctx.imageSmoothingEnabled=true;ctx.drawImage(I.cv,ix,iy,m,m);if(!mfdSolid)sar.rect={x:ix,y:iy,m};
+    ctx.strokeStyle='rgba(116,255,150,0.35)';for(let k=1;k<4;k++){line(ix+m*k/4,iy,ix+m*k/4,iy+m);line(ix,iy+m*k/4,ix+m,iy+m*k/4);}
+    const g=W.gtgt;if(g&&g.alive){const rx=g.pos.x-I.c.x,rz=g.pos.z-I.c.z,a=-I.uz*rx+I.ux*rz,b=I.ux*rx+I.uz*rz;if(Math.abs(a)<I.S/2&&Math.abs(b)<I.S/2){const px=ix+(a/I.S+0.5)*m,py=iy+(0.5-b/I.S)*m;ctx.strokeStyle='#f2f2ea';ctx.strokeRect(px-5*u,py-5*u,10*u,10*u);}}
+    txt('AGE '+mmss(W.time-I.t),x+ms-5*u,y0+10*u,'right',10);if(sar.msg)txt(sar.msg,x+ms/2,iy+m/2,'center',12,AMB);};
+  const mfdLeft=(x,y0,ms)=>{if(deadS('L'))return dark(x,y0,ms,ms);if(mfdPage===5){mfdSar(x,y0,ms);if(pw)tabs(x,y0,ms);return;}if(mfdPage===4){bg(x,y0,ms,ms,'POD');txt('VIDEO ON HUD',x+ms/2,y0+ms/2,'center',12);}else [mfdRadar,mfdMap,mfdWpn,mfdEw][mfdPage](x,y0,ms);if(pw)tabs(x,y0,ms);};
   if(mfdPage===4&&!podTgt())podManual();
   /* screens follow what is happening: air-to-ground selected puts the pod up on the left; a launch or a new radar threat puts the threat display up on the right */
   if(w.sel!==mfdAuto.sel){if(w.sel==='SPICE'&&mfdAuto.sel!=null)mfdPage=4;else if(mfdAuto.sel==='SPICE'&&mfdPage===4&&!pod.free&&!pod.trk)mfdPage=0;mfdAuto.sel=w.sel;}
@@ -1862,6 +1898,7 @@ function drawHUD(){tgpR=null;mfdR=null;mfdRR=null;if(W&&W.gtgt&&!W.gtgt.pt)podLa
     else{const lg=W.plane.bomb.lgb,fl=W.bombs.length>0;txt(v.wpn?(v.fwd?'NAV':'SEEKER'):sees?(pod.laser||lg&&fl?'LASING':lg?'LASER RDY':'TRACK'):'MASKED',x+ms-5*u,y0+ms-9*u,'right',11,sees?((pod.laser||lg&&fl)&&blink?RED:'#f2f2ea'):AMB);}};
   const podBig=()=>{const S=touchOn?Math.min(vh-140,vw*0.45):Math.min(vw*0.45,vh*0.62);return{x:(vw-S)/2,y:touchOn?4:vh*0.06,s:S};};
   if(pw&&!!pt&&pod.big&&!deadS('L')){const B=podBig();mfdR=B;podShown=B;mfdTgp(B.x,B.y,B.s);}
+  else if(mfdPage===5&&pw&&view===0&&!touchOn&&!deadS('L')){const S=clamp(m*0.3,120,250),B={x:10*u,y:vh-S-10*u,s:S};mfdR=B;mfdSar(B.x,B.y,S);tabs(B.x,B.y,S);}
   else if(ag&&view===0&&!touchOn){const S=clamp(m*0.27,104,230),B={x:10*u,y:vh-S-10*u,s:S};mfdR=B;podShown=B;mfdTgp(B.x,B.y,S);}
   if(view===0&&(opts.q==='high'||(clock*30|0)%(eco?3:2)===0)){const main=ctx,su=u,cv=cockpit.userData.cv;mfdSolid=true;u=1.3;
     if(cv.w){ctx=cv.w.ctx;mfdLeft(0,0,256);mfdEng(256,0,256,256);mfdRight(512,0,256);cv.w.tex.needsUpdate=true;}
