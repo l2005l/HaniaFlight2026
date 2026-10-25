@@ -277,7 +277,7 @@ function ckGlove(mirror,mat,sleeve,curl){const G=new T.Group(),s=mirror?-1:1,R=0
 function ckLimb(a,b,r0,r1,mat,folds){const d=new T.Vector3(b[0]-a[0],b[1]-a[1],b[2]-a[2]),L=d.length(),P=[];const n=folds?18:6;
   for(let i=0;i<=n;i++){const t=i/n,r=r0+(r1-r0)*t+(folds?Math.sin(t*Math.PI*folds)*0.004*(1-Math.abs(0.5-t)):0);P.push([r,t*L]);}P.unshift([0.001,0]);P.push([0.001,L]);
   const m=lathe(P,mat,20);const q=new T.Quaternion().setFromUnitVectors(new T.Vector3(0,1,0),d.normalize());m.quaternion.copy(q);m.position.set(a[0],a[1],a[2]);return m;}
-function dressCockpit(G,kind,panel){const ud=G.userData,f35=kind==='F35I',f16=kind==='F16I',side=f16||f35,classic=kind==='F15C';
+function dressCockpit(G,kind,panel){const n0=G.children.length,ud=G.userData,f35=kind==='F35I',f16=kind==='F16I',side=f16||f35,classic=kind==='F15C';
   const base=classic?'#1d2329':f35?'#16181a':kind==='M346'?'#25282a':'#1b1d1f';
   /* the panel faces and the consoles get textures */
   panel.children[0].material=ckMat('pn'+kind,base);
@@ -312,6 +312,8 @@ function dressCockpit(G,kind,panel){const ud=G.userData,f35=kind==='F35I',f16=ki
   {const r=ckGlove(false,glove,suit,1.05),k=side?1/0.62:1;r.rotation.set(0,0,-Math.PI/2);r.scale.setScalar(k*0.95);const gy=side?0.1:0.36;r.position.set(0.02*k,gy,0.045*k);ud.stick.add(r);
     const w=[0.02*k,gy,0.1*k],el=side?[0.2*k,-0.15*k,0.42*k]:[0.14,gy-0.32,0.36];ud.stick.add(ckLimb(w,el,0.04*k,0.05*k,suit,4));}
   {const l=ckGlove(true,glove,suit,0.8);l.scale.setScalar(0.92);l.position.set(0,0.034,0.016);ud.thr.add(l);ud.thr.add(ckLimb([0,0.034,0.07],[-0.08,-0.2,0.4],0.04,0.05,suit,4));}
+  ud.body=[...G.children.slice(n0).filter(o=>o.isMesh&&(o.material===suit||o.material===gsuit||o.material===boot)),...ud.stick.children.slice(-2),...ud.thr.children.slice(-2)];
+  if(PILOT.gltf)applyPilot(G);
   /* panel lights at night, and the canopy: sun glare and rain */
   ud.plight=new T.PointLight(0x9fd8b0,0,1.8,1.5);ud.plight.position.set(0,-0.25,-0.35);G.add(ud.plight);
   ud.glare=part(new T.PlaneGeometry(2.4,1.3),new T.MeshBasicMaterial({map:ckTex('glare',256,128,(x,w,h)=>{const g=x.createRadialGradient(w*0.7,h*0.25,2,w*0.7,h*0.25,w*0.6);g.addColorStop(0,'rgba(255,250,235,0.9)');g.addColorStop(0.2,'rgba(255,245,225,0.25)');g.addColorStop(1,'rgba(255,245,225,0)');x.fillStyle=g;x.fillRect(0,0,w,h);x.strokeStyle='rgba(255,255,255,0.12)';x.lineWidth=6;x.beginPath();x.moveTo(w*0.1,h*0.9);x.lineTo(w*0.5,h*0.1);x.stroke();}),transparent:true,opacity:0,depthWrite:false,blending:T.AdditiveBlending,fog:false}),0,0.05,-0.66,G);ud.glare.renderOrder=6;
@@ -356,3 +358,22 @@ function animMoving(ud,p,c,flaps,canOpen,parked){const k=0.25;if(ud.ail)for(cons
   if(ud.flap)for(const q of ud.flap)q.h.rotation.x+=((flaps?0.55:0)-q.h.rotation.x)*k*0.4;
   if(ud.rud)for(const q of ud.rud)q.h.rotation.y+=(clamp(c.yaw,-1,1)*-0.4-q.h.rotation.y)*k;
   if(ud.hinge)ud.hinge.rotation.x+=((canOpen?-0.85:0)-ud.hinge.rotation.x)*0.06;if(ud.ladder)ud.ladder.visible=!!parked&&canOpen;}
+
+
+/* ================= a pilot model from a file =================
+   If the site has models/pilot.glb (a glTF model of a seated pilot), it replaces the pilot built in code: the legs, arms and
+   gloves. The camera sits inside the model's head, so the head is not seen. An animation in the file (one named like sit, seat,
+   pilot or idle, else the first) is played. */
+const PILOT={gltf:null,mixer:null,url:'models/pilot.glb'};
+function loadPilot(){if(location.protocol==='file:')return;fetch(PILOT.url,{method:'HEAD',cache:'no-store'}).then(r=>{if(!r.ok||!/model|octet|gltf|binary/i.test(r.headers.get('content-type')||'model'))return;
+    const go=()=>{try{new THREE.GLTFLoader().load(PILOT.url,g=>{PILOT.gltf=g;if(cockpit)applyPilot(cockpit);},undefined,e=>console.warn('pilot model',e));}catch(e){}};
+    if(THREE.GLTFLoader)go();else{const s=document.createElement('script');s.src='vendor/GLTFLoader.js';s.onload=go;document.head.appendChild(s);}}).catch(()=>{});}
+function applyPilot(G){const g=PILOT.gltf,ud=G.userData;if(!g||ud.pilotModel)return;const m=g.scene;if(m.parent)m.parent.remove(m);
+  m.rotation.set(0,Math.PI,0);m.scale.setScalar(1);m.position.set(0,0,0);m.updateMatrixWorld(true);
+  const bb=new THREE.Box3().setFromObject(m),h=bb.max.y-bb.min.y;
+  /* a standing model is about 1.8 m tall, a seated one about 1.3 m: scale to a 1.78 m person either way */
+  const k=h>0.01?(h>1.5?1.78/h:1.3/h):1;m.scale.setScalar(k);m.updateMatrixWorld(true);const b2=new THREE.Box3().setFromObject(m),c=b2.getCenter(new THREE.Vector3());
+  /* the eyes are about 12 cm below the top of the head: put them at the camera */
+  m.position.set(-c.x,-(b2.max.y-0.12),-c.z+0.05);m.traverse(o=>{if(o.isMesh){o.castShadow=false;o.frustumCulled=false;}});G.add(m);ud.pilotModel=m;
+  for(const o of ud.body||[])o.visible=false;
+  if(g.animations&&g.animations.length){const clip=g.animations.find(a=>/sit|seat|pilot|idle/i.test(a.name))||g.animations[0];PILOT.mixer=new THREE.AnimationMixer(m);PILOT.mixer.clipAction(clip).play();}}
