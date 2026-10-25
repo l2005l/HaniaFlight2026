@@ -389,6 +389,7 @@ class Tanker{
    to port with four arresting wires; two catapults at the bow. Positions on the ship are (a: forward, c: to starboard) from its centre. ---------- */
 const CV={len:[-160,170],wid:[-38,34],h:19,ang:9*D2R,lo:[-150,-8],wires:[52,64,76,88],wHalf:16,aim:70,cats:[[60,6],[60,-7]],stroke:95,gs:3.5*D2R,isl:[-5,35,25,33,20]};
 let DECK=null;
+const PLAN_MOVE=['CAP','IP','ENTRY','WP2','WP3','PH','MERGE'];
 const fleetAt=TH=>({south:{x:-62000,z:-8000},north:{x:-52000,z:-6000},far:{x:120000,z:-5000},israel:ISR.fleet||{x:-62000,z:8000}})[TH.id]||{x:-62000,z:-8000};
 class Carrier{
   constructor(x,z,hdg){this.kind='ship';this.type='CVN';this.name='CVN';this.side=0;this.alive=true;this.hp=1e9;this.rcs=50000;this.hdg=hdg;this.spd=12.9;
@@ -486,6 +487,8 @@ class WingAI{
     if(this.mode==='form'&&pl.alive&&!pl.onGround&&pl.gear&&pl.agl<450&&W.flags.airborne&&W.time>60&&!nearHome){if(!this.brk){this.brk=true;W.msg('שתיים: מתנתק, אנחת אחריך.');}}else if(pl.agl>900)this.brk=false;
     const fwd=qrot(ac.q,FWD),flat=(x,z,dy)=>{const l=Math.hypot(x,z)||1;return vnorm(v3(x/l,dy,z/l));};let dir,spd=250;
     if(this.mode==='cover'&&!(this.tgt&&this.tgt.alive)){let b=null,bd=70000;for(const e of W.air){if(!e.alive||e.side===0)continue;if(e.type!=='UAV'&&e.type!=='CM'&&!W.migsActive)continue;const d=vdist(e.pos,ac.pos);if(d<bd){bd=d;b=e;}}this.tgt=b;}
+    /* the planned target: number two goes for it on its own when the flight is within 40 km */
+    if(this.mode==='form'&&W.wingTgt&&W.wingTgt.alive&&this.bombs>0&&!this.planGo&&Math.hypot(W.wingTgt.pos.x-ac.pos.x,W.wingTgt.pos.z-ac.pos.z)<40000){this.planGo=true;this.mode='attack';this.tgt=W.wingTgt;W.msg(`שתיים: לפי התכנון, תוקף את ${W.wingTgt.name||'המטרה שלי'}.`);}
     if(this.mode==='attack'&&!(this.tgt&&this.tgt.alive)){this.mode='form';this.tgt=null;W.msg('שתיים: המטרה ירדה, חוזר למבנה.');}
     const T=this.mode==='form'?null:this.tgt;
     if(T&&T.kind==='air'){const r=vsub(T.pos,ac.pos),R=vlen(r),lead=vadd(T.pos,vmul(T.vel,R/900)),a=vsub(lead,ac.pos),off=Math.acos(clamp(vdot(fwd,vmul(r,1/R)),-1,1));
@@ -652,6 +655,13 @@ class World{
     if(low&&air){const p=this.player,a=Math.atan2(LR[0].x,-LR[0].z);p.pos=v3(9000,terrainH(9000,0)+350,0);p.q=qeuler(a,0,0);p.vel=vmul(qrot(p.q,FWD),230);}
     /* the plan: an air speed of about 470 knots over the route gives the time at each point and over the target */
     if(low){const sp=240;let t=air?20:200,q={x:this.player.pos.x,z:this.player.pos.z};for(let i=0;i<5;i++){const w=this.wps[i];t+=Math.hypot(w.x-q.x,w.z-q.z)/sp;w.tot=Math.round(t);q=w;}this.tot=this.wps[4].tot;this.low={exp:0,detected:false,hitT:null,wpT:[]};}
+    /* a plan made in the menu: the route points that may move (not the target, the fleet or home) where the pilot put them, heights, a time
+       over target with the times at the points before it worked back at an even speed, and number two's target */
+    {const P=o.plan;this.planTot=null;this.wingTgt=null;if(P&&Array.isArray(P.wps)&&P.wps.length===this.wps.length&&!o.net&&P.wps.every((q,i)=>q[0]===this.wps[i].n)){
+      P.wps.forEach((q,i)=>{const w=this.wps[i];if(PLAN_MOVE.includes(w.n)){w.x=+q[1];w.z=+q[2];}if(+q[3]>0)w.alt=+q[3];});this.planned=true;
+      const ti=this.wps.findIndex(w=>w.n==='TGT'||w.n==='FLEET');if(P.tot>0&&ti>=0&&!low){let d=0,q={x:this.player.pos.x,z:this.player.pos.z};const cum=this.wps.map(w=>{d+=Math.hypot(w.x-q.x,w.z-q.z);q=w;return d;});
+        this.wps.forEach((w,i)=>{if(i<=ti)w.tot=Math.round(P.tot*cum[i]/cum[ti]);});this.tot=P.tot;this.planTot=P.tot;}
+      if(P.wing!=null&&this.ground[P.wing]&&this.ground[P.wing].primary)this.wingTgt=this.ground[P.wing];}}
     /* our troops for close air support, marked with white smoke; they are not targets, and a weapon landing near them ends the sortie */
     this.troops=[];this.cas=null;if(cas){for(const[dx,dz,k]of[[0,0,'apc'],[-40,30,'apc'],[-25,-45,'tank'],[30,60,'inf']]){const x=CA.x+dx,z=CA.z+dz;this.troops.push({name:'OWN',kind:k,own:true,side:0,alive:true,pos:v3(x,terrainH(x,z),z),vel:v3()});}
       this.cas={i:-1,cleared:false,t:0,smoke:{...this.troops[0].pos},area:CA,viol:0,manT:30+Math.random()*30,order:this.ground.filter(g=>g.primary)};}
@@ -733,7 +743,7 @@ class World{
     else if(T.type==='UAV'){this.stats.uav++;const left=this.drones.filter(d=>d.alive).length;this.msg(left?`בקר: פגיעה. כטב"ם הופל, נותרו ${left}.`:'בקר: כל הכטב"מים טופלו. המשך לנקודת הכניסה.');}
     else{this.stats.mig++;const n=this.migs.filter(x=>x.alive).length;this.msg(n?`בקר: הפלה! ${this.foeName} ירד. ${n===1?'אחד עדיין':n+' עדיין'} באוויר.`:'בקר: כל מטוסי האויב הופלו. השמיים נקיים.');}
     if(this.lock===T)this.lock=null;}
-  killGround(g){if(!g.alive)return;if(this.net==='guest'){this.events.push({type:'net',k:'gkill',g});return;}g.alive=false;this.events.push({type:'gkill',g});const left=this.ground.filter(x=>x.primary&&x.alive).length,id=this.missionId;
+  killGround(g){if(!g.alive)return;if(this.net==='guest'){this.events.push({type:'net',k:'gkill',g});return;}g.alive=false;if(this.planTot&&g.primary&&this.planHit==null){this.planHit=this.time;const d=Math.round(this.time-this.planTot);this.msg(`בקר: פגיעה ${Math.abs(d)<=15?'בזמן, ':''}${d>=0?'+':''}${d} שניות מה-TOT המתוכנן.`);}this.events.push({type:'gkill',g});const left=this.ground.filter(x=>x.primary&&x.alive).length,id=this.missionId;
     if(g.kind==='radar')this.stats.sam=true;
     if(g.primary){this.stats.tgt++;
       if(id==='sead'){this.msg(left?`בקר: מכ"ם הושמד. נותרו ${left} סוללות.`:'בקר: כל הסוללות שותקו. השמיים פתוחים למבנה התקיפה.');if(!this.migsActive&&this.migs.length){this.migsActive=true;this.msg(`בקר: זהירות, זוג ${this.foeName} הוזנק לעברך.`);}}
@@ -1317,5 +1327,5 @@ class World{
       this.dlz=T&&p.alive?launchZone(s==='AIM120'?this.mrm:this.srm,p.pos,p.vel,T.pos,T.vel):null;}
   }
 }
-const RAAM={CV,Carrier,findSea,setClouds,turbAt,Cruise,STANDOFF,ISR,LAKES,isWater,lakeAt,Helo,ARM_PT,StrikerAI,THEATRE,setTheatre,WingAI,DIFF,PLANES,PARK,Tanker,G0,D2R,R2D,KT,FT,NM,clamp,lerp,sstep,v3,vadd,vsub,vmul,vdot,vcross,vlen,vnorm,vdist,qmul,qrot,qrotInv,qaxis,qeuler,FWD,UP,RIGHT,atmo,TER,SITES,RWY,buildTerrain,terrainSteps,terrainH,TYPES,Aircraft,apSteer,MSL,Missile,flyout,launchZone,SPICE,spiceRange,Bomb,Drone,MigAI,SamSite,World};
+const RAAM={PLAN_MOVE,CV,Carrier,findSea,setClouds,turbAt,Cruise,STANDOFF,ISR,LAKES,isWater,lakeAt,Helo,ARM_PT,StrikerAI,THEATRE,setTheatre,WingAI,DIFF,PLANES,PARK,Tanker,G0,D2R,R2D,KT,FT,NM,clamp,lerp,sstep,v3,vadd,vsub,vmul,vdot,vcross,vlen,vnorm,vdist,qmul,qrot,qrotInv,qaxis,qeuler,FWD,UP,RIGHT,atmo,TER,SITES,RWY,buildTerrain,terrainSteps,terrainH,TYPES,Aircraft,apSteer,MSL,Missile,flyout,launchZone,SPICE,spiceRange,Bomb,Drone,MigAI,SamSite,World};
 if(typeof module!=='undefined')module.exports=RAAM;

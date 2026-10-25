@@ -122,6 +122,7 @@ details[open] summary{margin-bottom:10px}
 #achList{display:grid;grid-template-columns:repeat(auto-fill,minmax(9.5rem,1fr));gap:6px}
 .ach{border:1px solid var(--line);padding:6px 8px;display:flex;flex-direction:column;gap:2px;opacity:.38;font-size:.8rem}
 .ach.on{opacity:1;border-color:var(--sand)}.ach.on b{color:var(--sand)}.ach span{color:var(--dim);font-size:.72rem}
+#planner{border:1px solid var(--line);padding:8px 10px;margin:6px 0}#planner .sthead{display:flex;gap:10px;align-items:center;flex-wrap:wrap}#planner .sthead .note{margin-inline-end:auto}#plMap{width:100%;height:min(56vw,320px);display:block;margin:6px 0;touch-action:none;border:1px solid var(--line);background:#0c1412}#plTot,#plWingT{font-family:var(--mono);font-size:.85rem;padding:0 6px}
 #stations{border:1px solid var(--line);padding:8px 10px;margin:6px 0}#stations .sthead{display:flex;gap:10px;align-items:center;flex-wrap:wrap}#stations .sthead .note{margin-inline-end:auto}#stSvg{width:100%;max-width:420px;display:block;margin:4px auto}#stSvg .st{cursor:pointer}#stList{display:grid;grid-template-columns:repeat(auto-fill,minmax(11rem,1fr));gap:4px}#stList button{text-align:start;font-size:.82rem;padding:4px 8px}#stList button b{color:var(--sand)}
 #dKills{display:flex;flex-wrap:wrap;gap:6px;align-items:center}#dKills:empty{display:none}#dKills button{font-size:.82rem;padding:5px 9px}
 #dAch{display:flex;flex-direction:column;gap:4px}#dAch span{border:1px solid var(--sand);padding:5px 9px;font-size:.85rem}#dAch:empty{display:none}#dPts a{color:inherit;font-weight:700}
@@ -513,6 +514,12 @@ details[open] summary{margin-bottom:10px}
       <div id="stations"><div class="sthead"><b>תחנות חימוש</b><span class="note">לחיצה על תחנה מחליפה את מה שתלוי עליה</span><button id="stReset">ברירת מחדל</button></div>
         <svg id="stSvg" viewBox="0 0 320 210" role="img" aria-label="המטוס מלמעלה, עם תחנות החימוש"></svg><div id="stList"></div></div>
       <p id="towLine" class="note"></p>
+      <div id="planner"><div class="sthead"><b>תכנון משימה</b><span class="note">גרירת נקודה מזיזה אותה. לחיצה על נקודה בוחרת אותה, ואז אפשר לשנות את הגובה שלה.</span><button id="plReset">אפס</button></div>
+        <canvas id="plMap" aria-label="מפת המסלול לתכנון"></canvas>
+        <div class="seg" id="plAltRow"><span id="plSel">נקודה: —</span><button id="plAltD">−1000 רגל</button><button id="plAltU">+1000 רגל</button></div>
+        <div class="seg"><span>זמן מעל המטרה (TOT)</span><button id="plTotD">−30 שנ׳</button><b id="plTot" dir="ltr">ללא</b><button id="plTotU">+30 שנ׳</button></div>
+        <div class="seg" id="plWingRow"><span>מטרה למספר 2</span><button id="plWing">בחר על המפה</button><b id="plWingT">לפי פקודה בטיסה</b></div>
+        <p class="note" id="plNote"></p></div>
       <p class="note">מכל נתיק מוסיף דלק, משקל וגרר. משליכים אותו במקש J (לפני הפצצות). במשימות תדלוק והדרכה אין מכלים. כמה פצצות נכנסות בתחנה תלוי בסוג החימוש שבחרת: פצצה כבדה אחת, שתי GBU-12, ארבע GBU-39.</p>
     </div>
     <div>
@@ -738,6 +745,12 @@ details[open] summary{margin-bottom:10px}
           <li>מפעיל הבום מדבר איתך ברדיו כשאתה קרוב: "קדימה 4", "למעלה 2", "יציב". הזרוע עצמה זזה אליך ונכנסת לפתח שמאחורי התא. התקרבות מהירה מדי נגמרת ב"ברייקאוויי": מורידים כוח ונסוגים.</li>
           <li>בסיום סוגרים את הדלת ומתרחקים למטה ואחורה.</li>
         </ul></div>
+        <div><h4>תכנון משימה</h4><ul>
+          <li>בלשונית <b>הכנה</b> מופיעה מפת המסלול של המשימה שנבחרה. נקודות עגולות (CAP, IP, נקודות כניסה ופנייה) אפשר לגרור. נקודות מרובעות (המטרה, הצי, הבית) קבועות במקומן. לחיצה על נקודה בוחרת אותה, ואז אפשר לשנות את הגובה שלה.</li>
+          <li><b>TOT</b>: הזמן המתוכנן מעל המטרה, מתחילת הגיחה. הזמנים בנקודות שלפני המטרה מחושבים אחורה, במהירות קבועה. בטיסה ה־HUD מראה את ה־TOT, כמה אתה מקדים או מאחר לנקודה הבאה, ואת מהירות הקרקע הנדרשת (<b>REQ</b>). בפגיעה הראשונה הבקר אומר בכמה שניות פספסת.</li>
+          <li><b>מטרה למספר 2</b>: בוחרים על המפה אחת המטרות, ומספר שתיים יוצא אליה לבד כשהמבנה במרחק 40 ק"מ ממנה.</li>
+          <li>התכנון נשמר למשימה, לזירה ולמטוס שנבחרו. "אפס" מחזיר את המסלול הרגיל. במשחק עם חברים התכנון לא חל.</li>
+        </ul></div>
         <div><h4>מכ"ם קרקע (SAR)</h4><ul>
           <li>במסך השמאלי, בעמוד <b>SAR</b>: לחיצה על המסך מצלמת "תמונת מכ"ם" של הקרקע. היא עובדת גם בעננים, בסערה ובלילה. התמונה מכסה ריבוע סביב המטרה הנבחרת, ואם אין מטרה, 20 ק"מ לפנים. למעלה נמצא "הכיוון שלך", כלומר הקו מהמטוס אל הריבוע.</li>
           <li>מדרונות שפונים אליך בהירים, מים וצל מכ"ם כהים, ומבנים וכלי רכב הם נקודות בוהקות. לחיצה על התמונה מסמנת את הנקודה: היא נהיית המטרה, הפוד מסתכל עליה, והקואורדינטות שלה עוברות ל־UFC.</li>
@@ -791,7 +804,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט. לחיצה על המוט השמאלי: וו בלימה, על הימני: מבט למטרה. Start מתחיל טיסה מהתפריט. באפליקציית האנדרואיד השלט עובד דרך האפליקציה עצמה.</p>
     </details>
-    <p class="note">גרסה 2.8 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
+    <p class="note">גרסה 2.9 (__BUILD__, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
     </div>
     <div id="dock">
     <div id="update" role="status" aria-live="polite" hidden>
