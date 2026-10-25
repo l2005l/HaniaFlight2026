@@ -365,15 +365,44 @@ function animMoving(ud,p,c,flaps,canOpen,parked){const k=0.25;if(ud.ail)for(cons
    gloves. The camera sits inside the model's head, so the head is not seen. An animation in the file (one named like sit, seat,
    pilot or idle, else the first) is played. */
 const PILOT={gltf:null,mixer:null,url:'models/pilot.glb'};
-function loadPilot(){if(location.protocol==='file:')return;fetch(PILOT.url,{method:'HEAD',cache:'no-store'}).then(r=>{if(!r.ok||!/model|octet|gltf|binary/i.test(r.headers.get('content-type')||'model'))return;
-    const go=()=>{try{new THREE.GLTFLoader().load(PILOT.url,g=>{PILOT.gltf=g;if(cockpit)applyPilot(cockpit);},undefined,e=>console.warn('pilot model',e));}catch(e){}};
-    if(THREE.GLTFLoader)go();else{const s=document.createElement('script');s.src='vendor/GLTFLoader.js';s.onload=go;document.head.appendChild(s);}}).catch(()=>{});}
-function applyPilot(G){const g=PILOT.gltf,ud=G.userData;if(!g||ud.pilotModel)return;const m=g.scene;if(m.parent)m.parent.remove(m);
-  m.rotation.set(0,Math.PI,0);m.scale.setScalar(1);m.position.set(0,0,0);m.updateMatrixWorld(true);
-  const bb=new THREE.Box3().setFromObject(m),h=bb.max.y-bb.min.y;
-  /* a standing model is about 1.8 m tall, a seated one about 1.3 m: scale to a 1.78 m person either way */
-  const k=h>0.01?(h>1.5?1.78/h:1.3/h):1;m.scale.setScalar(k);m.updateMatrixWorld(true);const b2=new THREE.Box3().setFromObject(m),c=b2.getCenter(new THREE.Vector3());
-  /* the eyes are about 12 cm below the top of the head: put them at the camera */
-  m.position.set(-c.x,-(b2.max.y-0.12),-c.z+0.05);m.traverse(o=>{if(o.isMesh){o.castShadow=false;o.frustumCulled=false;}});G.add(m);ud.pilotModel=m;
+function loadPilot(){if(location.protocol==='file:'||opts.q==='eco')return;
+  const go=()=>{try{new T.GLTFLoader().load(PILOT.url,g=>{PILOT.gltf=g;if(cockpit)applyPilot(cockpit);},undefined,()=>{});}catch(e){}};
+  if(T.GLTFLoader)go();else{const s=document.createElement('script');s.src='vendor/GLTFLoader.js';s.onload=go;s.onerror=()=>{};document.head.appendChild(s);}}
+/* bend a standing (A-pose) pilot into the seated pose, by moving vertices round the hips, knees, shoulders and elbows.
+   The model is first scaled to 1.78 m, feet at y=0, facing +z, with its right hand on -x. */
+function poseSeated(root,o){o=o||{};const T3=T,H=1.78;root.updateMatrixWorld(true);const bb=new T3.Box3().setFromObject(root),h=bb.max.y-bb.min.y,k=H/h,cx=(bb.min.x+bb.max.x)/2,cz=(bb.min.z+bb.max.z)/2;
+  const toM=new T3.Matrix4().makeScale(k,k,k).multiply(new T3.Matrix4().makeTranslation(-cx,-bb.min.y,-cz));
+  const J={hip:0.93,knee:0.5,sh:1.42,shx:0.17,el:0.3};const hipA=o.hip??-1.48,kneeA=o.knee??1.38;
+  const ss=(a,b,x)=>{const t=Math.min(1,Math.max(0,(x-a)/(b-a)));return t*t*(3-2*t);};
+  const rx=(v,p,a)=>{const y=v.y-p.y,z=v.z-p.z,c=Math.cos(a),s=Math.sin(a);v.y=p.y+y*c-z*s;v.z=p.z+y*s+z*c;};
+  const rz=(v,p,a)=>{const x=v.x-p.x,y=v.y-p.y,c=Math.cos(a),s=Math.sin(a);v.x=p.x+x*c-y*s;v.y=p.y+x*s+y*c;};
+  const meshes=[];root.traverse(m=>{if(m.isMesh)meshes.push(m);});
+  for(const m of meshes){const g=m.geometry=m.geometry.clone();g.applyMatrix4(new T3.Matrix4().multiplyMatrices(toM,m.matrixWorld));const P=g.attributes.position,v=new T3.Vector3(),q=new T3.Vector3();
+    for(let i=0;i<P.count;i++){v.fromBufferAttribute(P,i);const y0=v.y,ax=Math.abs(v.x),sd=Math.sign(v.x)||1;
+      if(y0<J.hip+0.06&&ax<0.3){/* legs: knee first, then the hip */const bk=ss(J.knee+0.05,J.knee-0.05,y0),bh=ss(J.hip+0.06,J.hip-0.06,y0);
+        if(bk>0)rx(v,{y:J.knee,z:0.02},kneeA*bk);if(bh>0)rx(v,{y:J.hip,z:0},hipA*bh);}
+      else if(ax>J.shx-0.01&&y0>0.75&&y0<J.sh+0.1){/* arms: down from the A-pose, elbow bent, upper arm forward, a little inward */
+        const sp={x:sd*J.shx,y:J.sh,z:0},t=Math.hypot(v.x-sp.x,v.y-sp.y),bs=ss(0.02,0.11,t)*ss(J.sh+0.1,J.sh-0.03,y0),right=sd<0;if(bs<=0)continue;
+        rz(v,sp,-sd*(o.aA??0.9)*bs);const be=ss(J.el-0.04,J.el+0.05,t);if(be>0)rx(v,{y:J.sh-J.el,z:0},(right?o.re??-1.25:o.le??-1.1)*be);
+        rx(v,{y:J.sh,z:0},(right?o.rf??-0.45:o.lf??-0.35)*bs);rz(v,sp,sd*(right?o.ri??0.22:o.li??-0.05)*bs);}
+      P.setXYZ(i,v.x,v.y,v.z);}
+    P.needsUpdate=true;g.computeVertexNormals();g.computeBoundingBox();g.computeBoundingSphere();m.matrix.identity();m.matrixAutoUpdate=false;m.matrixWorldNeedsUpdate=true;}
+  /* the meshes now hold model-space positions: hang them all directly on a fresh group */
+  const out=new T3.Group();for(const m of meshes){if(m.parent)m.parent.remove(m);m.position.set(0,0,0);m.rotation.set(0,0,0);m.scale.set(1,1,1);m.updateMatrix();out.add(m);}return out;}
+
+/* the model, posed once for each kind of stick and kept */
+function pilotPosed(side){const k=side?'side':'center';if(PILOT[k])return PILOT[k];const o=side?{rf:-0.35,re:-1.0,ri:1.0,lf:-0.45,le:-0.8,li:1.0}:{rf:-0.45,re:-0.85,ri:0.1,lf:-0.45,le:-0.8,li:1.0};
+  const m=poseSeated(PILOT.gltf.scene.clone(true),Object.assign({hip:-1.36,knee:0.95},o));let hel=null,gl=null;m.children.forEach(c=>{if(/HELMET/.test(c.name))hel=c;if(/GLOVES/.test(c.name))gl=c;if(/H-(HELMET|VISOR|STRAPS|FACEMASK|PIPE)/.test(c.name))c.visible=false;c.castShadow=false;c.frustumCulled=false;
+    /* the trousers come out near black in the cockpit light: same olive flight suit as the jacket */
+    if(c.material&&/PANTS/i.test(c.material.name||'')){c.material=c.material.clone();c.material.map=null;c.material.color.setRGB(0.24,0.26,0.2);c.material.needsUpdate=true;}});
+  /* the eyes: just above the top of the oxygen mask, a few cm behind its front (the helmet's box also holds the hose, so it is no use here) */
+  let fm=null;m.children.forEach(c=>{if(/FACEMASK/.test(c.name))fm=c;});const fb=new T.Box3().setFromObject(fm||hel),eye=new T.Vector3((fb.min.x+fb.max.x)/2,fb.max.y-0.01,fb.max.z-0.08);
+  /* where the hands are, in the cockpit (camera at the eye, forward -z, right +x) */
+  const P=gl.geometry.attributes.position,R=[0,0,0,0],L=[0,0,0,0];for(let i=0;i<P.count;i++){const y=P.getY(i);if(y<0.75)continue;const x=P.getX(i),A=x<0?R:L;A[0]+=x;A[1]+=y;A[2]+=P.getZ(i);A[3]++;}
+  const hand=A=>A[3]?new T.Vector3(-(A[0]/A[3]-eye.x),A[1]/A[3]-eye.y,-(A[2]/A[3]-eye.z)):null;
+  const g=new T.Group();m.rotation.y=Math.PI;m.position.set(eye.x,-eye.y,eye.z);g.add(m);return PILOT[k]={g,R:hand(R),L:hand(L)};}
+function applyPilot(G){const ud=G.userData;if(!PILOT.gltf||ud.pilotModel)return;const side=ud.kind==='F16I'||ud.kind==='F35I',P=pilotPosed(side);if(P.g.parent)P.g.parent.remove(P.g);G.add(P.g);ud.pilotModel=P.g;
   for(const o of ud.body||[])o.visible=false;
-  if(g.animations&&g.animations.length){const clip=g.animations.find(a=>/sit|seat|pilot|idle/i.test(a.name))||g.animations[0];PILOT.mixer=new THREE.AnimationMixer(m);PILOT.mixer.clipAction(clip).play();}}
+  /* the stick and the throttle are brought to where the hands are (grip centre: centre stick 0.33 up, side stick 0.1 of its small group) */
+  if(P.R){if(side){ud.stick.position.set(P.R.x-0.01,P.R.y-0.1*0.62,P.R.z);}else ud.stick.position.set(P.R.x-0.03,P.R.y-0.33,P.R.z);}
+  if(P.L&&ud.thr){ud.thr.position.x=P.L.x;ud.thr.position.y=P.L.y-0.03;ud.thrZ=P.L.z;}}
