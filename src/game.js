@@ -1212,12 +1212,20 @@ const CAMP2=[
   {id:'recon',t:'לפני המכה',b:()=>'צריך תמונות עדכניות של שלושה אתרים לפני התקיפה. בלי חימוש לקרקע, רק הפוד.',g:['לצלם שלושה אתרים','להביא את התמונות הביתה']},
   {id:'csar',t:'אף אחד לא נשאר מאחור',b:()=>'טייס מהגיחה הקודמת נטש מעל הים. מסוק חילוץ יוצא אליו, וזוג מיג-21 יעלה לצוד אותו.',g:['לשמור על המסוק עד שיחזור עם הטייס']},
   {id:'strike',t:'המכה הגדולה',b:c=>'תקיפת אתר השיגור מעבר לים. '+(c.sead?'הסוללה הארוכה שותקה בשלב השני. ':'הסוללה הארוכה עדיין פעילה. ')+'בדרך מחכות ספינת טילים, סוללה נסתרת ומיג שטס נמוך. בלי תדלוק אין חזרה.',g:['להשמיד שני משגרים ובונקר','לתדלק בדרך','לנחות בבסיס']}],camp={on:false,n:1};
-const CZ={1:{i:0,sead:false,air:false,skipped:0,done:0},2:{i:0,sead:false,air:false,skipped:0,done:0,jets:4,rep:0,faults:[],aam:16,bomb:12}};
-const CL=n=>n===2?CAMP2:CAMP,CK=n=>n===2?'haniaflight-camp2':'haniaflight-camp';
+/* third campaign: the carrier group. Every sortie launches from the ship and ends only with the hook on a wire. */
+const CAMP3=[
+  {id:'intercept',t:'הגל הראשון',b:()=>'קבוצת הנושאת הגיעה לחוף האויב, והוא עונה במטח כטב"מים וטילי שיוט לעבר החוף שלנו. משגרים אותך מהקטפולטה ליירט. בסוף הגיחה: נחיתה על הנושאת.',g:['ליירט את המטח','לחזור ולנחות על הנושאת']},
+  {id:'recon',t:'עיניים על החוף',b:()=>'לפני שהצי מתקרב, צריך תמונות של שלושה אתרים על החוף. רק הפוד, בלי חימוש לקרקע.',g:['לצלם שלושה אתרים','לנחות על הנושאת עם התמונות']},
+  {id:'naval',t:'ספינות הטילים',b:()=>'שלוש ספינות טילים של האויב יוצאות לכיוון הנושאת. טילי ים מבטן המטוס, משיגור מחוץ לטווח ההגנה שלהן.',g:['להטביע את שלוש ספינות הטילים','לנחות על הנושאת']},
+  {id:'sead',t:'פתיחת החוף',b:()=>'שלוש סוללות נ"מ חוסמות את הדרך מהים אל אתר השיגור. אם כולן יושמדו, התקיפה בשלב הבא תהיה מול אתר חשוף.',g:['להשמיד את שלוש הסוללות','לנחות על הנושאת']},
+  {id:'strike',t:'מכה מהים',b:c=>'תקיפת אתר השיגור, מהנושאת. '+(c.sead?'הסוללות על החוף שותקו. ':'הסוללות עדיין פעילות. ')+'הדרך חזרה ארוכה: תכנן את הדלק לנחיתה.',g:['להשמיד את המשגרים והבונקר','לנחות על הנושאת']},
+  {id:'duel',foe:'su27',t:'השמיים מעל הצי',b:()=>'זוג סוחוי-27 יוצא לנקום בנושאת. זה השלב האחרון: להפיל את שניהם, ולחזור הביתה אל הסיפון.',g:['להפיל את שני הסוחוי','לנחות על הנושאת']}];
+const CZ={1:{i:0,sead:false,air:false,skipped:0,done:0},3:{i:0,sead:false,air:false,skipped:0,done:0,traps:0,wires:0},2:{i:0,sead:false,air:false,skipped:0,done:0,jets:4,rep:0,faults:[],aam:16,bomb:12}};
+const CL=n=>n===2?CAMP2:n===3?CAMP3:CAMP,CK=n=>n===2?'haniaflight-camp2':n===3?'haniaflight-camp3':'haniaflight-camp';
 function readCamp(n=camp.n){try{const c=Object.assign({},CZ[n],JSON.parse(localStorage.getItem(CK(n))||'{}'));c.i=clamp(c.i|0,0,CL(n).length-1);return c;}catch(e){return{...CZ[n]};}}
 function saveCamp(c,n=camp.n){try{localStorage.setItem(CK(n),JSON.stringify(c));}catch(e){}showCamp();}
 const fleetLine=c=>`מטוסים כשירים ${c.jets-c.rep} מתוך ${c.jets}${c.rep?' (אחד בתיקון)':''} · טילי אוויר־אוויר במלאי ${c.aam} · חימוש לקרקע ${c.bomb}`;
-function showCamp(){for(const n of[1,2]){const c=readCamp(n),L=CL(n),st=L[c.i],x=n===2?'2':'';$('campStage'+x).textContent=`שלב ${c.i+1} מתוך ${L.length}: ${st.t}`;$('campText'+x).textContent=st.b(c)+(c.done?` המערכה הושלמה ${c.done} פעמים.`:'');}$('campFleet').textContent=fleetLine(readCamp(2));}
+function showCamp(){for(const n of[1,2,3]){const c=readCamp(n),L=CL(n),st=L[c.i],x=n>1?String(n):'';$('campStage'+x).textContent=`שלב ${c.i+1} מתוך ${L.length}: ${st.t}`;$('campText'+x).textContent=st.b(c)+(c.done?` המערכה הושלמה ${c.done} פעמים.`:'');}$('campFleet').textContent=fleetLine(readCamp(2));{const c=readCamp(3);$('campTraps').textContent=c.traps?`נחיתות על הנושאת: ${c.traps}, ממוצע כבל ${(c.wires/c.traps).toFixed(1)} (הטוב ביותר: 3).`:'';}}
 function campAdvance(c,won,n=camp.n){const L=CL(n),st=L[c.i];if(won){if(st.id==='sead')c.sead=true;if(n===1&&st.id==='duel'&&c.i<3)c.air=true;}else c.skipped++;c.i++;let t;
   if(c.i>=L.length){const sk=c.skipped;t=sk?`המערכה הסתיימה. ${L.length-sk} מתוך ${L.length} שלבים הושלמו.`:`המערכה הושלמה במלואה! כל ${L.length} השלבים מאחוריך.`;Object.assign(c,CZ[n],{done:c.done+(sk?0:1)});if(!sk)unlock(n===2?'campaign2':'campaign');}
   else t=`המערכה: עברת לשלב ${c.i+1}, ${L[c.i].t}.`;saveCamp(c,n);return t;}
@@ -1227,30 +1235,31 @@ function campLogistics(){if(!camp.on||camp.n!==2)return'';const c=readCamp(2),w=
   if(lost){c.jets--;c.rep=0;c.faults=[];t=`מטוס אבד, נותרו ${c.jets}. `;}else if(W.dmg.length){c.rep=1;c.faults=W.dmg.map(d=>d.t.split(' ')[0]);t='המטוס חזר פגוע ויישאר בתיקון בגיחה הבאה. ';}else{c.rep=0;c.faults=[];}
   if(c.jets<=0){Object.assign(c,CZ[2],{done:c.done});saveCamp(c,2);camp.reset=true;return t+'לא נשארו מטוסים כשירים. המערכה מתחילה מחדש.';}
   saveCamp(c,2);return t+`במלאי: ${c.aam} טילים, ${c.bomb} חימושים לקרקע.`;}
-function campResult(){$('campSkip').hidden=true;if(!camp.on)return'';const lg=campLogistics();if(camp.reset){camp.reset=false;return lg;}const c=readCamp(),id=CL(camp.n)[c.i].id;if(W.missionId!==id)return lg;
+function campResult(){$('campSkip').hidden=true;if(!camp.on)return'';const lg=campLogistics();if(camp.reset){camp.reset=false;return lg;}const c=readCamp(),id=CL(camp.n)[c.i].id;if(W.missionId!==id)return lg;if(camp.n===3&&W.flags.trap){c.traps++;c.wires+=W.flags.trap;}
   if(!W.over.win){$('campSkip').hidden=false;return(lg?lg+' ':'')+'המערכה: השלב לא הושלם. אפשר לנסות שוב, או להמשיך בלעדיו ולשאת בתוצאות בשלבים הבאים.';}return(lg?lg+' ':'')+campAdvance(c,true);}
 $('campSkip').onclick=()=>{$('dCamp').textContent=campAdvance(readCamp(),false);$('campSkip').hidden=true;camp.on=false;};
 /* the sortie's settings for World: what the campaign has already achieved, and in the second one, the stock and a jet still under repair */
-function campOpts(){if(!camp.on)return{};const c=readCamp();if(camp.n===1)return{noSam:c.sead,noMigs:c.air};
+function campOpts(){if(!camp.on)return{};const c=readCamp();if(camp.n===1)return{noSam:c.sead,noMigs:c.air};if(camp.n===3)return{noSam:c.sead};
   return{noSam:c.sead,stock:{aam:c.aam,bomb:c.bomb},faults:c.rep&&c.jets-c.rep<=0?c.faults:null};}
 /* briefing before a campaign sortie: situation, goals and the map with the threats */
-function openBrief(n=camp.n){camp.n=n;const c=readCamp(n),st=CL(n)[c.i],pl=R.PLANES[opts.plane];
-  if(n===2&&opts.theatre!=='far'){opts.theatre='far';try{localStorage.setItem('haniaflight-opts',JSON.stringify(opts));localStorage.setItem('haniaflight-pend','camp2');}catch(e){}$('loading').hidden=false;$('loadText').textContent='טוען את הזירה הרחוקה…';location.reload();return;}
+function openBrief(n=camp.n){camp.n=n;const c=readCamp(n),st=CL(n)[c.i];let pl=R.PLANES[opts.plane];
+  if(n===3&&opts.plane!=='F35C'){opts.plane='F35C';applyOpts();}pl=R.PLANES[opts.plane];
+  {const th=n===2?'far':n===3?'south':null;if(th&&opts.theatre!==th){opts.theatre=th;try{localStorage.setItem('haniaflight-opts',JSON.stringify(opts));localStorage.setItem('haniaflight-pend','camp'+n);}catch(e){}$('loading').hidden=false;$('loadText').textContent=th==='far'?'טוען את הזירה הרחוקה…':'טוען את זירת הדרום…';location.reload();return;}}
   if(pl.trainer){toast('המערכה טסה במטוסי קרב. בחר רעם, סופה, אדיר או בז.');return;}
   if(!pl.spice&&(st.id==='sead'||st.id==='strike'||st.id==='recon')){toast('לשלב הזה צריך מטוס תקיפה עם פוד. בחר רעם, סופה או אדיר.');$('toast').dataset.on='1';setTimeout(()=>{$('toast').dataset.on='';},3200);return;}
   opts.mission=st.id;if(st.foe)opts.foe=st.foe;applyOpts();
-  $('bStage').textContent=`${n===2?'מערכה מעבר לים':'מערכה'} · שלב ${c.i+1} מתוך ${CL(n).length}`;$('bTitle').textContent=st.t;$('bText').textContent=st.b(c);$('bGoals').innerHTML=st.g.map(x=>`<li>${x}</li>`).join('');
+  $('bStage').textContent=`${n===2?'מערכה מעבר לים':n===3?'קבוצת הנושאת':'מערכה'} · שלב ${c.i+1} מתוך ${CL(n).length}`;$('bTitle').textContent=st.t;$('bText').textContent=st.b(c);$('bGoals').innerHTML=st.g.map(x=>`<li>${x}</li>`).join('');
   $('bFleet').hidden=n!==2;$('bFleet').textContent=n===2?fleetLine(c)+(c.rep&&c.jets-c.rep<=0?' · אין מטוס אחר: טסים במטוס הפגוע.':''):'';
-  $('bPlane').textContent=pl.name+' · '+{south:'זירת הדרום',north:'זירת הצפון',far:'הזירה הרחוקה',israel:'מפת ישראל'}[opts.theatre];const air=st.id==='duel'||st.id==='escort';$('bCold').hidden=air;$('bGo').textContent=air?'לאוויר':'המראה מהמסלול';
+  $('bPlane').textContent=pl.name+' · '+{south:'זירת הדרום',north:'זירת הצפון',far:'הזירה הרחוקה',israel:'מפת ישראל'}[opts.theatre];const air=st.id==='duel'||st.id==='escort';$('bCold').hidden=air||!!pl.carrier;$('bGo').textContent=air?'לאוויר':pl.carrier?'שיגור מהנושאת':'המראה מהמסלול';
   show('brief',true);
   requestAnimationFrame(()=>{const cv=$('bMap'),r=cv.getBoundingClientRect(),d=Math.min(2,window.devicePixelRatio||1);cv.width=r.width*d;cv.height=r.height*d;
     const BW=new R.World(Object.assign({start:'air',plane:opts.plane,mission:st.id,foe:st.foe},(camp.on=true,campOpts()))),sW=W,sc=ctx,sv=vw,sh=vh,su=u;camp.on=false;
     try{W=BW;ctx=cv.getContext('2d');ctx.setTransform(d,0,0,d,0,0);ctx.direction='ltr';ctx.textBaseline='middle';vw=r.width;vh=r.height;mapBox=true;drawMap(BW.player,BW.player.euler());}
     finally{W=sW;ctx=sc;vw=sv;vh=sh;u=su;mapBox=false;}});}
-$('campGo').onclick=()=>openBrief(1);$('campGo2').onclick=()=>openBrief(2);$('bBack').onclick=()=>show('brief',false);
+$('campGo').onclick=()=>openBrief(1);$('campGo2').onclick=()=>openBrief(2);$('campGo3').onclick=()=>openBrief(3);$('bBack').onclick=()=>show('brief',false);
 $('bGo').onclick=()=>{const st=CL(camp.n)[readCamp().i];show('brief',false);daily.on=false;camp.on=true;start(lastMode=st.id==='duel'||st.id==='escort'?'air':'runway');};
 $('bCold').onclick=()=>{show('brief',false);daily.on=false;camp.on=true;start(lastMode='cold');};
-$('campReset').onclick=()=>{saveCamp({...CZ[1],done:readCamp(1).done},1);};$('campReset2').onclick=()=>{saveCamp({...CZ[2],done:readCamp(2).done},2);};
+$('campReset').onclick=()=>{saveCamp({...CZ[1],done:readCamp(1).done},1);};$('campReset2').onclick=()=>{saveCamp({...CZ[2],done:readCamp(2).done},2);};$('campReset3').onclick=()=>{saveCamp({...CZ[3],done:readCamp(3).done},3);};
 /* daily challenge: one sortie a day, the same for everyone on that date, scored */
 const MNAME={naval:'תקיפה ימית',strike:'פטיש ברזל',intercept:'הגנת שמיים',sead:'דיכוי נ"מ',convoy:'סיור חמוש',escort:'ליווי',duel:'קרב אוויר',csar:'חילוץ',recon:'צילום',stealth:'כטב"ם חמקן',cas:'סיוע קרוב',low:'חדירה נמוכה'};
 const daily={on:false,saved:null};
@@ -1561,6 +1570,7 @@ function drawMap(p,e,after){if(W.flt.map){ctx.save();ctx.fillStyle='rgba(2,6,8,0
   ctx.strokeStyle=SND;ctx.setLineDash([7,5]);ctx.beginPath();const NPm=W.navPos();ctx.moveTo(X(NPm.x),Y(NPm.z));for(let i=W.wp;i<W.wps.length;i++)ctx.lineTo(X(W.wps[i].x),Y(W.wps[i].z));ctx.stroke();ctx.setLineDash([]);
   W.wps.forEach((q,i)=>{const cur=i===W.wp;ctx.strokeStyle=cur?HUDC:SND;ctx.lineWidth=cur?2:1.3;ctx.beginPath();ctx.arc(X(q.x),Y(q.z),5,0,7);ctx.stroke();txt(q.n,X(q.x),Y(q.z)-13,'center',11,cur?HUDC:SND);});ctx.lineWidth=1.3;
   ctx.fillStyle=SND;ctx.fillRect(X(RWY.x1),Y(0)-1.5,Math.max(8,(RWY.x2-RWY.x1)*s),3);
+  if(W.carrier){const c=W.carrier,cx2=X(c.pos.x),cy2=Y(c.pos.z),f=c.f;ctx.strokeStyle=HUDC;ctx.beginPath();ctx.moveTo(cx2+f.x*8,cy2+f.z*8);ctx.lineTo(cx2-f.x*7+f.z*4,cy2-f.z*7-f.x*4);ctx.lineTo(cx2-f.x*7-f.z*4,cy2-f.z*7+f.x*4);ctx.closePath();ctx.stroke();txt('CVN',cx2,cy2+14,'center',10);}
   for(const k of W.friends){if(!k.alive||k.remote)continue;ctx.strokeStyle=HUDC;ctx.beginPath();ctx.arc(X(k.pos.x),Y(k.pos.z),5,0,7);ctx.stroke();if(k.type==='HELO'){ctx.strokeStyle=HUDC;ctx.beginPath();ctx.arc(X(W.csarP.x),Y(W.csarP.z),4,0,7);ctx.stroke();}txt(k.type==='TANKER'?'TANKER':k.label||'2',X(k.pos.x),Y(k.pos.z)+14,'center',10);}
   for(const c of W.contacts){if(c.fr)continue;ctx.fillStyle=RED;ctx.fillRect(X(c.e.pos.x)-4,Y(c.e.pos.z)-2,8,4);if(c.e===W.lock){ctx.strokeStyle=RED;ctx.beginPath();ctx.arc(X(c.e.pos.x),Y(c.e.pos.z),8,0,7);ctx.stroke();}}
   mapPeers(X,Y,u);if(after)after(X,Y,s);ctx.translate(X(p.pos.x),Y(p.pos.z));ctx.rotate(e.hdg);ctx.fillStyle=HUDC;ctx.strokeStyle='#04140a';ctx.beginPath();ctx.moveTo(0,-11);ctx.lineTo(7,8);ctx.lineTo(0,4);ctx.lineTo(-7,8);ctx.closePath();ctx.fill();ctx.stroke();
@@ -1928,7 +1938,7 @@ let instEv=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();if
 $('install').onclick=()=>{if(instEv){instEv.prompt();instEv=null;$('install').hidden=true;}};
 await prog(0.96);
 try{baseLife.parkJets&&baseLife.parkJets();}catch(e){console.error('parkJets',e);}loadPilot();applyOpts();newGame('runway',true);requestAnimationFrame(frame);
-try{if(localStorage.getItem('haniaflight-pend')==='camp2'){localStorage.removeItem('haniaflight-pend');setTimeout(()=>openBrief(2),400);}}catch(e){}
+try{const pd=localStorage.getItem('haniaflight-pend');if(pd==='camp2'||pd==='camp3'){localStorage.removeItem('haniaflight-pend');setTimeout(()=>openBrief(+pd.slice(4)),400);}}catch(e){}
 {const n=$('loadMs');if(n)n.textContent=(performance.now()/1000).toFixed(1);}
 window.__mpPeers=()=>MP.peers.values();window.__mpMic=()=>({mic:!!MP.mic,live:MP.mic?MP.mic.readyState:null,on:mpg.on});window.__raam={get pMesh(){return pMesh;},ff:s=>{for(let i=0;i<s*120;i++){W.trigger(trigG,trigP,1/120);W.step(1/120);if(i%6===0)handleEvents();if(i%12===0)recFrame();}handleEvents();},kills:()=>kills,parts:()=>P.filter(q=>q.on).map(q=>[Math.round(q.x),Math.round(q.y),Math.round(q.z),+q.s0.toFixed(1),+q.a.toFixed(2)]),look,pod,podAct,podSlew:(dx,dy)=>podSlew(dx,dy,200),dbgBetty:()=>({bufs:Object.keys(Betty.buf),last:Betty.last,coll:hudWarn.coll,pull:hudWarn.pull}),dbg:()=>({cb:[cloudBall.visible,cloudBall.material.opacity,cloudBall.material.color.r,cloudIn(camera.position,W&&W.wx==='storm')],tgp:tgpR,fx:tgpFx.style.display,fov:tgpCam.fov,ll:landLight.visible,li:landLight.intensity,glow:nightGlow.map(g=>g.visible),tod,eco}),get W(){return W;},start,keys,setTOD,get cockpit(){return cockpit;},camera,act,opts,get state(){return state;},ready:true};
 if(demFail){opts.theatre='south';try{localStorage.setItem('haniaflight-opts',JSON.stringify(opts));}catch(e){}toast('מפת ישראל לא נטענה (אין חיבור?). חזרתי לזירת הדרום.');}

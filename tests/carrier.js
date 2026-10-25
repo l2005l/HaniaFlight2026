@@ -26,4 +26,8 @@ const final=(W,u,h,vs,v)=>{const cv=W.carrier,p=W.player,pt=cv.landPt(u,v||0),f=
   let m=[];for(let i=0;i<60*6;i++){at(1300,-0.8);W.step(1/60);m.push(...msgs(W));}ok(m.some(t=>/LSO: כוח/.test(t))&&m.some(t=>/כדור/.test(t)),'1 degree low: "power"');
   ok(W.cvGS&&Math.abs(W.cvGS.deg+0.8)<0.15,'glide-slope deviation measured: '+(W.cvGS&&W.cvGS.deg.toFixed(2)));}
 {const W=new R.World({plane:'F15I',mission:'strike'});ok(!W.carrier,'other jets: no carrier');}
+{/* a carrier sortie ends only with a trap: photos taken, near the ship but not landed is not home */
+  const W=new R.World({plane:'F35C',mission:'recon',start:'air'}),p=W.player,cv=W.carrier;p.hp=p.hpMax=1e9;for(const g of W.ground)g.shot=true;W.sams.length=0;W.migs.forEach(m=>{m.alive=false;});
+  const pt=cv.world(-3000,0,800);p.pos=R.v3(pt.x,800,pt.z);for(let i=0;i<60*20;i++){p.pos=R.v3(pt.x,800,pt.z);W.step(1/60);}ok(!W.over,'over the ship, not landed: sortie goes on');
+  W.flags.trap=3;for(let i=0;i<60*5&&!W.over;i++)W.step(1/60);ok(W.over&&W.over.win,'trapped: sortie complete: '+(W.over&&W.over.title));}
 process.exit(bad?1:0);

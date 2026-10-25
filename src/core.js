@@ -1015,7 +1015,7 @@ class World{
     if(C.i<0){if(R0<30000){C.i=0;C.t=0;this.wp=1;this.msg('בקר קרקעי: כאן אגוז. כוחותינו במגע עם האויב, סימנתי את המיקום שלנו בעשן לבן. אנחנו ליד העשן, אל תתקוף שם.');C.say=4;}return;}
     if(C.say!=null){C.say-=0.5;if(C.say<=0){C.say=null;if(tg){const q=this.casDesc(tg,C.smoke);this.msg(`בקר קרקעי: מטרה ${['ראשונה','שנייה','שלישית'][C.i]}: ${q.what}, ${q.d} מטר ${q.dir} לעשן הלבן. מצא אותה בפוד ונעל.`);C.cleared=false;}}return;}
     if(!tg){if(!C.done){C.done=true;this.wp=2;this.msg('בקר קרקעי: כל המטרות הושמדו. תודה, הצלתם אותנו. חזור הביתה.');}
-      if(this.homeD(p)<25000||p.onGround){this.stopT+=0.5;if(this.stopT>2&&!this.over)this.over={win:true,title:'הכוחות חולצו',reason:`שלוש מטרות הושמדו מול הכוחות שלנו${C.viol?`, אבל ${C.viol} שחרורים בלי אישור`:', כל שחרור באישור הבקר'}.`};}return;}
+      if(this.homeD(p)<25000||(p.onGround&&!this.cvHome)){this.stopT+=0.5;if(this.stopT>2&&!this.over)this.over={win:true,title:'הכוחות חולצו',reason:`שלוש מטרות הושמדו מול הכוחות שלנו${C.viol?`, אבל ${C.viol} שחרורים בלי אישור`:', כל שחרור באישור הבקר'}.`};}return;}
     if(!tg.alive){S.casOk=(S.casOk||0)+1;this.msg('בקר קרקעי: פגיעה טובה! המטרה הושמדה.');C.i++;C.say=5;C.cleared=false;return;}
     /* the pod on a target: right one, cleared hot; another one, a correction from there */
     const g=this.gtgt;if(g&&g!==C.lastLook){C.lastLook=g;if(g===tg){if(!C.cleared){C.cleared=true;this.msg('בקר קרקעי: נכון, זו המטרה. רשאי לתקוף. (Cleared hot)');}}
@@ -1033,7 +1033,7 @@ class World{
     /* waypoints in turn, with the time each was passed */
     if(this.wp<4){const w=this.wps[this.wp];if(Math.hypot(p.pos.x-w.x,p.pos.z-w.z)<2500){L.wpT[this.wp]=this.time;this.wp++;}}
     const g=this.ground.find(x=>x.primary);if(g&&!g.alive&&this.wp<5)this.wp=5;
-    if(g&&!g.alive){if(this.homeD(p)<25000||p.onGround){this.stopT+=0.5;if(this.stopT>2&&!this.over){const d=Math.round((L.hitT??this.time)-this.tot);
+    if(g&&!g.alive){if(this.homeD(p)<25000||(p.onGround&&!this.cvHome)){this.stopT+=0.5;if(this.stopT>2&&!this.over){const d=Math.round((L.hitT??this.time)-this.tot);
         this.over={win:true,title:'החדירה הצליחה',reason:`המטרה הושמדה ${Math.abs(d)<=10?'בזמן, '+(d>=0?'+':'')+d+' שניות מה-TOT':Math.abs(d)+' שניות '+(d>0?'אחרי':'לפני')+' ה-TOT'}${L.detected?', אבל זוהית בדרך':', בלי שזוהית'}.`};}}return;}
     if(this.w.spice===0&&!this.bombs.some(b=>b.alive&&b.owner===p)&&!this.missiles.some(m=>m.alive&&m.cruise)){this.stopT+=0.5;if(this.stopT>20&&!this.over)this.over={win:false,title:'נגמר החימוש',reason:'המטרה לא הושמדה.'};}}
   /* a weapon away in close air support without clearance */
@@ -1087,7 +1087,7 @@ class World{
     if(this.pvp){if(lost())return;const foes=this.remotes.filter(r=>r.side===1);if(foes.length&&foes.every(r=>!r.alive)){this.stopT+=0.5;if(this.stopT>2&&!this.over)this.over={win:true,title:this.remotes.length>foes.length?'הצוות שלך ניצח':'ניצחת בקרב',reason:foes.length>1?'כל היריבים הופלו.':`${foes[0].name||'היריב'} הופל.`};}return;}
     if(this.missionId==='naval'){if(lost())return;const left=this.ground.filter(g=>g.primary&&g.alive).length;
       if(!this.migsActive&&this.migs.length&&Math.hypot(p.pos.x-this.fleet.x,p.pos.z-this.fleet.z)<60000){this.migsActive=true;this.msg(`בקר: זוג ${this.foeName} שומר על הספינות, פונה אליך.`);}
-      if(!left){this.wp=1;if(this.homeD(p)<25000||p.onGround){this.stopT+=0.5;if(this.stopT>2&&!this.over)this.over={win:true,title:'הצי הושמד',reason:`שלוש ספינות הטילים טובעו, ${S.shots} טילים שוגרו.`};}return;}
+      if(!left){this.wp=1;if(this.homeD(p)<25000||(p.onGround&&!this.cvHome)){this.stopT+=0.5;if(this.stopT>2&&!this.over)this.over={win:true,title:'הצי הושמד',reason:`שלוש ספינות הטילים טובעו, ${S.shots} טילים שוגרו.`};}return;}
       if(this.w.spice===0&&!this.missiles.some(m=>m.alive&&m.owner===p)){this.stopT+=0.5;if(this.stopT>20&&!this.over)this.over={win:false,title:'נגמר החימוש',reason:`הוטבעו ${S.tgt} מתוך 3 ספינות.`};}
       return;}
     if(this.missionId==='csar'){if(lost())return;const h=this.helo,dP=Math.hypot(h.pos.x-this.csarP.x,h.pos.z-this.csarP.z);
@@ -1262,7 +1262,8 @@ class World{
     if(p.onGround&&p.onDeck&&!this.cat&&f.cvApp){f.cvTouch=true;
       if(p.caught&&p.caught.wire&&vlen(vsub(p.vel,cv.vel))<1.5&&!f.trap){f.trap=p.caught.wire;this.stats.wire=p.caught.wire;this.stats.sink=p.touchSink;this.msg(`LSO: ${['','כבל אחת, קצת קצר','כבל שתיים, טוב','כבל שלוש, מצוין!','כבל ארבע, ארוך'][p.caught.wire]}. ברוך הבא הביתה.`);this.events.push({type:'trap'});}}
     if(f.cvTouch&&!p.onGround&&!f.trap){f.cvTouch=false;f.ball=false;f.cvApp=false;this.stats.bolter=(this.stats.bolter||0)+1;this.msg('LSO: בולטר, בולטר! כוח מלא, טפס והקף לגישה נוספת.');this.events.push({type:'bolter'});}}
-  homeD(p){const c=this.cvHome&&this.carrier;return c?Math.hypot(p.pos.x-c.pos.x,p.pos.z-c.pos.z):Math.hypot(p.pos.x,p.pos.z);}
+  /* home: for the carrier jet, only a trap counts */
+  homeD(p){return this.cvHome&&this.carrier?(this.flags.trap?0:1e9):Math.hypot(p.pos.x,p.pos.z);}
   step(dt){
     this.time+=dt;const p=this.player;
     p.turb=CLOUDS.length?turbAt(p.pos,this.wx==='storm'):0;
