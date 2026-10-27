@@ -159,6 +159,7 @@ details[open] summary{margin-bottom:10px}
 #ufcPad{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}#ufcPad button{padding:3px 0;font-size:.78rem;font-family:var(--mono)}
 @media (max-height:520px){#ufc{bottom:6px;left:6px;width:min(15rem,calc(100% - 12px))}#ufcScr{min-height:6em;font-size:.64rem}#ufcPad button{padding:2px 0;font-size:.72rem}}
 #app[data-walk="1"] #check,#app[data-walk="1"] #chips,#app[data-walk="1"] #obj{display:none!important}
+#lwBox{position:absolute;z-index:7;top:50%;left:50%;transform:translate(-50%,-50%);display:grid;grid-template-columns:1fr 1fr;gap:8px;background:rgba(8,12,14,.86);border:1px solid var(--line);padding:12px}#lwBox[hidden]{display:none}#lwBox button{padding:10px 18px}
 #walkBar{position:absolute;z-index:6;bottom:14px;left:50%;transform:translateX(-50%)}#walkBar[hidden]{display:none}#walkBar button{background:rgba(8,12,14,.75);padding:8px 22px}
 #chips button.warn2{border-color:var(--amber);color:var(--amber)}
 @media (pointer:fine){#chips{top:44px;left:auto;transform:none;inset-inline-start:16px;flex-direction:column;align-items:flex-start;gap:4px}}
@@ -236,7 +237,7 @@ details[open] summary{margin-bottom:10px}
   <div id="radio" aria-live="polite"></div>
   <div id="toast" role="status" aria-live="polite"></div>
   <button id="lookBack" hidden>חזרה למבט קדימה</button>
-  <div id="chips" hidden><button id="atcBtn" class="radio" hidden></button><button id="mfdBtn">מסך: מכ"ם ‹</button><button id="mfdBtnR">מסך ימין: איומים ‹</button><button id="panelBtn">לוח מתגים</button><button id="ufcBtn">UFC</button><button id="tiltBtn" hidden>כיול הטיה</button><button id="resetBtn" class="warn2" hidden>ריסט מערכות</button><button id="mapBtn" hidden>מפה מלאה</button><button id="ecmBtn" hidden>שיבוש</button><button id="wingBtn" hidden>שתיים</button><button id="padBtn" hidden>מבט למטרה</button><button id="nvgBtn" hidden>משקפת לילה</button><button id="micBtn" hidden>פקודה קולית</button><button id="wcamBtn" hidden>מצלמת החימוש</button><button id="pttBtn" class="radio" hidden>לחץ לדבר</button><button id="quickBtn" class="radio" hidden>הודעה</button><button id="doorBtn" hidden>פתח דלת תדלוק</button><button id="joinBtn" hidden>התקרבות אוטומטית</button><button id="hookBtn" hidden>וו בלימה</button><button id="formBtn" hidden>מבנה</button><button id="formKBtn" hidden>כנף</button><button id="relightBtn" class="warn" hidden>התנעה באוויר</button></div>
+  <div id="chips" hidden><button id="atcBtn" class="radio" hidden></button><button id="mfdBtn">מסך: מכ"ם ‹</button><button id="mfdBtnR">מסך ימין: איומים ‹</button><button id="panelBtn">לוח מתגים</button><button id="ufcBtn">UFC</button><button id="tiltBtn" hidden>כיול הטיה</button><button id="resetBtn" class="warn2" hidden>ריסט מערכות</button><button id="mapBtn" hidden>מפה מלאה</button><button id="ecmBtn" hidden>שיבוש</button><button id="wingBtn" hidden>שתיים</button><button id="padBtn" hidden>מבט למטרה</button><button id="nvgBtn" hidden>משקפת לילה</button><button id="micBtn" hidden>פקודה קולית</button><button id="wcamBtn" hidden>מצלמת החימוש</button><button id="pttBtn" class="radio" hidden>לחץ לדבר</button><button id="quickBtn" class="radio" hidden>הודעה</button><button id="doorBtn" hidden>פתח דלת תדלוק</button><button id="joinBtn" hidden>התקרבות אוטומטית</button><button id="hookBtn" hidden>וו בלימה</button><button id="formBtn" hidden>מבנה</button><button id="lwBtn" hidden>נאמן</button><button id="formKBtn" hidden>כנף</button><button id="relightBtn" class="warn" hidden>התנעה באוויר</button></div>
   <div id="check" hidden>
     <div class="chead"><b>רשימת תיוג להתנעה</b><button id="autoStart">התנעה אוטומטית</button></div>
     <ol id="checkList"></ol>
@@ -493,6 +494,11 @@ details[open] summary{margin-bottom:10px}
       <button data-opt="wx" data-val="wind">רוח צד</button>
       <button data-opt="wx" data-val="storm">מעונן וסוער</button>
       <button data-opt="wx" data-val="fog">ערפל בוקר</button>
+    </div>
+    <div class="seg" role="group" aria-label="כטב&quot;ם נאמן">
+      <span>כטב"ם נאמן בכנף</span>
+      <button data-opt="lw" data-val="off">לא</button>
+      <button data-opt="lw" data-val="on">כן</button>
     </div>
     <div class="seg" role="group" aria-label="סיור סביב המטוס">
       <span>סיור סביב המטוס בהתנעה מהדת"ק</span>
@@ -762,6 +768,10 @@ details[open] summary{margin-bottom:10px}
           <li>מפעיל הבום מדבר איתך ברדיו כשאתה קרוב: "קדימה 4", "למעלה 2", "יציב". הזרוע עצמה זזה אליך ונכנסת לפתח שמאחורי התא. התקרבות מהירה מדי נגמרת ב"ברייקאוויי": מורידים כוח ונסוגים.</li>
           <li>בסיום סוגרים את הדלת ומתרחקים למטה ואחורה.</li>
         </ul></div>
+        <div><h4>כטב"ם נאמן</h4><ul>
+          <li>בהגדרה "כטב"ם נאמן בכנף" (לשונית הכנה) טס לצידך כטב"ם סילוני בלי טייס, 250 מטר מימין ו־300 מאחור, במשימות עם חימוש לקרקע. הכפתור <b>נאמן</b> פותח את הפקודות:</li>
+          <li><b>כנף</b>: חזרה לצידך. <b>הטעיה</b>: טס אל סוללת הנ"מ הקרובה ומקיף אותה ממרחק 14 ק"מ, עם משדרים שנראים כמו מבנה תקיפה. הסוללה יורה עליו במקום עליך, והוא לרוב לא חוזר. <b>תקיפה</b>: שתי פצצות GPS על המטרה שבחרת, או על מכ"ם הסוללה הקרובה. <b>צילום</b>: טס מעל המטרה ומצלם, וגם נחשב באתרי משימת הצילום.</li>
+        </ul></div>
         <div><h4>סיור סביב המטוס</h4><ul>
           <li>בהתנעה מהדת"ק מתחילים ברגל מול המטוס. מסתובבים סביבו ומגיעים לחמש הנקודות המסומנות בטבעות: חרטום ופיטו, גלגל ראשי, כניסת אוויר, חימוש ופינים, זנב. אחר כך נגשים לסולם (הטבעת הכחולה) ועולים לתא.</li>
           <li>הליכה בסטיק או במקשי WASD (Shift לריצה), גרירה על המסך כדי להסתכל. "לתא" מדלג על הסיור. אפשר לכבות את הסיור בהגדרות, בלשונית הכנה.</li>
@@ -863,6 +873,7 @@ details[open] summary{margin-bottom:10px}
   <div id="ufc" hidden dir="ltr"><div id="ufcHead"><span id="ufcSeat"></span><div id="ufcPages"></div><button id="ufcX" aria-label="סגור">✕</button></div>
     <pre id="ufcScr"></pre><div id="ufcSoft"></div>
     <div id="ufcPad"><button>1</button><button>2</button><button>3</button><button>4</button><button>5</button><button>6</button><button>7</button><button>8</button><button>9</button><button>-</button><button>0</button><button>.</button><button data-k="clr">CLR</button><button data-k="ent" class="go">ENT</button></div></div>
+  <div id="lwBox" hidden><button data-lw="form">כנף</button><button data-lw="decoy">הטעיה</button><button data-lw="attack">תקיפה</button><button data-lw="recon">צילום</button></div>
   <div id="walkBar" hidden><button id="walkSkip">לתא</button></div>
   <div id="podBar" hidden><button data-pod="zoom">זום</button><button data-pod="trk">נעל</button><button data-pod="laser">לייזר</button><button data-pod="mode">TV</button><button data-pod="big">הגדל</button><button data-pod="auto">אוטומטי</button></div>
   <div id="quickBox" hidden></div>
