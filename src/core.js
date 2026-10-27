@@ -362,6 +362,17 @@ class Drone{
     if(!this.orbit&&this.pos.x<16000){this.alive=false;this.leaked=true;}}
   die(){this.alive=false;}
 }
+/* ---------- civil traffic: airliners on straight airways at cruise height, neutral (side 2). With them in the sky, a contact must be
+   identified before it is shot at: a radar lock held for 3 s inside 25 miles (the radar recognises the type from its echo), or seeing it
+   inside 9 km. Shooting down an airliner ends the mission. ---------- */
+const CIVN=['SKYLINE 452','MEDAIR 31','SUNJET 207','AIRBLUE 88','ORIENT 615'];
+class Airliner{
+  constructor(i,W){this.kind='air';this.type='CIV';this.name=CIVN[i%CIVN.length];this.label=this.name;this.side=2;this.civ=true;this.alive=true;this.hp=3;this.rcs=40;this.eng=0.8;this.i=i;this.place(W,true);}
+  place(W,first){const p=W.player,a=Math.random()*Math.PI*2,h=a+Math.PI+(Math.random()-0.5)*0.8,d=first?20000+Math.random()*50000:90000;
+    this.pos=v3(p.pos.x+Math.cos(a)*d,9500+Math.random()*1800,p.pos.z+Math.sin(a)*d);this.hdg=Math.atan2(Math.cos(h),-Math.sin(h));const sp=225+Math.random()*25;this.vel=v3(Math.sin(this.hdg)*sp,0,-Math.cos(this.hdg)*sp);this.q=qeuler(this.hdg,0,0);}
+  step(dt,W){if(!this.alive)return;this.pos=vadd(this.pos,vmul(this.vel,dt));if(vdist(this.pos,W.player.pos)>140000)this.place(W,false);}
+  die(){this.alive=false;}
+}
 /* ---------- loyal wingman: an unmanned jet that flies off the right wing and takes the jobs too risky for a pilot. Orders:
    form (stay on the wing), decoy (fly at the nearest SAM battery and light up like a strike package, so the missiles go for it),
    attack (two small GPS bombs on the target or the nearest SAM radar), recon (fly over the target and photograph what is there). ---------- */
@@ -535,7 +546,7 @@ class WingAI{
       apSteer(ac,dir,0.5);ac.ctl.throttle=ac.V<spd-3?1:ac.V<spd+3?0.6:0.1;ac.ctl.brake=ac.V>spd+18;ac.step(dt);return;}
     if(this.mode==='form'&&pl.alive&&!pl.onGround&&pl.gear&&pl.agl<450&&W.flags.airborne&&W.time>60&&!nearHome){if(!this.brk){this.brk=true;W.msg('שתיים: מתנתק, אנחת אחריך.');}}else if(pl.agl>900)this.brk=false;
     const fwd=qrot(ac.q,FWD),flat=(x,z,dy)=>{const l=Math.hypot(x,z)||1;return vnorm(v3(x/l,dy,z/l));};let dir,spd=250;
-    if(this.mode==='cover'&&!(this.tgt&&this.tgt.alive)){let b=null,bd=70000;for(const e of W.air){if(!e.alive||e.side===0)continue;if(e.type!=='UAV'&&e.type!=='CM'&&!W.migsActive)continue;const d=vdist(e.pos,ac.pos);if(d<bd){bd=d;b=e;}}this.tgt=b;}
+    if(this.mode==='cover'&&!(this.tgt&&this.tgt.alive)){let b=null,bd=70000;for(const e of W.air){if(!e.alive||e.side!==1)continue;if(e.type!=='UAV'&&e.type!=='CM'&&!W.migsActive)continue;const d=vdist(e.pos,ac.pos);if(d<bd){bd=d;b=e;}}this.tgt=b;}
     /* the planned target: number two goes for it on its own when the flight is within 40 km */
     if(this.mode==='form'&&W.wingTgt&&W.wingTgt.alive&&this.bombs>0&&!this.planGo&&Math.hypot(W.wingTgt.pos.x-ac.pos.x,W.wingTgt.pos.z-ac.pos.z)<40000){this.planGo=true;this.mode='attack';this.tgt=W.wingTgt;W.msg(`שתיים: לפי התכנון, תוקף את ${W.wingTgt.name||'המטרה שלי'}.`);}
     if(this.mode==='attack'&&!(this.tgt&&this.tgt.alive)){this.mode='form';this.tgt=null;W.msg('שתיים: המטרה ירדה, חוזר למבנה.');}
@@ -676,6 +687,7 @@ class World{
     if(this.diff==='hard'&&nFoe)this.foeJam=true;
     this.air=[...this.drones,...this.migs];
     /* attack helicopters: over our troops in close support, round the target in a strike, hunting the downed pilot in a rescue */
+    this.civs=[];this.roe=false;if(o.civ&&!duel&&!tank&&!train&&!o.net&&M!=='form'){this.roe=true;const n=2+(Math.random()<0.5?1:0);for(let i=0;i<n;i++)this.civs.push(new Airliner(i,this));this.air.push(...this.civs);}
     this.lw=null;if(o.lw&&pl0.spice&&!duel&&!tank&&!train&&!o.net){this.lw=new LoyalWing(this.player);this.friends.push(this.lw);}
     this.helis=[];{const nH=this.diff==='easy'?1:2,at=cas?[CA.x+3500,CA.z-2500]:csar?[CP.x+5000,CP.z+3000]:strike&&!o.noHeli?[tg.x-9000,tg.z+6000]:null;
       if(at&&!o.net)for(let i=0;i<(strike?nH-(this.diff==='hard'?0:1)||1:nH);i++)this.helis.push(new AttackHelo(at[0]+i*1800,at[1]-i*1200,i));this.air.push(...this.helis);}
@@ -765,6 +777,7 @@ class World{
   supports(owner,T){if(owner&&owner.remote)return owner.alive;if(owner===this.player)return this.lock===T;if(owner===this.sam)return this.sam.alive&&this.sam.tracking;
     if(this.wing&&owner===this.wing.ac)return owner.alive;if(owner!==this.sam&&this.sams.includes(owner))return owner.alive&&owner.tracking;const ai=this.migAI.find(a=>a.ac===owner);return !!(ai&&owner.alive&&ai.track);}
   launch(spec,owner,target,pos,vel){
+    if(owner===this.player&&this.roe&&target&&target.kind==='air'&&!target.idd){this.stats.roe=(this.stats.roe||0)+1;this.msg('בקר: שיגור בלי זיהוי! זו הפרה של הוראות הפתיחה באש.');}
     const m=new Missile(spec,owner,target,pos||vadd(owner.pos,vmul(qrot(owner.q,UP),-1.6)),vel||vadd(owner.vel,vmul(qrot(owner.q,UP),-4)));
     this.missiles.push(m);this.events.push({type:'launch',m});return m;}
   bullet(owner,mv){const f=qrot(owner.q,FWD),j=()=>(Math.random()-0.5)*0.004;
@@ -794,6 +807,7 @@ class World{
     T.alive=false;T.crash='shot';this.events.push({type:'boom',pos:T.pos,size:1.4});this.events.push({type:'kill',e:T});this.stats.lost=(this.stats.lost||0)+1;
     this.msg(two?'שתיים: נפגעתי קשה, נוטש!':`בקר: ${name} הופל.`);if(this.lock===T)this.lock=null;}
   killAir(T){if(!T.alive)return;if(this.net==='guest'&&!T.remote){this.events.push({type:'net',k:'kill',T});return;}T.alive=false;T.crash='shot';this.events.push({type:'kill',e:T});
+    if(T.civ){this.stats.civ=(this.stats.civ||0)+1;this.msg('בקר: חדל! חדל! הפלת מטוס נוסעים!');if(!this.over)this.over={win:false,title:'הפלת מטוס אזרחי',reason:`${T.name} הופל. לפני ירי מזהים את המטרה: נעילה של שלוש שניות בטווח 25 מייל, או קשר עין.`};return;}
     if(this.missionId==='train'){this.stats.uav++;}
     else if(T.type==='CM'){this.stats.uav++;this.msg('בקר: טיל שיוט הופל. עבודה יפה.');}
     else if(T.type==='HELI'){this.stats.heli=(this.stats.heli||0)+1;this.msg('בקר: מסוק קרב הופל. פגיעה יפה.');}
@@ -832,7 +846,7 @@ class World{
   unlock(){this.lock=null;this.dlz=null;}
   get power(){return this.sys.batt||this.player.rpm.some(r=>r>=0.98);}
   get radarOn(){return this.sys.radar&&!this.dmgRadar&&this.power;}
-  ident(e,R){return e.side===0?'FRIEND':R<46000?e.type:'UNKNOWN';}
+  ident(e,R){if(e.side===0)return'FRIEND';if(!this.roe)return R<46000?e.type:'UNKNOWN';return e.idd?(e.civ?'CIVIL':e.type):'UNKNOWN';}
   /* every cockpit switch goes through here; returns whether it moved and reports why not */
   sw(id){const s=this.sys,p=this.player,ev=on=>{this.events.push({type:'sw',id,on});return true;},no=why=>{this.events.push({type:'swfail',id,why});return false;};
     if(!p.alive)return false;
@@ -1129,6 +1143,9 @@ class World{
       if(Math.abs(az)<(acm?30:60)*D2R&&Math.abs(el)<(acm?45:50)*D2R&&R<(acm?18500:Math.min(115000*Math.pow(e.rcs/5,0.25)*(this.ecm?0.75:1),this.foeJam&&e.side===1&&e.t?52000:1e9))&&this.los(p.pos,e.pos)&&!this.notched(p.pos,e,false))e.seenT=this.time;
       if(this.time-(e.seenT??-99)<2.5)cs.push({e,R,az,el,fr:e.side===0,id:this.ident(e,R),vel:e.vel});}
     cs.sort((a,b)=>a.R-b.R);this.contacts=cs;
+    /* identification: a held lock inside 25 miles, or eyes on it inside 9 km */
+    if(this.roe){const L=this.lock;if(L&&!L.idd){const R=vdist(L.pos,p.pos);if(R<46000){L.idT=(L.idT||0)+this.sensDt;if(L.idT>=3){L.idd=true;this.events.push({type:'ident',e:L});}}else L.idT=0;}
+      for(const e of this.air){if(e.alive&&!e.idd&&vdist(e.pos,p.pos)<9000&&this.los(p.pos,e.pos)){e.idd=true;if(e===L)this.events.push({type:'ident',e});}}}
     if(this.lock&&(!this.lock.alive||!cs.find(c=>c.e===this.lock)))this.lock=null;
     if(on&&acm&&!this.lock){const h=cs.find(c=>!c.fr);if(h){this.lock=h.e;this.events.push({type:'lock'});}}
     /* IR seeker */
@@ -1384,7 +1401,7 @@ class World{
     else{
     for(const ai of this.migAI)ai.update(dt,this);
     for(const m of this.migs){m.step(dt);if(!m.alive&&m.crash&&m.crash!=='shot'&&m.crash!=='rtb'){m.crash='shot';this.killAir(Object.assign(m,{alive:true}));}}
-    for(const d of this.drones)d.step(dt);for(const h of this.helis)h.step(dt,this);if(this.lw)this.lw.step(dt,this);
+    for(const d of this.drones)d.step(dt);for(const h of this.helis)h.step(dt,this);if(this.lw)this.lw.step(dt,this);for(const c of this.civs)c.step(dt,this);
     for(const q of this.sams)q.update(dt,this);for(const k of this.strikers)k.update(dt,this);}if(this.wing)this.wing.update(dt,this);
     for(const g of this.ground)if(g.alive&&(g.kind==='truck'||g.mob)){g.pos.x+=g.vel.x*dt;g.pos.z+=g.vel.z*dt;g.pos.y=terrainH(g.pos.x,g.pos.z);if(g.kind==='ship'){const z0=g.z0??0,amp=g.amp??15000;if(Math.abs(g.pos.z-z0)>amp&&(g.pos.z-z0)*g.vel.z>0)g.vel.z=-g.vel.z;}}
     for(const m of this.missiles)if(m.alive)m.step(dt,this);
@@ -1401,11 +1418,11 @@ class World{
     if(this.bullets.length&&this.bullets[0].t>2.2)this.bullets=this.bullets.filter(b=>b.t<=2.2);
     this.missiles=this.missiles.filter(m=>{if(!m.alive&&m.result!=='hit'&&!m.done){m.done=true;if(m.result==='ground')this.events.push({type:'boom',pos:m.pos,size:0.6,ground:true});}return m.alive;});
     this.bombs=this.bombs.filter(b=>b.alive);
-    this.tS+=dt;if(this.tS>=0.2){this.tS=0;this.sensors();}
+    this.tS+=dt;if(this.tS>=0.2){this.sensDt=this.tS;this.tS=0;this.sensors();}
     this.tM+=dt;if(this.tM>=0.5){this.tM=0;this.mission();this.awacs();this.atcStep();}
     this.tD+=dt;if(this.tD>=0.6){this.tD=0;const s=this.w.sel,T=s==='AIM120'?this.lock:s==='PYTHON'?this.irTgt:null;
       this.dlz=T&&p.alive?launchZone(s==='AIM120'?this.mrm:this.srm,p.pos,p.vel,T.pos,T.vel):null;}
   }
 }
-const RAAM={LoyalWing,AttackHelo,FORM,PLAN_MOVE,CV,Carrier,findSea,setClouds,turbAt,Cruise,STANDOFF,ISR,LAKES,isWater,lakeAt,Helo,ARM_PT,StrikerAI,THEATRE,setTheatre,WingAI,DIFF,PLANES,PARK,Tanker,G0,D2R,R2D,KT,FT,NM,clamp,lerp,sstep,v3,vadd,vsub,vmul,vdot,vcross,vlen,vnorm,vdist,qmul,qrot,qrotInv,qaxis,qeuler,FWD,UP,RIGHT,atmo,TER,SITES,RWY,buildTerrain,terrainSteps,terrainH,TYPES,Aircraft,apSteer,MSL,Missile,flyout,launchZone,SPICE,spiceRange,Bomb,Drone,MigAI,SamSite,World};
+const RAAM={Airliner,LoyalWing,AttackHelo,FORM,PLAN_MOVE,CV,Carrier,findSea,setClouds,turbAt,Cruise,STANDOFF,ISR,LAKES,isWater,lakeAt,Helo,ARM_PT,StrikerAI,THEATRE,setTheatre,WingAI,DIFF,PLANES,PARK,Tanker,G0,D2R,R2D,KT,FT,NM,clamp,lerp,sstep,v3,vadd,vsub,vmul,vdot,vcross,vlen,vnorm,vdist,qmul,qrot,qrotInv,qaxis,qeuler,FWD,UP,RIGHT,atmo,TER,SITES,RWY,buildTerrain,terrainSteps,terrainH,TYPES,Aircraft,apSteer,MSL,Missile,flyout,launchZone,SPICE,spiceRange,Bomb,Drone,MigAI,SamSite,World};
 if(typeof module!=='undefined')module.exports=RAAM;
