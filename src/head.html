@@ -123,6 +123,7 @@ details[open] summary{margin-bottom:10px}
 .ach{border:1px solid var(--line);padding:6px 8px;display:flex;flex-direction:column;gap:2px;opacity:.38;font-size:.8rem}
 .ach.on{opacity:1;border-color:var(--sand)}.ach.on b{color:var(--sand)}.ach span{color:var(--dim);font-size:.72rem}
 #planner{border:1px solid var(--line);padding:8px 10px;margin:6px 0}#planner .sthead{display:flex;gap:10px;align-items:center;flex-wrap:wrap}#planner .sthead .note{margin-inline-end:auto}#plMap{width:100%;height:min(56vw,320px);display:block;margin:6px 0;touch-action:none;border:1px solid var(--line);background:#0c1412}#plTot,#plWingT{font-family:var(--mono);font-size:.85rem;padding:0 6px}
+#recTable{overflow-x:auto}#recTable table{border-collapse:collapse;width:100%;font-size:.85rem}#recTable th,#recTable td{border-bottom:1px solid var(--line);padding:4px 6px;text-align:start;white-space:nowrap}#recTable td.b{color:var(--sand);font-weight:700}#recTable th{color:var(--dim);font-weight:600}
 #stations{border:1px solid var(--line);padding:8px 10px;margin:6px 0}#stations .sthead{display:flex;gap:10px;align-items:center;flex-wrap:wrap}#stations .sthead .note{margin-inline-end:auto}#stSvg{width:100%;max-width:420px;display:block;margin:4px auto}#stSvg .st{cursor:pointer}#stList{display:grid;grid-template-columns:repeat(auto-fill,minmax(11rem,1fr));gap:4px}#stList button{text-align:start;font-size:.82rem;padding:4px 8px}#stList button b{color:var(--sand)}
 #dKills{display:flex;flex-wrap:wrap;gap:6px;align-items:center}#dKills:empty{display:none}#dKills button{font-size:.82rem;padding:5px 9px}
 #dAch{display:flex;flex-direction:column;gap:4px}#dAch span{border:1px solid var(--sand);padding:5px 9px;font-size:.85rem}#dAch:empty{display:none}#dPts a{color:inherit;font-weight:700}
@@ -627,6 +628,11 @@ details[open] summary{margin-bottom:10px}
       </div>
     </div>
     <p id="bestLine" class="note"></p>
+    <div>
+      <h3>טבלת שיאים</h3>
+      <p class="note">השיאים שלך ושל חברים שטסתם יחד. כשאתם באותו חדר משחק, השיאים מתעדכנים אצל כולם. ★ מסמן את הטוב ביותר בכל שורה.</p>
+      <div id="recTable"></div>
+    </div>
     <div>
       <h3>יומן טייס</h3>
       <dl id="logbook"></dl>

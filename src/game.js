@@ -1361,13 +1361,27 @@ const ACH=[['first','טיסה ראשונה','סיימת גיחה'],['kill','הפ
 function readAch(){try{return JSON.parse(localStorage.getItem('haniaflight-ach')||'{}')||{};}catch(e){return{};}}
 const newAch=[];function unlock(id){const a=readAch();if(a[id])return;a[id]=Date.now();try{localStorage.setItem('haniaflight-ach',JSON.stringify(a));}catch(e){}newAch.push(id);showAch();}
 function showAch(){const a=readAch(),el=$('achList');if(!el)return;el.innerHTML=ACH.map(x=>`<div class="ach${a[x[0]]?' on':''}"><b>${x[1]}</b><span>${x[2]}</span></div>`).join('');$('achCount').textContent=`${ACH.filter(x=>a[x[0]]).length} מתוך ${ACH.length}`;}
+/* records: my own (fastest win per mission, softest touchdown, kills in one sortie, formation, carrier wires, time over target) and
+   those of friends met in network rooms, swapped when the room connects */
+const RECS=[['sink','נגיעה הרכה ביותר','min',v=>v+' רגל/דקה'],['kills','הכי הרבה הפלות בגיחה','max',v=>String(v)],['form','טיסה במבנה, בעמדה','max',v=>v+'%'],['wire3','כבל 3 בנושאת','max',v=>v+' פעמים'],['tot','דיוק TOT','min',v=>v+' שנ\''],['heli','מסוקים שהופלו בגיחה','max',v=>String(v)]];
+function readRec(){try{return JSON.parse(localStorage.getItem('haniaflight-rec')||'{}')||{};}catch(e){return{};}}
+function readFrec(){try{return JSON.parse(localStorage.getItem('haniaflight-frec')||'{}')||{};}catch(e){return{};}}
+function myRecs(){const r={...readRec()},B=readBest();for(const k in B)r['t:'+k]=B[k].t;return r;}
+function noteRecs(){const s=W.stats,p=W.player,r=readRec(),put=(k,v,dir)=>{if(v==null||isNaN(v))return;const o=r[k];if(o==null||(dir==='min'?v<o:v>o))r[k]=v;};
+  if(s.sink!=null&&p.alive&&W.flags.airborne)put('sink',Math.round(s.sink*196.85),'min');put('kills',s.mig||0,'max');if(s.form)put('form',s.form.pct,'max');if(s.wire===3)r.wire3=(r.wire3||0)+1;
+  if(W.planHit!=null)put('tot',Math.abs(Math.round(W.planHit-W.planTot)),'min');if(s.heli)put('heli',s.heli,'max');try{localStorage.setItem('haniaflight-rec',JSON.stringify(r));}catch(e){}if(mpg.on)mpg.sendRecs();}
+function showRecs(){const el=$('recTable');if(!el)return;const me=myRecs(),F=readFrec(),fr=Object.entries(F).sort((a,b)=>(b[1].at||0)-(a[1].at||0)).slice(0,4),cols=[['אני',me],...fr.map(([n,v])=>[n,v.r||{}])];
+  const rows=[...Object.keys(MNAME).map(k=>['t:'+k,'ניצחון מהיר: '+MNAME[k],'min',v=>mmss(v)]),...RECS].filter(([k])=>cols.some(c=>c[1][k]!=null));
+  if(!rows.length){el.innerHTML='<p class="note">עוד אין שיאים. כל ניצחון, נחיתה וטיסה במבנה נרשמים כאן.</p>';return;}
+  el.innerHTML='<table><tr><th></th>'+cols.map(c=>`<th>${esc(c[0])}</th>`).join('')+'</tr>'+rows.map(([k,l,dir,f])=>{const vs=cols.map(c=>c[1][k]),ok=vs.filter(v=>v!=null),b=ok.length>1?(dir==='min'?Math.min(...ok):Math.max(...ok)):null;
+    return `<tr><td>${l}</td>`+vs.map(v=>v==null?'<td>—</td>':`<td class="${v===b?'b':''}">${f(v)}${v===b?' ★':''}</td>`).join('')+'</tr>';}).join('')+'</table>';}
 function readBest(){try{return JSON.parse(localStorage.getItem('haniaflight-best')||'{}')||{};}catch(e){return{};}}
 function judge(){newAch.length=0;const s=W.stats,o=W.over,p=W.player,L=readLog(),id=W.missionId,win=o.win;unlock('first');
   if(s.mig>0)unlock('kill');if(L.mig>=5)unlock('ace');if(s.gunKill)unlock('gun');if(s.sink!=null&&p.alive&&s.sink*196.85<200&&W.flags.airborne)unlock('butter');
   if(s.start==='cold'&&W.flags.airborne)unlock('cold');if(id==='tanker'&&win)unlock('tanker');if(id==='sead'&&win)unlock('sead');if(win&&!W.dmg.length&&id!=='train'&&id!=='tanker')unlock('clean');
   if(win&&tod==='night')unlock('night');if(id==='escort'&&win&&W.strikers.every(k=>k.ac.alive))unlock('guard');if(win&&W.wx==='storm')unlock('storm');if(W.ejected&&W.ejected.safe)unlock('eject');if(s.home)unlock('home');if(id==='train'&&win&&W.lesson!=='basic')unlock('school');if(s.pair)unlock('pair');if(id==='csar'&&win)unlock('rescue');if(p.caught&&p.alive)unlock('hook');if(s.relit)unlock('relight');
   let best=null;if(win){const B=readBest(),k=id+(id==='duel'?'-'+opts.foe:''),old=B[k];if(!old||W.time<old.t){B[k]={t:Math.round(W.time),plane:W.plane.name,diff:W.diff};try{localStorage.setItem('haniaflight-best',JSON.stringify(B));}catch(e){}best={now:true,old};}else best={now:false,old};}
-  return best;}
+  noteRecs();return best;}
 // Hania points: the first win of each mission pays 10 points to the person's Hania360 account
 // (signed in at pass.hania360.com; the cookie is shared across hania360.com).
 const HP_MISSIONS=['train','strike','intercept','duel','csar','convoy','sead','escort','recon','tanker','stealth','naval','cas','low'];
@@ -2043,7 +2057,7 @@ for(const b of document.querySelectorAll('[data-opt]'))b.setAttribute('aria-pres
     const pl=R.PLANES[opts.plane],T0=R.TYPES[pl.type],mx=pl.maxTanks||0;opts.aam='full';opts.tanks=String(Math.min(mx,loadSum(opts.plane).tanks));drawStations();for(const b of document.querySelectorAll('[data-opt="tanks"]')){b.disabled=+b.dataset.val>mx;b.setAttribute('aria-pressed',String(opts.tanks===b.dataset.val));}
     const TW=new R.World({plane:opts.plane,mission:opts.mission,bomb:opts.bomb,start:'runway',fuelPct:+opts.fuelPct,tanks:+opts.tanks,aam:opts.aam,load:loadSum(opts.plane)}),fuel=TW.player.fuel,tow=TW.player.mass,tw=T0.Tab/(tow*9.81);
     $('towLine').innerHTML=`משקל המראה <b dir="ltr">${Math.round(tow).toLocaleString('en')} kg</b> מתוך <span dir="ltr">${pl.mtow.toLocaleString('en')}</span> · דלק <b dir="ltr">${Math.round(fuel).toLocaleString('en')} kg</b> · יחס דחף למשקל <b dir="ltr">${tw.toFixed(2)}</b>`+(tow>pl.mtow?' · <b style="color:var(--red)">מעל המשקל המרבי: ריצת ההמראה תתארך מאוד</b>':'');}
-showCamp();showDaily();showAch();{const B=readBest(),k=opts.mission+(opts.mission==='duel'?'-'+opts.foe:''),b=B[k];$('bestLine').textContent=b?`שיא אישי במשימה: ${Math.floor(b.t/60)}:${String(b.t%60).padStart(2,'0')} · ${b.plane}`:'';}eco=opts.q==='eco';cloudSp.forEach((c,i)=>c.visible=opts.q==='high'||i%(eco?4:2)===0);landLight.visible=tod!=='day'&&!eco;resize();
+showCamp();showDaily();showAch();showRecs();{const B=readBest(),k=opts.mission+(opts.mission==='duel'?'-'+opts.foe:''),b=B[k];$('bestLine').textContent=b?`שיא אישי במשימה: ${Math.floor(b.t/60)}:${String(b.t%60).padStart(2,'0')} · ${b.plane}`:'';}eco=opts.q==='eco';cloudSp.forEach((c,i)=>c.visible=opts.q==='high'||i%(eco?4:2)===0);landLight.visible=tod!=='day'&&!eco;resize();
   try{localStorage.setItem('haniaflight-opts',JSON.stringify(opts));}catch(e){}}
 document.addEventListener('click',e=>{const b=e.target&&e.target.closest&&e.target.closest('[data-opt]');if(b&&MP.live)setTimeout(()=>{mpg.sendRoom();MP.send({t:'me',plane:opts.plane,call:readPilot().call||'',team:mpg.myTeam()},true);mpUi.room();},0);});
 for(const b of document.querySelectorAll('[data-opt]'))b.onclick=()=>{const prevBase=opts.isrBase;opts[b.dataset.opt]=b.dataset.val;if(b.dataset.opt==='q')try{localStorage.setItem('haniaflight-qset','1');}catch(e){}if(b.dataset.opt==='theatre'&&b.dataset.val!==theatre0||b.dataset.opt==='isrBase'&&theatre0==='israel'&&b.dataset.val!==prevBase){try{localStorage.setItem('haniaflight-opts',JSON.stringify(opts));}catch(e){}$('loadText')&&($('loading').hidden=false,$('loadText').textContent='טוען את הזירה…');location.reload();return;}if(b.dataset.opt==='tilt'&&b.dataset.val==='on')tiltOn(true);applyOpts();};if(opts.tilt==='on')tiltOn(false);

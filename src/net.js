@@ -89,7 +89,8 @@ const QUICK=['כסה אותי','אני תוקף','פונה ימינה','פונה
 const mpg={on:false,cfg:null,role:'pilot',seatOf:null,room:{mode:'coop',start:'air'},ch:1,team:null,
   vs(m){return m==='pvp'||m==='teams';},teamCh(){return mpg.team==='r'?3:2;},myTeam(){if(!mpg.team)mpg.team=MP.host?'b':'r';return mpg.team;},sT:0,wT:0,nT:0,netN:0,live:new Set(),sent:false,overSent:false,lostSent:false,
   sendRoom(){if(!MP.host)return;const r=mpg.room;MP.send({t:'room',mode:r.mode,start:r.start,mission:opts.mission,theatre:opts.theatre,isrBase:opts.isrBase,diff:opts.diff,tod:opts.tod,wx:opts.wx},true);},
-  hi(P){MP.sendTo(P.id,{t:'me',plane:opts.plane,call:readPilot().call||'',team:mpg.myTeam(),role:mpg.role||'pilot',seat:mpg.seatOf||null},true);if(MP.host)mpg.sendRoom();},
+  sendRecs(){if(MP.live)MP.send({t:'rec',n:mpUi.name(),r:myRecs()},true);},
+  hi(P){MP.sendTo(P.id,{t:'rec',n:mpUi.name(),r:myRecs()},true);MP.sendTo(P.id,{t:'me',plane:opts.plane,call:readPilot().call||'',team:mpg.myTeam(),role:mpg.role||'pilot',seat:mpg.seatOf||null},true);if(MP.host)mpg.sendRoom();},
   left(P,wasHost){if(mpg.on&&W&&rear.seat==='wso'&&P.id===rear.pilot&&!W.over)W.over={win:false,title:'החיבור נותק',reason:'הטייס יצא מהמשחק.'};
     if(mpg.on&&W){const r=W.remotes.find(x=>x.id===P.id);if(r&&r.alive){r.alive=false;r.gone=true;W.events.push({type:'kill',e:r});}radioQ.push(`רשת: ${P.name} יצא מהמשחק.`);
       if(!W.over&&((wasHost&&!MP.host)||(mpg.vs(mpg.cfg.mode)&&!W.remotes.some(x=>!x.gone&&x.side===1))))W.over={win:false,title:'החיבור נותק',reason:wasHost?'המארח יצא מהמשחק.':'היריב יצא מהמשחק.'};}
@@ -169,6 +170,7 @@ const mpg={on:false,cfg:null,role:'pilot',seatOf:null,room:{mode:'coop',start:'a
     else if(e.type==='cm'&&e.ac===W.player)MP.send({t:'cm',k:e.fl&&e.ch?0:e.fl?'flare':'chaff'},true);},
   /* messages from the others */
   recv(o,from,viaRelay){const P=MP.peers.get(from);if(!o||!o.t)return;
+    if(o.t==='rec'){if(o.n&&o.r&&typeof o.r==='object'){const F=readFrec(),n=String(o.n).slice(0,18),r={};for(const k in o.r){const v=+o.r[k];if(isFinite(v)&&k.length<24)r[k]=v;}F[n]=Object.assign(F[n]||{},{r,at:Date.now()});try{localStorage.setItem('haniaflight-frec',JSON.stringify(F));}catch(e){}showRecs();}return;}
     if(o.t==='me'){if(P){P.plane=o.plane;P.call=o.call;if(o.team)P.team=o.team;P.role=o.role||'pilot';P.seat=o.seat||null;mpUi.room();}return;}
     if(o.t==='room'){if(P&&P.host){mpg.room={mode:o.mode,start:o.start};mpg.hostCfg=o;mpUi.room();mpg.align(o);}return;}
     if(o.t==='start'){mpg.begin(o);return;}
