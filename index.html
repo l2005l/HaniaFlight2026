@@ -162,6 +162,8 @@ details[open] summary{margin-bottom:10px}
 #ufc{position:absolute;z-index:6;bottom:12px;left:12px;width:min(16.5rem,calc(100% - 24px));background:rgba(10,14,12,.9);border:1px solid #3c5a44;border-radius:8px;padding:6px;display:grid;gap:5px;font-family:var(--mono)}
 #ufc[hidden]{display:none}
 #ufc:not([data-pad="1"]) #ufcPad{display:none}
+#ufcHelp{margin:0;font-family:Assistant,Arial,sans-serif;font-size:.74rem;line-height:1.35;color:#cfe8d6;min-height:2.6em}#ufcHelp[data-f="1"]{color:var(--amber)}
+#ufc[data-t="1"][data-side="r"]{left:auto;right:8px;transform:none}#ufc[data-t="1"] #ufcHelp{font-size:.66rem;min-height:2.4em}
 #ufc[data-t="1"]{top:52px;bottom:auto;left:50%;transform:translateX(-50%);width:min(19rem,44vw);background:rgba(10,14,12,.82)}
 #ufc[data-t="1"] #ufcScr{min-height:0;font-size:.62rem}#ufc[data-t="1"] #ufcPad{grid-template-columns:repeat(7,1fr)}#ufc[data-t="1"] #ufcPad button{padding:2px 0}
 #ufcHead{display:flex;gap:3px;align-items:center}#ufcPages{display:flex;gap:3px;flex:1;direction:rtl}#ufcHead button{padding:2px 6px;font-size:.72rem}#ufcPages button[aria-pressed="true"]{border-color:#74ff96;color:#74ff96}
@@ -830,7 +832,7 @@ details[open] summary{margin-bottom:10px}
         </ul></div>
         <div><h4>UFC ונווט במושב האחורי</h4><ul>
           <li><b>UFC</b> (כפתור UFC או <b>F4</b>) הוא לוח מקשים עם מסך ירוק, בארבעה דפים. <b>ניווט:</b> הנקודה הנוכחית, כיוון, מרחק וזמן אליה, הבית והדלק. <b>נ"צ:</b> המיקום שלך ברשת המפה, בקילומטרים מזרחה (E) וצפונה (N) מהבסיס. <b>חימוש:</b> מה נשאר בכל סוג, הנשק הנבחר, חימוש ראשי והמטרה. <b>GPS:</b> הלוויינים שהמקלט קולט, שגיאת המיקום המשוערת (EPE), ה־INS, ושיבוש.</li>
-          <li>הזנת נ"צ: מקלידים מספר ולוחצים <b>E</b>, מקלידים מספר ולוחצים <b>N</b> (מינוס לדרום או למערב). "מהפוד" מעתיק את הנקודה שהפוד מסתכל עליה, ו"מיקום שלי" את המיקום שלך. אחר כך "לנקודת ציון" מוסיף את הנקודה למסלול, ו"למטרה" הופך אותה למטרה לחימוש GPS.</li>
+          <li>הזנת ערך: קודם בוחרים שדה (<b>E מזרח</b>, <b>N צפון</b> או <b>קוד לייזר</b>), ואז מקלידים ולוחצים <b>ENT</b>. <b>CLR</b> מוחק, ו"ביטול" יוצא בלי לשנות. במסך רואים את הערך הנוכחי ואת מה שהוקלד, ומתחתיו הסבר בעברית. מינוס מסמן דרום או מערב. "מהפוד" מעתיק את הנקודה שהפוד מסתכל עליה, ו"מיקום שלי" את המיקום שלך. אחר כך "לנקודת ציון" מוסיף את הנקודה למסלול, ו"למטרה" הופך אותה למטרה לחימוש GPS.</li>
           <li>חימוש GPS נוחת בערך בתוך ה־EPE מנקודת הכיוון. ליד סוללת מכ"ם של האויב (פחות מ־25 ק"מ) יש שיבוש: פחות לוויינים ושגיאה גדולה יותר. בתקלת GPS נשאר רק ה־INS, והשגיאה גדלה עם הזמן.</li>
           <li><b>נווט במושב האחורי</b> (משחק עם חברים, במצב "יחד"): אורח בוחר בחדר "נווט אצל..." מטייס שטס ב־F-15I, F-16I או לביא. הנווט רואה את התא והתצוגות, ומפעיל את נעילת המכ"ם, את הפוד, את בחירת הנשק, את החימוש הראשי ואת ה־UFC. הוא גם יכול לשחרר חימוש בפיקל. את המטוס מטיס הטייס בלבד: כן נסע, מדפים, תדלוק וטייס אוטומטי נשארים אצלו.</li>
         </ul></div>
@@ -876,7 +878,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט. לחיצה על המוט השמאלי: וו בלימה, על הימני: מבט למטרה. Start מתחיל טיסה מהתפריט. באפליקציית האנדרואיד השלט עובד דרך האפליקציה עצמה.</p>
     </details>
-    <p class="note">גרסה 3.1 (a1da1f5, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
+    <p class="note">גרסה 3.1 (d1c74c5, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
     </div>
     <div id="dock">
     <div id="update" role="status" aria-live="polite" hidden>
@@ -903,7 +905,7 @@ details[open] summary{margin-bottom:10px}
   <div id="tour" hidden><div id="tourRing"></div><div id="tourBox" role="dialog" aria-live="polite"><p id="tourText"></p><div class="acts"><span id="tourN" class="note"></span><button id="tourSkip">דלג</button><button id="tourNext" class="go">הבא</button></div></div></div>
   <button id="mfdHitR" aria-label="החלף תצוגה במסך הימני" hidden></button>
   <div id="ufc" hidden dir="ltr"><div id="ufcHead"><span id="ufcSeat"></span><div id="ufcPages"></div><button id="ufcX" aria-label="סגור">✕</button></div>
-    <pre id="ufcScr"></pre><div id="ufcSoft"></div>
+    <pre id="ufcScr"></pre><p id="ufcHelp" dir="rtl"></p><div id="ufcSoft"></div>
     <div id="ufcPad"><button>1</button><button>2</button><button>3</button><button>4</button><button>5</button><button>6</button><button>7</button><button>8</button><button>9</button><button>-</button><button>0</button><button>.</button><button data-k="clr">CLR</button><button data-k="ent" class="go">ENT</button></div></div>
   <div id="lwBox" hidden><button data-lw="form">כנף</button><button data-lw="decoy">הטעיה</button><button data-lw="attack">תקיפה</button><button data-lw="recon">צילום</button></div>
   <div id="walkBar" hidden><button id="walkSkip">לתא</button></div>
@@ -4141,46 +4143,65 @@ function ufcApply(u){if(!W)return;const p=W.player,x=u.e*1000,z=-u.n*1000;
   else if(u.k==='lc'){W.laserCode=u.v;radioQ.push(`UFC: קוד לייזר ${u.v}. פצצות לייזר שישוחררו מעכשיו יחפשו את הקוד הזה.`);}
   else if(u.k==='tgt'){W.gtgt={pos:{x,y:R.terrainH(x,z),z},alive:true,name:'COORD',kind:'pt',vel:v3(),pt:true};radioQ.push(W.w.sel==='SPICE'?'UFC: נקודת המטרה הוזנה. חימוש GPS יכוון אליה.':'UFC: נקודת המטרה הוזנה. בחר חימוש לקרקע.');}}
 
-const ufc={on:false,page:'nav',buf:'',e:null,n:null,flash:'',flashT:0,last:''};
+const ufc={on:false,page:'nav',buf:'',e:null,n:null,flash:'',flashT:0,last:'',edit:null};
 const UFCP=[['nav','ניווט'],['crd','נ"צ'],['wpn','חימוש'],['gps','GPS']];
 const fE=v=>(v<0?'W':'E')+Math.abs(v).toFixed(1).padStart(5,'0'),fN=v=>(v<0?'S':'N')+Math.abs(v).toFixed(1).padStart(5,'0');
 const pad2=n=>String(n).padStart(2,'0'),mmssU=s=>s>5999?'--:--':pad2(Math.floor(s/60))+':'+pad2(Math.floor(s%60));
+/* entering a value: choose the field with its key, type, ENT. The screen shows the field, what is typed so far, and what is expected. */
+const UFCF={lc:{t:'LASER CODE',h:'הקלד 4 ספרות: 1 ואחריו ספרה 1–7, ואז שתי ספרות 1–8 (למשל 1688). ENT לאישור, CLR למחיקה.',max:4,neg:false,dot:false},
+  e:{t:'EAST  KM',h:'כמה קילומטרים מזרחה מהבסיס (מינוס למערב), למשל 112.5. ENT לאישור.',max:6,neg:true,dot:true},
+  n:{t:'NORTH KM',h:'כמה קילומטרים צפונה מהבסיס (מינוס לדרום), למשל -3.0. ENT לאישור.',max:6,neg:true,dot:true}};
+const UFCH={nav:'הנקודה הבאה במסלול: כיוון, מרחק וזמן. "הקודם" ו"הבא" מחליפים נקודה.',
+  crd:'נקודה חדשה: לחץ E והקלד, לחץ N והקלד, או קח "מהפוד" או "מיקום שלי". אחר כך "לנקודת ציון" (מוסיף למסלול) או "למטרה" (לחימוש GPS).',
+  wpn:'מה נשאר בכל סוג חימוש. "קוד לייזר" משנה את הקוד: פצצת לייזר מחפשת רק את הקוד שלה.',gps:'מספר הלוויינים ודיוק המיקום (EPE). ליד מכ"ם של האויב יש שיבוש.'};
 function ufcShow(){const b=$('ufc');if(!b)return;const vis=ufc.on&&state==='fly'&&!!W;if(b.hidden===vis)b.hidden=!vis;if(!vis)return;
   $('ufcPages').innerHTML=UFCP.map(([k,l])=>`<button data-up="${k}" aria-pressed="${ufc.page===k}">${l}</button>`).join('');
-  for(const x of $('ufcPages').querySelectorAll('button'))x.onclick=()=>{ufc.page=x.dataset.up;ufc.last='';ufcShow();beep(1100,0.02);};
-  const S={nav:[['הקודם','wpPrev'],['הבא','wp']],crd:[['E','setE'],['N','setN'],['מיקום שלי','here'],['מהפוד','pod'],['לנקודת ציון','wpt'],['למטרה','tgt']],wpn:[['קוד לייזר','lc'],['בחר נשק','wpn'],['חימוש ראשי','arm']],gps:[]}[ufc.page];
-  $('ufcSoft').innerHTML=S.map(([l,k])=>`<button data-sk="${k}">${l}</button>`).join('');for(const x of $('ufcSoft').querySelectorAll('button'))x.onclick=()=>ufcSoft(x.dataset.sk);
-  b.dataset.pad=ufc.page==='crd'||ufc.page==='wpn'?'1':'';b.dataset.t=touchOn?'1':'';$('ufcSeat').textContent=rear.seat==='wso'?'BACK SEAT':rear.wso?'FRONT · WSO ON':'';ufc.last='';ufcDraw();}
-function ufcFlash(t){ufc.flash=t;ufc.flashT=2.2;ufc.last='';}
-function ufcSoft(k){click(0.6);const p=W.player,num=parseFloat(ufc.buf);
-  if(k==='wp'||k==='wpPrev'){rear.cmd({a:k});if(rear.seat!=='wso')ufcFlash('WPT '+(W.wps[W.wp]||{}).n);}
-  else if(k==='setE'||k==='setN'){if(!ufc.buf||isNaN(num)){ufcFlash('ENTER A NUMBER FIRST');return;}if(k==='setE')ufc.e=num;else ufc.n=num;ufc.buf='';ufcFlash(k==='setE'?'EAST SET':'NORTH SET');}
-  else if(k==='here'){ufc.e=+(p.pos.x/1000).toFixed(1);ufc.n=+(-p.pos.z/1000).toFixed(1);ufcFlash('OWN POSITION');}
-  else if(k==='pod'){const g=podTgt();if(!g||g.sky){ufcFlash('POD: NO POINT');return;}ufc.e=+(g.pos.x/1000).toFixed(1);ufc.n=+(-g.pos.z/1000).toFixed(1);ufcFlash('POD POINT');}
-  else if(k==='wpt'||k==='tgt'){if(ufc.e==null||ufc.n==null){ufcFlash('SET E AND N');return;}rear.cmd({a:'ufc',u:{k,e:ufc.e,n:ufc.n}});ufcFlash(k==='wpt'?'WAYPOINT ADDED':'TARGET SET');}
-  else if(k==='lc'){const c=ufc.buf.replace(/\D/g,'');if(!/^1[1-7][1-8][1-8]$/.test(c)){ufcFlash('CODE 1111-1788');return;}ufc.buf='';rear.cmd({a:'ufc',u:{k:'lc',v:+c}});ufcFlash('LASER CODE '+c);}
+  for(const x of $('ufcPages').querySelectorAll('button'))x.onclick=()=>{ufc.page=x.dataset.up;ufc.edit=null;ufc.last='';ufcShow();click(0.6);};
+  const S=ufc.edit?[['ביטול','cancel']]:{nav:[['הקודם','wpPrev'],['הבא','wp']],crd:[['E מזרח','setE'],['N צפון','setN'],['מהפוד','pod'],['מיקום שלי','here'],['לנקודת ציון','wpt'],['למטרה','tgt']],wpn:[['קוד לייזר','lc'],['בחר נשק','wpn'],['חימוש ראשי','arm']],gps:[]}[ufc.page];
+  $('ufcSoft').innerHTML=S.map(([l,k])=>`<button data-sk="${k}"${ufc.edit?' class="go"':''}>${l}</button>`).join('');for(const x of $('ufcSoft').querySelectorAll('button'))x.onclick=()=>ufcSoft(x.dataset.sk);
+  b.dataset.pad=ufc.edit?'1':'';b.dataset.t=touchOn?'1':'';b.dataset.side=touchOn&&pod.big?'r':'';$('ufcSeat').textContent=rear.seat==='wso'?'BACK SEAT':rear.wso?'FRONT · WSO ON':'';ufc.last='';ufcDraw();}
+function ufcFlash(t){ufc.flash=t;ufc.flashT=3;ufc.last='';}
+function ufcEdit(f){ufc.edit={f,buf:''};ufcShow();}
+function ufcSoft(k){click(0.6);const p=W.player;
+  if(k==='cancel'){ufc.edit=null;ufcShow();return;}
+  if(k==='wp'||k==='wpPrev'){rear.cmd({a:k});}
+  else if(k==='setE')return ufcEdit('e');else if(k==='setN')return ufcEdit('n');else if(k==='lc')return ufcEdit('lc');
+  else if(k==='here'){ufc.e=+(p.pos.x/1000).toFixed(1);ufc.n=+(-p.pos.z/1000).toFixed(1);ufcFlash('הוזן המיקום שלך.');}
+  else if(k==='pod'){const g=podTgt();if(!g||g.sky){ufcFlash('הפוד לא מסתכל על נקודה בקרקע.');return ufcDraw();}ufc.e=+(g.pos.x/1000).toFixed(1);ufc.n=+(-g.pos.z/1000).toFixed(1);ufcFlash('הוזנה הנקודה שהפוד מסתכל עליה.');}
+  else if(k==='wpt'||k==='tgt'){if(ufc.e==null||ufc.n==null){ufcFlash('קודם הזן E ו-N, או לחץ "מהפוד".');return ufcDraw();}rear.cmd({a:'ufc',u:{k,e:ufc.e,n:ufc.n}});ufcFlash(k==='wpt'?'הנקודה נוספה למסלול ונבחרה.':'הנקודה היא עכשיו המטרה.');}
   else if(k==='wpn')rear.cmd({a:'wpn'});else if(k==='arm')(rear.seat==='wso'?rear.cmd({a:'sw',id:'arm'}):W.sw('arm'));
   ufcDraw();}
-function ufcKey(k){if(!ufc.on)return;click(0.6);if(k==='clr'){ufc.buf=ufc.buf.slice(0,-1);}else if(k==='ent'){if(ufc.page!=='crd')return;ufcFlash('PRESS E OR N');}else if(k==='-'){ufc.buf=ufc.buf.startsWith('-')?ufc.buf.slice(1):'-'+ufc.buf;}else if(ufc.buf.length<7&&!(k==='.'&&ufc.buf.includes('.')))ufc.buf+=k;ufc.last='';ufcDraw();}
+function ufcEnter(){const E=ufc.edit,F=UFCF[E.f],v=E.buf;
+  if(E.f==='lc'){if(!/^1[1-7][1-8][1-8]$/.test(v)){ufcFlash('קוד לא תקין. 4 ספרות: 1, ספרה 1–7, שתי ספרות 1–8.');return;}rear.cmd({a:'ufc',u:{k:'lc',v:+v}});W.laserCode=+v;ufcFlash('קוד הלייזר עכשיו '+v+'.');}
+  else{const n=parseFloat(v);if(!v||isNaN(n)||Math.abs(n)>400){ufcFlash('מספר לא תקין.');return;}if(E.f==='e')ufc.e=n;else ufc.n=n;ufcFlash((E.f==='e'?'מזרח':'צפון')+' הוזן: '+n+' ק"מ.');}
+  ufc.edit=null;ufcShow();}
+function ufcKey(k){if(!ufc.on)return;click(0.6);const E=ufc.edit;
+  if(!E){ufcFlash(ufc.page==='wpn'?'לחץ קודם "קוד לייזר", ואז הקלד.':ufc.page==='crd'?'לחץ קודם E או N, ואז הקלד.':'בדף הזה אין מה להקליד.');return ufcDraw();}
+  const F=UFCF[E.f];if(k==='clr'){if(E.buf)E.buf=E.buf.slice(0,-1);else{ufc.edit=null;return ufcShow();}}else if(k==='ent'){return ufcEnter();}
+  else if(k==='-'){if(F.neg)E.buf=E.buf.startsWith('-')?E.buf.slice(1):'-'+E.buf;}else if(k==='.'){if(F.dot&&!E.buf.includes('.'))E.buf+='.';}else if(E.buf.replace(/[-.]/g,'').length<F.max)E.buf+=k;
+  ufc.last='';ufcDraw();}
 function ufcDraw(){if(!ufc.on||!W)return;const p=W.player,w=W.w,L=[];
-  if(ufc.page==='nav'){const q=W.wps[W.wp]||{n:'---',x:p.pos.x,z:p.pos.z},br=(x,z)=>{let b=Math.atan2(x-p.pos.x,-(z-p.pos.z))*R2D;if(b<0)b+=360;return String(Math.round(b)%360).padStart(3,'0');},rg=Math.hypot(q.x-p.pos.x,q.z-p.pos.z),gs=Math.max(30,Math.hypot(p.vel.x,p.vel.z));
+  if(ufc.edit){const E=ufc.edit,F=UFCF[E.f],cur=E.f==='lc'?String(W.laserCode||1688):E.f==='e'?(ufc.e==null?'-----':fE(ufc.e)):(ufc.n==null?'-----':fN(ufc.n));
+    L.push(F.t+'   NOW '+cur,'',E.f==='lc'?'NEW  '+(E.buf+'____').slice(0,4).split('').join(' '):'NEW  '+(E.buf||'')+'_','','ENT=OK   CLR=DEL');}
+  else if(ufc.page==='nav'){const q=W.wps[W.wp]||{n:'---',x:p.pos.x,z:p.pos.z},br=(x,z)=>{let b=Math.atan2(x-p.pos.x,-(z-p.pos.z))*R2D;if(b<0)b+=360;return String(Math.round(b)%360).padStart(3,'0');},rg=Math.hypot(q.x-p.pos.x,q.z-p.pos.z),gs=Math.max(30,Math.hypot(p.vel.x,p.vel.z));
     const H=W.carrier&&W.cvHome?{n:'CVN',x:W.carrier.pos.x,z:W.carrier.pos.z}:{n:'BASE',x:0,z:0};
     L.push(`WPT ${q.n.padEnd(5)}      ${W.wp+1}/${W.wps.length}`,`BRG ${br(q.x,q.z)}   RNG ${(rg/NM).toFixed(1)}NM`,`ETE ${mmssU(rg/gs)}   ALT ${Math.round(q.alt*FT/100)*100}`,
       `HOME ${H.n} ${br(H.x,H.z)}/${(Math.hypot(H.x-p.pos.x,H.z-p.pos.z)/NM).toFixed(1)}NM`,`FUEL ${Math.round(p.fuel)}  BINGO ${W.bingo}`);}
-  else if(ufc.page==='crd'){L.push(`OWN ${fE(p.pos.x/1000)} ${fN(-p.pos.z/1000)}`,`E   ${ufc.e==null?'-----':fE(ufc.e)}`,`N   ${ufc.n==null?'-----':fN(ufc.n)}`,`>${ufc.buf}_`);
-    const g=W.gtgt;L.push(g&&g.alive?`TGT ${(g.name||'').slice(0,6).padEnd(6)} ${fE(g.pos.x/1000)} ${fN(-g.pos.z/1000)}`:'TGT NONE');}
+  else if(ufc.page==='crd'){const g=W.gtgt;L.push(`OWN  ${fE(p.pos.x/1000)} ${fN(-p.pos.z/1000)}`,`E    ${ufc.e==null?'-----':fE(ufc.e)}`,`N    ${ufc.n==null?'-----':fN(ufc.n)}`,
+      ufc.e!=null&&ufc.n!=null?'READY: WPT OR TGT':'SET E AND N',g&&g.alive?`TGT  ${fE(g.pos.x/1000)} ${fN(-g.pos.z/1000)}`:'TGT  NONE');}
   else if(ufc.page==='wpn'){const pl=W.plane,bn=(pl.bomb&&pl.bomb.name||'A/G').slice(0,10);
     L.push(`${(W.mrm&&W.mrm.name||'AIM-120').slice(0,8).padEnd(8)} x${w.aim120}  ${(W.srm&&W.srm.name||'PYTHON').slice(0,8).padEnd(8)} x${w.python}`,`${bn.padEnd(10)} x${w.spice}   GUN ${w.gun}`,`CHF ${w.chaff} FLR ${w.flare}  TNK ${w.tanks||0}`,
-      `SEL ${String(w.sel).padEnd(7)} ${W.arm?'ARM':'SAFE'}  LSR ${W.laserCode||1688}`);const g=W.gtgt;L.push(g&&g.alive?`TGT ${(g.name||g.type||'').slice(0,10)}${pl.bomb&&pl.bomb.gps?' GPS':''}`:W.lock?`LOCK ${(W.lock.label||W.lock.name||W.lock.type||'').slice(0,10)}`:'NO TGT');}
+      `SEL ${String(w.sel).padEnd(7)} ${W.arm?'ARM':'SAFE'}`,`LASER CODE ${W.laserCode||1688}`);}
   else if(ufc.page==='gps'){const s=W.gpsState(),seed=Math.floor(W.time/40),prn=[];for(let i=0;i<12;i++){const n=((seed*7+i*11)%31)+1;if(!prn.includes(n))prn.push(n);}
     const bars=prn.slice(0,Math.max(s.sats,0)).map((n,i)=>pad2(n)+['▂','▄','▆','█'][(n+i+seed)%4]).join(' ');
     L.push(`GPS ${s.mode.padEnd(5)} SATS ${pad2(s.sats)}  EPE ${s.epe}M`,`INS ${s.ins>=1?'NAV':'ALIGN '+Math.round(s.ins*100)+'%'}  ${W.flt&&W.flt.gps?'GPS FAIL':''}`,bars.slice(0,26)||'NO SATELLITES',bars.slice(27,53),`JAM ${s.jam>0.66?'HEAVY':s.jam>0.2?'MODERATE':s.jam>0?'LIGHT':'NONE'}`);}
-  if(ufc.flashT>0)L[L.length-1]='» '+ufc.flash;
-  const t=L.join('\n');if(t!==ufc.last){ufc.last=t;$('ufcScr').textContent=t;}}
-function ufcTick(dt){if(ufc.flashT>0){ufc.flashT-=dt;if(ufc.flashT<=0)ufc.last='';}const b=$('ufc');if(!b)return;const vis=ufc.on&&state==='fly'&&!!W&&W.player.alive;if(b.hidden===vis){if(vis)ufcShow();else b.hidden=true;}if(vis){ufc.dt=(ufc.dt||0)+dt;if(ufc.dt>0.25){ufc.dt=0;ufcDraw();}}}
+  const help=ufc.flashT>0?ufc.flash:ufc.edit?UFCF[ufc.edit.f].h:UFCH[ufc.page],t=L.join('\n')+'|'+help;
+  if(t!==ufc.last){ufc.last=t;$('ufcScr').textContent=L.join('\n');const hp=$('ufcHelp');hp.textContent=help;hp.dataset.f=ufc.flashT>0?'1':'';}}
+function ufcTick(dt){if(ufc.flashT>0){ufc.flashT-=dt;if(ufc.flashT<=0)ufc.last='';}const b=$('ufc');if(!b)return;const vis=ufc.on&&state==='fly'&&!!W&&W.player.alive;if(b.hidden===vis){if(vis)ufcShow();else b.hidden=true;}
+  if(vis){const sd=touchOn&&pod.big?'r':'';if(b.dataset.side!==sd)b.dataset.side=sd;ufc.dt=(ufc.dt||0)+dt;if(ufc.dt>0.25){ufc.dt=0;ufcDraw();}}}
 for(const x of $('ufcPad').querySelectorAll('button'))x.onclick=()=>ufcKey(x.dataset.k||x.textContent);
 $('ufcX').onclick=()=>{ufc.on=false;ufcTick(0);};$('ufcBtn').onclick=()=>{ufc.on=!ufc.on;ufcTick(0);};
-addEventListener('keydown',e=>{if(!ufc.on||state!=='fly')return;const t=e.target;if(t&&t.closest&&t.closest('input,textarea'))return;
+addEventListener('keydown',e=>{if(!ufc.on||!ufc.edit||state!=='fly')return;if(e.code==='Enter'||e.code==='NumpadEnter'){ufcKey('ent');e.stopImmediatePropagation();e.preventDefault();return;}if(e.code==='Escape'){ufc.edit=null;ufcShow();e.stopImmediatePropagation();e.preventDefault();return;}const t=e.target;if(t&&t.closest&&t.closest('input,textarea'))return;
   const k=/^(Digit|Numpad)([0-9])$/.exec(e.code);if(k){ufcKey(k[2]);e.stopImmediatePropagation();e.preventDefault();return;}
   if(e.code==='Period'||e.code==='NumpadDecimal'){ufcKey('.');e.stopImmediatePropagation();}else if(e.code==='Minus'||e.code==='NumpadSubtract'){ufcKey('-');e.stopImmediatePropagation();}else if(e.code==='Backspace'){ufcKey('clr');e.stopImmediatePropagation();e.preventDefault();}},true);
 
@@ -5279,7 +5300,7 @@ function drawHUD(){tgpR=null;if(walk.on&&state==='fly'){ctx.setTransform(dpr,0,0
     else T2((g.name||'').slice(0,10),x+ms-5*k,y0+ms-10*k,'right',9);
     if(!sees&&!g.held){const masked=!!(g.pod||g)&&(()=>{const dd=qrotInv(p.q,vsub(g.pos,p.pos));return dd.y/vlen(dd)>0.35;})();if(blink||!masked)T2(masked?'MASK':'NO LOS',c0,c1-ms*0.12,'center',13,AMB);}
     ctx.restore();};
-  const podBig=()=>{const S=touchOn?Math.min(vh-140,vw*0.45):Math.min(vw*0.45,vh*0.62);return{x:(vw-S)/2,y:touchOn?4:vh*0.06,s:S};};
+  const podBig=()=>{const S=touchOn?Math.min(vh-140,vw*0.45):Math.min(vw*0.45,vh*0.62);return{x:touchOn&&ufc.on?Math.max(8,vw*0.5-S-8):(vw-S)/2,y:touchOn?4:vh*0.06,s:S};};
   if(pw&&!!pt&&pod.big&&!deadS('L')){const B=podBig();mfdR=B;podShown=B;mfdTgp(B.x,B.y,B.s);}
   else if(mfdPage===5&&pw&&view===0&&!touchOn&&!deadS('L')){const S=clamp(m*0.3,120,250),B={x:10*u,y:vh-S-10*u,s:S};mfdR=B;mfdSar(B.x,B.y,S);tabs(B.x,B.y,S);}
   else if(ag&&view===0&&!touchOn){const S=clamp(m*0.27,104,230),B={x:10*u,y:vh-S-10*u,s:S};mfdR=B;podShown=B;mfdTgp(B.x,B.y,S);}

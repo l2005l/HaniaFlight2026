@@ -2038,7 +2038,7 @@ function drawHUD(){tgpR=null;if(walk.on&&state==='fly'){ctx.setTransform(dpr,0,0
     else T2((g.name||'').slice(0,10),x+ms-5*k,y0+ms-10*k,'right',9);
     if(!sees&&!g.held){const masked=!!(g.pod||g)&&(()=>{const dd=qrotInv(p.q,vsub(g.pos,p.pos));return dd.y/vlen(dd)>0.35;})();if(blink||!masked)T2(masked?'MASK':'NO LOS',c0,c1-ms*0.12,'center',13,AMB);}
     ctx.restore();};
-  const podBig=()=>{const S=touchOn?Math.min(vh-140,vw*0.45):Math.min(vw*0.45,vh*0.62);return{x:(vw-S)/2,y:touchOn?4:vh*0.06,s:S};};
+  const podBig=()=>{const S=touchOn?Math.min(vh-140,vw*0.45):Math.min(vw*0.45,vh*0.62);return{x:touchOn&&ufc.on?Math.max(8,vw*0.5-S-8):(vw-S)/2,y:touchOn?4:vh*0.06,s:S};};
   if(pw&&!!pt&&pod.big&&!deadS('L')){const B=podBig();mfdR=B;podShown=B;mfdTgp(B.x,B.y,B.s);}
   else if(mfdPage===5&&pw&&view===0&&!touchOn&&!deadS('L')){const S=clamp(m*0.3,120,250),B={x:10*u,y:vh-S-10*u,s:S};mfdR=B;mfdSar(B.x,B.y,S);tabs(B.x,B.y,S);}
   else if(ag&&view===0&&!touchOn){const S=clamp(m*0.27,104,230),B={x:10*u,y:vh-S-10*u,s:S};mfdR=B;podShown=B;mfdTgp(B.x,B.y,S);}

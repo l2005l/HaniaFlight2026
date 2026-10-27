@@ -150,6 +150,8 @@ details[open] summary{margin-bottom:10px}
 #ufc{position:absolute;z-index:6;bottom:12px;left:12px;width:min(16.5rem,calc(100% - 24px));background:rgba(10,14,12,.9);border:1px solid #3c5a44;border-radius:8px;padding:6px;display:grid;gap:5px;font-family:var(--mono)}
 #ufc[hidden]{display:none}
 #ufc:not([data-pad="1"]) #ufcPad{display:none}
+#ufcHelp{margin:0;font-family:Assistant,Arial,sans-serif;font-size:.74rem;line-height:1.35;color:#cfe8d6;min-height:2.6em}#ufcHelp[data-f="1"]{color:var(--amber)}
+#ufc[data-t="1"][data-side="r"]{left:auto;right:8px;transform:none}#ufc[data-t="1"] #ufcHelp{font-size:.66rem;min-height:2.4em}
 #ufc[data-t="1"]{top:52px;bottom:auto;left:50%;transform:translateX(-50%);width:min(19rem,44vw);background:rgba(10,14,12,.82)}
 #ufc[data-t="1"] #ufcScr{min-height:0;font-size:.62rem}#ufc[data-t="1"] #ufcPad{grid-template-columns:repeat(7,1fr)}#ufc[data-t="1"] #ufcPad button{padding:2px 0}
 #ufcHead{display:flex;gap:3px;align-items:center}#ufcPages{display:flex;gap:3px;flex:1;direction:rtl}#ufcHead button{padding:2px 6px;font-size:.72rem}#ufcPages button[aria-pressed="true"]{border-color:#74ff96;color:#74ff96}
@@ -816,7 +818,7 @@ details[open] summary{margin-bottom:10px}
         </ul></div>
         <div><h4>UFC ונווט במושב האחורי</h4><ul>
           <li><b>UFC</b> (כפתור UFC או <b>F4</b>) הוא לוח מקשים עם מסך ירוק, בארבעה דפים. <b>ניווט:</b> הנקודה הנוכחית, כיוון, מרחק וזמן אליה, הבית והדלק. <b>נ"צ:</b> המיקום שלך ברשת המפה, בקילומטרים מזרחה (E) וצפונה (N) מהבסיס. <b>חימוש:</b> מה נשאר בכל סוג, הנשק הנבחר, חימוש ראשי והמטרה. <b>GPS:</b> הלוויינים שהמקלט קולט, שגיאת המיקום המשוערת (EPE), ה־INS, ושיבוש.</li>
-          <li>הזנת נ"צ: מקלידים מספר ולוחצים <b>E</b>, מקלידים מספר ולוחצים <b>N</b> (מינוס לדרום או למערב). "מהפוד" מעתיק את הנקודה שהפוד מסתכל עליה, ו"מיקום שלי" את המיקום שלך. אחר כך "לנקודת ציון" מוסיף את הנקודה למסלול, ו"למטרה" הופך אותה למטרה לחימוש GPS.</li>
+          <li>הזנת ערך: קודם בוחרים שדה (<b>E מזרח</b>, <b>N צפון</b> או <b>קוד לייזר</b>), ואז מקלידים ולוחצים <b>ENT</b>. <b>CLR</b> מוחק, ו"ביטול" יוצא בלי לשנות. במסך רואים את הערך הנוכחי ואת מה שהוקלד, ומתחתיו הסבר בעברית. מינוס מסמן דרום או מערב. "מהפוד" מעתיק את הנקודה שהפוד מסתכל עליה, ו"מיקום שלי" את המיקום שלך. אחר כך "לנקודת ציון" מוסיף את הנקודה למסלול, ו"למטרה" הופך אותה למטרה לחימוש GPS.</li>
           <li>חימוש GPS נוחת בערך בתוך ה־EPE מנקודת הכיוון. ליד סוללת מכ"ם של האויב (פחות מ־25 ק"מ) יש שיבוש: פחות לוויינים ושגיאה גדולה יותר. בתקלת GPS נשאר רק ה־INS, והשגיאה גדלה עם הזמן.</li>
           <li><b>נווט במושב האחורי</b> (משחק עם חברים, במצב "יחד"): אורח בוחר בחדר "נווט אצל..." מטייס שטס ב־F-15I, F-16I או לביא. הנווט רואה את התא והתצוגות, ומפעיל את נעילת המכ"ם, את הפוד, את בחירת הנשק, את החימוש הראשי ואת ה־UFC. הוא גם יכול לשחרר חימוש בפיקל. את המטוס מטיס הטייס בלבד: כן נסע, מדפים, תדלוק וטייס אוטומטי נשארים אצלו.</li>
         </ul></div>
@@ -889,7 +891,7 @@ details[open] summary{margin-bottom:10px}
   <div id="tour" hidden><div id="tourRing"></div><div id="tourBox" role="dialog" aria-live="polite"><p id="tourText"></p><div class="acts"><span id="tourN" class="note"></span><button id="tourSkip">דלג</button><button id="tourNext" class="go">הבא</button></div></div></div>
   <button id="mfdHitR" aria-label="החלף תצוגה במסך הימני" hidden></button>
   <div id="ufc" hidden dir="ltr"><div id="ufcHead"><span id="ufcSeat"></span><div id="ufcPages"></div><button id="ufcX" aria-label="סגור">✕</button></div>
-    <pre id="ufcScr"></pre><div id="ufcSoft"></div>
+    <pre id="ufcScr"></pre><p id="ufcHelp" dir="rtl"></p><div id="ufcSoft"></div>
     <div id="ufcPad"><button>1</button><button>2</button><button>3</button><button>4</button><button>5</button><button>6</button><button>7</button><button>8</button><button>9</button><button>-</button><button>0</button><button>.</button><button data-k="clr">CLR</button><button data-k="ent" class="go">ENT</button></div></div>
   <div id="lwBox" hidden><button data-lw="form">כנף</button><button data-lw="decoy">הטעיה</button><button data-lw="attack">תקיפה</button><button data-lw="recon">צילום</button></div>
   <div id="walkBar" hidden><button id="walkSkip">לתא</button></div>
