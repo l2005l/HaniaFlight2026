@@ -158,6 +158,8 @@ details[open] summary{margin-bottom:10px}
 #ufcSoft{display:flex;gap:3px;flex-wrap:wrap;direction:rtl}#ufcSoft button{flex:1;padding:3px 4px;font-size:.7rem;min-width:4em}
 #ufcPad{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}#ufcPad button{padding:3px 0;font-size:.78rem;font-family:var(--mono)}
 @media (max-height:520px){#ufc{bottom:6px;left:6px;width:min(15rem,calc(100% - 12px))}#ufcScr{min-height:6em;font-size:.64rem}#ufcPad button{padding:2px 0;font-size:.72rem}}
+#app[data-walk="1"] #check,#app[data-walk="1"] #chips,#app[data-walk="1"] #obj{display:none!important}
+#walkBar{position:absolute;z-index:6;bottom:14px;left:50%;transform:translateX(-50%)}#walkBar[hidden]{display:none}#walkBar button{background:rgba(8,12,14,.75);padding:8px 22px}
 #chips button.warn2{border-color:var(--amber);color:var(--amber)}
 @media (pointer:fine){#chips{top:44px;left:auto;transform:none;inset-inline-start:16px;flex-direction:column;align-items:flex-start;gap:4px}}
 .tb button[data-st="1"]{border-color:var(--sand);color:var(--sand)}
@@ -492,6 +494,11 @@ details[open] summary{margin-bottom:10px}
       <button data-opt="wx" data-val="storm">מעונן וסוער</button>
       <button data-opt="wx" data-val="fog">ערפל בוקר</button>
     </div>
+    <div class="seg" role="group" aria-label="סיור סביב המטוס">
+      <span>סיור סביב המטוס בהתנעה מהדת"ק</span>
+      <button data-opt="walk" data-val="on">כן</button>
+      <button data-opt="walk" data-val="off">לא</button>
+    </div>
     <div class="seg" role="group" aria-label="מזג אוויר משתנה">
       <span>מזג אוויר משתנה במשימה</span>
       <button data-opt="wxdyn" data-val="off">לא</button>
@@ -755,6 +762,10 @@ details[open] summary{margin-bottom:10px}
           <li>מפעיל הבום מדבר איתך ברדיו כשאתה קרוב: "קדימה 4", "למעלה 2", "יציב". הזרוע עצמה זזה אליך ונכנסת לפתח שמאחורי התא. התקרבות מהירה מדי נגמרת ב"ברייקאוויי": מורידים כוח ונסוגים.</li>
           <li>בסיום סוגרים את הדלת ומתרחקים למטה ואחורה.</li>
         </ul></div>
+        <div><h4>סיור סביב המטוס</h4><ul>
+          <li>בהתנעה מהדת"ק מתחילים ברגל מול המטוס. מסתובבים סביבו ומגיעים לחמש הנקודות המסומנות בטבעות: חרטום ופיטו, גלגל ראשי, כניסת אוויר, חימוש ופינים, זנב. אחר כך נגשים לסולם (הטבעת הכחולה) ועולים לתא.</li>
+          <li>הליכה בסטיק או במקשי WASD (Shift לריצה), גרירה על המסך כדי להסתכל. "לתא" מדלג על הסיור. אפשר לכבות את הסיור בהגדרות, בלשונית הכנה.</li>
+        </ul></div>
         <div><h4>מסוקי קרב של האויב</h4><ul>
           <li>במשימות סיוע קרוב, תקיפה וחילוץ טסים מסוקי Mi-24 בגובה 30 מטר מעל הקרקע. כשהם רואים אותך, הם נכנסים מאחורי הגבעה הקרובה ומרחפים. המכ"ם מתקשה למצוא מסוק שמרחף נמוך מתחתיך: אין לו מהירות התקרבות, והגבעות מסתירות אותו.</li>
           <li>מדי פעם המסוק קופץ מעל הרכס, יורה טיל כתף (עד 5 ק"מ) או תותח (עד 1.5 ק"מ), ויורד חזרה. הדרך לתפוס אותו: להסתכל בחוץ או בפוד, לנעול כשהוא קופץ, או לירות בטיל חום מקרוב.</li>
@@ -852,6 +863,7 @@ details[open] summary{margin-bottom:10px}
   <div id="ufc" hidden dir="ltr"><div id="ufcHead"><span id="ufcSeat"></span><div id="ufcPages"></div><button id="ufcX" aria-label="סגור">✕</button></div>
     <pre id="ufcScr"></pre><div id="ufcSoft"></div>
     <div id="ufcPad"><button>1</button><button>2</button><button>3</button><button>4</button><button>5</button><button>6</button><button>7</button><button>8</button><button>9</button><button>-</button><button>0</button><button>.</button><button data-k="clr">CLR</button><button data-k="ent" class="go">ENT</button></div></div>
+  <div id="walkBar" hidden><button id="walkSkip">לתא</button></div>
   <div id="podBar" hidden><button data-pod="zoom">זום</button><button data-pod="trk">נעל</button><button data-pod="laser">לייזר</button><button data-pod="mode">TV</button><button data-pod="big">הגדל</button><button data-pod="auto">אוטומטי</button></div>
   <div id="quickBox" hidden></div>
   <div id="talkers" hidden></div>

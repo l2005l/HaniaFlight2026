@@ -170,6 +170,8 @@ details[open] summary{margin-bottom:10px}
 #ufcSoft{display:flex;gap:3px;flex-wrap:wrap;direction:rtl}#ufcSoft button{flex:1;padding:3px 4px;font-size:.7rem;min-width:4em}
 #ufcPad{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}#ufcPad button{padding:3px 0;font-size:.78rem;font-family:var(--mono)}
 @media (max-height:520px){#ufc{bottom:6px;left:6px;width:min(15rem,calc(100% - 12px))}#ufcScr{min-height:6em;font-size:.64rem}#ufcPad button{padding:2px 0;font-size:.72rem}}
+#app[data-walk="1"] #check,#app[data-walk="1"] #chips,#app[data-walk="1"] #obj{display:none!important}
+#walkBar{position:absolute;z-index:6;bottom:14px;left:50%;transform:translateX(-50%)}#walkBar[hidden]{display:none}#walkBar button{background:rgba(8,12,14,.75);padding:8px 22px}
 #chips button.warn2{border-color:var(--amber);color:var(--amber)}
 @media (pointer:fine){#chips{top:44px;left:auto;transform:none;inset-inline-start:16px;flex-direction:column;align-items:flex-start;gap:4px}}
 .tb button[data-st="1"]{border-color:var(--sand);color:var(--sand)}
@@ -506,6 +508,11 @@ details[open] summary{margin-bottom:10px}
       <button data-opt="wx" data-val="storm">מעונן וסוער</button>
       <button data-opt="wx" data-val="fog">ערפל בוקר</button>
     </div>
+    <div class="seg" role="group" aria-label="סיור סביב המטוס">
+      <span>סיור סביב המטוס בהתנעה מהדת"ק</span>
+      <button data-opt="walk" data-val="on">כן</button>
+      <button data-opt="walk" data-val="off">לא</button>
+    </div>
     <div class="seg" role="group" aria-label="מזג אוויר משתנה">
       <span>מזג אוויר משתנה במשימה</span>
       <button data-opt="wxdyn" data-val="off">לא</button>
@@ -769,6 +776,10 @@ details[open] summary{margin-bottom:10px}
           <li>מפעיל הבום מדבר איתך ברדיו כשאתה קרוב: "קדימה 4", "למעלה 2", "יציב". הזרוע עצמה זזה אליך ונכנסת לפתח שמאחורי התא. התקרבות מהירה מדי נגמרת ב"ברייקאוויי": מורידים כוח ונסוגים.</li>
           <li>בסיום סוגרים את הדלת ומתרחקים למטה ואחורה.</li>
         </ul></div>
+        <div><h4>סיור סביב המטוס</h4><ul>
+          <li>בהתנעה מהדת"ק מתחילים ברגל מול המטוס. מסתובבים סביבו ומגיעים לחמש הנקודות המסומנות בטבעות: חרטום ופיטו, גלגל ראשי, כניסת אוויר, חימוש ופינים, זנב. אחר כך נגשים לסולם (הטבעת הכחולה) ועולים לתא.</li>
+          <li>הליכה בסטיק או במקשי WASD (Shift לריצה), גרירה על המסך כדי להסתכל. "לתא" מדלג על הסיור. אפשר לכבות את הסיור בהגדרות, בלשונית הכנה.</li>
+        </ul></div>
         <div><h4>מסוקי קרב של האויב</h4><ul>
           <li>במשימות סיוע קרוב, תקיפה וחילוץ טסים מסוקי Mi-24 בגובה 30 מטר מעל הקרקע. כשהם רואים אותך, הם נכנסים מאחורי הגבעה הקרובה ומרחפים. המכ"ם מתקשה למצוא מסוק שמרחף נמוך מתחתיך: אין לו מהירות התקרבות, והגבעות מסתירות אותו.</li>
           <li>מדי פעם המסוק קופץ מעל הרכס, יורה טיל כתף (עד 5 ק"מ) או תותח (עד 1.5 ק"מ), ויורד חזרה. הדרך לתפוס אותו: להסתכל בחוץ או בפוד, לנעול כשהוא קופץ, או לירות בטיל חום מקרוב.</li>
@@ -837,7 +848,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט. לחיצה על המוט השמאלי: וו בלימה, על הימני: מבט למטרה. Start מתחיל טיסה מהתפריט. באפליקציית האנדרואיד השלט עובד דרך האפליקציה עצמה.</p>
     </details>
-    <p class="note">גרסה 2.9 (4b356d6, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
+    <p class="note">גרסה 2.9 (c9fea67, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
     </div>
     <div id="dock">
     <div id="update" role="status" aria-live="polite" hidden>
@@ -866,6 +877,7 @@ details[open] summary{margin-bottom:10px}
   <div id="ufc" hidden dir="ltr"><div id="ufcHead"><span id="ufcSeat"></span><div id="ufcPages"></div><button id="ufcX" aria-label="סגור">✕</button></div>
     <pre id="ufcScr"></pre><div id="ufcSoft"></div>
     <div id="ufcPad"><button>1</button><button>2</button><button>3</button><button>4</button><button>5</button><button>6</button><button>7</button><button>8</button><button>9</button><button>-</button><button>0</button><button>.</button><button data-k="clr">CLR</button><button data-k="ent" class="go">ENT</button></div></div>
+  <div id="walkBar" hidden><button id="walkSkip">לתא</button></div>
   <div id="podBar" hidden><button data-pod="zoom">זום</button><button data-pod="trk">נעל</button><button data-pod="laser">לייזר</button><button data-pod="mode">TV</button><button data-pod="big">הגדל</button><button data-pod="auto">אוטומטי</button></div>
   <div id="quickBox" hidden></div>
   <div id="talkers" hidden></div>
@@ -3559,7 +3571,7 @@ for(const ev of['pointerup','pointercancel'])glc.addEventListener(ev,e=>{if(e.po
     ray.setFromCamera(rayV,camera);const h=ray.intersectObjects(cockpit.userData.hits,false)[0];if(h){doSwitch(h.object.userData.sw);buzz(12);}return;}
   /* looking well down at the panel holds the view there; looking back up releases it */
   if(!look.panel&&look.pitch<-0.36)look.panel=true;else if(look.panel&&look.pitch>(touchOn?-0.55:-0.3))look.panel=false;});
-$('lookBack').onclick=()=>{look.panel=false;};$('formBtn').onclick=()=>act('form');$('formKBtn').onclick=()=>act('formk');$('nvgBtn').onclick=()=>act('nvg');$('mapBtn').onclick=()=>act('map');$('ecmBtn').onclick=()=>act('ecm');$('wingBtn').onclick=()=>act('wing');$('padBtn').onclick=()=>act('padlock');$('hookBtn').onclick=()=>act('hook');$('micBtn').onclick=()=>{if(voice.busy)micStop();else listen();};$('joinBtn').onclick=()=>act('join');
+$('lookBack').onclick=()=>{look.panel=false;};$('formBtn').onclick=()=>act('form');$('walkSkip').onclick=()=>{if(walk.on)walkEnd();};$('formKBtn').onclick=()=>act('formk');$('nvgBtn').onclick=()=>act('nvg');$('mapBtn').onclick=()=>act('map');$('ecmBtn').onclick=()=>act('ecm');$('wingBtn').onclick=()=>act('wing');$('padBtn').onclick=()=>act('padlock');$('hookBtn').onclick=()=>act('hook');$('micBtn').onclick=()=>{if(voice.busy)micStop();else listen();};$('joinBtn').onclick=()=>act('join');
 $('bettyTest').onclick=()=>{Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();Betty.load();const k=['pull','bingo','coll','msl'][(Betty.tn=(Betty.tn||0)+1)%4];setTimeout(()=>{delete Betty.last[k];if(!Betty.say(k,10,0))toast(opts.betty==='off'?'ההתרעות הקוליות כבויות':'הצליל עוד נטען, נסה שוב');},350);};$('doorBtn').onclick=()=>act('ardoor');{const hb=$('mfdHit');let st=null;hb.addEventListener('pointerdown',e=>{try{hb.setPointerCapture(e.pointerId);}catch(x){}st={x:e.clientX,y:e.clientY,mv:false};});
   hb.addEventListener('pointermove',e=>{if(!st)return;const dx=e.clientX-st.x,dy=e.clientY-st.y;if(!st.mv&&Math.hypot(dx,dy)<8)return;if(!tgpR&&!pod.free&&!pod.trk&&mfdPage!==4)return;st.mv=true;podSlew(dx,dy,mfdR?mfdR.s:200);st.x=e.clientX;st.y=e.clientY;});
   hb.addEventListener('pointerup',e=>{if(st&&!st.mv){const r=hb.getBoundingClientRect(),S2=sar.rect;
@@ -4272,7 +4284,7 @@ function tourStart(force){try{if(!force&&localStorage.getItem('haniaflight-tour'
   tour.on=true;tour.i=0;tour.steps=tourSteps();$('tour').hidden=false;setTimeout(tourShow,60);}
 function tourEnd(){tour.on=false;$('tour').hidden=true;}
 $('atcBtn').onclick=()=>{const k=$('atcBtn').dataset.k;if(W&&k){W.atcReq(k);squelch();}};$('tourAgain').onclick=()=>{try{localStorage.removeItem('haniaflight-tour');}catch(e){}toast('הסיור יופיע בתחילת הטיסה הבאה.');};$('tourNext').onclick=()=>{if(++tour.i>=tour.steps.length)tourEnd();else tourShow();};$('tourSkip').onclick=tourEnd;
-function start(mode){lowT=-99;Object.assign(pod,{free:false,dir:null,trk:null,laser:false,big:false});tilt.warned=false;if(opts.tilt==='on'&&!tilt.on)tiltOn(true);tilt.seen=0;if(opts.voice==='always')setTimeout(listen,1500);tilt.p0=null;mapOn=false;padlock=false;startedAt=performance.now();goImmersive();hush();Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();Betty.load();newGame(mode);view=0;state='fly';show('menu',false);show('pause',false);show('debrief',false);$('app').dataset.fly='1';{const ab=document.querySelector('#tThr .lab.ab');if(ab)ab.hidden=!!R.TYPES[W.plane.type].noAB;}if(!mpg.on)setTimeout(()=>tourStart(false),700);}
+function start(mode){lowT=-99;Object.assign(pod,{free:false,dir:null,trk:null,laser:false,big:false});tilt.warned=false;if(opts.tilt==='on'&&!tilt.on)tiltOn(true);tilt.seen=0;if(opts.voice==='always')setTimeout(listen,1500);tilt.p0=null;mapOn=false;padlock=false;startedAt=performance.now();goImmersive();hush();Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd.ac.resume();Betty.load();newGame(mode);view=0;state='fly';walk.on=false;if(mode==='cold'&&opts.walk!=='off'&&!mpg.on&&!xr.on&&W.stats.start==='cold')walkBegin();show('menu',false);show('pause',false);show('debrief',false);$('app').dataset.fly='1';{const ab=document.querySelector('#tThr .lab.ab');if(ab)ab.hidden=!!R.TYPES[W.plane.type].noAB;}if(!mpg.on)setTimeout(()=>tourStart(false),700);}
 const photo={az:0.9,el:0.2,dist:38,drag:false,px:0,py:0};
 function startPhoto(){if(state!=='pause')return;state='photo';show('pause',false);show('photoBar',true);photo.az=0.9;photo.el=0.2;photo.dist=38;$('app').dataset.photo='1';}
 function endPhoto(){if(state!=='photo')return;show('photoBar',false);$('app').dataset.photo='';state='pause';show('pause',true);}
@@ -4744,7 +4756,8 @@ let last=performance.now();
 let slowT=0;
 function frame(now){if(!xr.on)requestAnimationFrame(frame);if(eco&&now-last<31&&!xr.on)return;if(state!=='fly')readPad(0);const wall=Math.min(1,(now-last)/1000),dt=Math.min(0.05,Math.max(0.001,(now-last)/1000));last=now;clock+=dt;
   if(state==='fly'&&opts.q!=='eco'){slowT=wall>(opts.q==='high'?1/24:1/18)?slowT+wall:Math.max(0,slowT-wall*2);if(slowT>(opts.q==='high'?5:8)){slowT=0;const hi=opts.q==='high';opts.q=hi?'low':'eco';applyOpts();radioQ.push(hi?'המחשב: הגרפיקה הועברה למצב חסכוני כדי לשפר את הקצב.':'המחשב: עדיין איטי, עברתי למצב חיסכון סוללה.');}}
-  if(state==='fly'&&!tour.on){
+  if(state==='fly'&&walk.on)walkStep(Math.min(dt,0.1));
+  if(state==='fly'&&!tour.on&&!walk.on){
     readInput(dt);if(W.mwarn&&timeAcc>1)timeAcc=1;
     simAcc+=dt*timeAcc;const h=1/120;let n=0;
     while(simAcc>=h&&n<48){if(rear.seat==='wso')W.trigger(false,false,h);else W.trigger(trigG,trigP,h);if(trigG&&W.w.sel==='GUN')lastGunT=W.time;if(W.cmHeld){W.cmT-=h;if(W.cmT<=0){W.cmT=0.3;W.dispense(W.player,W.cmKind);}}else W.cmT=0;W.step(h);simAcc-=h;n++;}
@@ -4758,6 +4771,7 @@ function frame(now){if(!xr.on)requestAnimationFrame(frame);if(eco&&now-last<31&&
   mpg.tick(dt);rear.tick(dt);ufcTick(dt);if(sdt>0)updParticles(sdt);syncScene(sdt);updWx();updRadio(dt);updCheck(dt);updAudio(dt);
   if(xr.on&&W){const p=W.player;view=0;look.panel=false;xr.rig.position.copy(camera.position);xr.rig.quaternion.set(p.q.x,p.q.y,p.q.z,p.q.w);camera.position.set(0,0,0);camera.quaternion.identity();
     const vis=state==='fly'||state==='pause';vrHud.m.visible=vrHud.m2.visible=vis&&p.alive;if(vis&&p.alive){vrHud.m.position.set(0,0.02,-0.62);vrHud.m2.position.set(0,-0.3,-0.55);vrHud.m2.rotation.x=-0.5;drawVrHud();}}
+  if(walk.on)walkCam();
   if(window.__cam)try{window.__cam(camera,W,T);}catch(e){}
   renderer.render(scene,camera);renderTgp();drawHUD();}
 /* ================= HUD ================= */
@@ -4904,7 +4918,34 @@ function sarTap(fx,fy){const I=sar.img;if(!I){sar.busy=performance.now()/1000+1.
   let best=null,bd=I.S/40+40;for(const q of I.pts){const d=vdist(q.o.pos,{x:wx,y:q.o.pos.y,z:wz});if(d<bd){bd=d;best=q.o;}}
   const pos=best?best.pos:{x:wx,y:terrainH(wx,wz),z:wz};if(best&&W.w.sel==='SPICE')W.gtgt=best;else W.gtgt={pos:{...pos},alive:true,name:'SAR PT',kind:'pt',vel:v3(),pt:true};
   pod.trk=best?{e:best}:{p:{...pos}};pod.free=true;ufc.e=+(pos.x/1000).toFixed(1);ufc.n=+(-pos.z/1000).toFixed(1);beep(1300,0.05);toast(best?'מכ"ם קרקע: מטרה סומנה, הפוד מכוון אליה':'מכ"ם קרקע: נקודה סומנה, הפוד מכוון אליה');}
-function drawHUD(){tgpR=null;mfdR=null;mfdRR=null;if(W&&W.gtgt&&!W.gtgt.pt)podLast=W.gtgt;
+/* ================= walk-around =================
+   Before a start from the shelter: on foot round the jet, as the pilot does. Five points to look at (the pitot and the nose, the left
+   main wheel, the intake, the weapons and their pins, the tail); each one is ticked off by walking up to it. Then the ladder, and up into
+   the cockpit. Stick or WASD to walk, drag to look round; "to the cockpit" skips it. */
+const walk={on:false,pos:null,yaw:0,pitch:-0.08,pts:[],i:0,marks:[],drag:null};window.__walk=walk;
+const WALKL={F15I:19.4,F15C:19.4,F16I:15,F35I:15.7,F35C:15.7,M346:11.5};
+function walkBegin(){const L=WALKL[W.plane.type]||16,m=pMesh,h=L/2,P=W.player;m.position.set(P.pos.x,P.pos.y,P.pos.z);setQ(m,P.q);walk.on=true;view=1;look.panel=false;
+  const pts=[['nose','כיסוי פיטו וחרטום',0,-1.2,-h*0.92],['wheel','גלגל ראשי וכן נסע',-1.8,-1.6,h*0.08],['intake','כניסת אוויר: נקייה',-1.9,-0.6,-h*0.25],['pins','חימוש ופיני ביטחון',-3.4,-1.2,h*0.12],['tail','זנב והגאים',0,0.4,h*1.02],['ladder','הסולם: עלה לתא',-1.6,-1.6,-h*0.42]];
+  walk.pts=pts.map(q=>({k:q[0],n:q[1],o:new T.Vector3(q[2],q[3],q[4]),done:false}));walk.i=0;
+  for(const mk of walk.marks)scene.remove(mk);walk.marks=walk.pts.map((q,i)=>{const g=new T.Mesh(new T.TorusGeometry(0.55,0.06,8,24),new T.MeshBasicMaterial({color:i===5?0x7fb8ff:0xffbe55,transparent:true,opacity:0.85,depthTest:false}));g.rotation.x=Math.PI/2;g.renderOrder=9;scene.add(g);return g;});
+  m.updateMatrixWorld(true);const st=m.localToWorld(new T.Vector3(-2.5,0,-h-7));walk.pos=new T.Vector3(st.x,terrainH(st.x,st.z)+1.7,st.z);const c=m.localToWorld(new T.Vector3(0,0,0));walk.yaw=Math.atan2(c.x-st.x,-(c.z-st.z));walk.pitch=-0.08;
+  $('walkBar').hidden=false;$('app').dataset.walk='1';radioQ.push('סיור לפני טיסה: עבור על הנקודות המסומנות סביב המטוס, ואז עלה בסולם.');}
+function walkEnd(){walk.on=false;view=0;for(const mk of walk.marks)scene.remove(mk);walk.marks=[];$('walkBar').hidden=true;$('app').dataset.walk='';W.stats.walk=walk.pts.slice(0,5).filter(q=>q.done).length;toast(W.stats.walk===5?'סיור הושלם. בתא: התחל בהתנעה.':'בתא. התחל בהתנעה.');}
+function walkStep(dt){const k=keys,fw=((k.KeyW||k.ArrowUp)?1:0)-((k.KeyS||k.ArrowDown)?1:0)-(touch.held?touch.y:0),sd=((k.KeyD||k.ArrowRight)?1:0)-((k.KeyA||k.ArrowLeft)?1:0)+(touch.held?touch.x:0),sp=(k.ShiftLeft?3.2:1.8)*dt;
+  const f=new T.Vector3(Math.sin(walk.yaw),0,-Math.cos(walk.yaw)),r=new T.Vector3(Math.cos(walk.yaw),0,Math.sin(walk.yaw));walk.pos.addScaledVector(f,clamp(fw,-1,1)*sp).addScaledVector(r,clamp(sd,-1,1)*sp);
+  /* not through the jet: pushed out of a box round the fuselage */
+  pMesh.updateMatrixWorld(true);const L=(WALKL[W.plane.type]||16)/2,lp=pMesh.worldToLocal(walk.pos.clone());if(Math.abs(lp.z)<L&&Math.abs(lp.x)<1.3){lp.x=Math.sign(lp.x||1)*1.3;walk.pos.copy(pMesh.localToWorld(lp));}
+  walk.pos.y=terrainH(walk.pos.x,walk.pos.z)+1.7;
+  walk.pts.forEach((q,i)=>{const w=pMesh.localToWorld(q.o.clone()),mk=walk.marks[i];mk.position.copy(w);mk.position.y=Math.max(w.y,terrainH(w.x,w.z)+0.15);mk.visible=!q.done&&(i<5||walk.pts.slice(0,5).every(x=>x.done));mk.rotation.z+=dt*1.5;
+    if(!q.done&&mk.visible&&Math.hypot(walk.pos.x-w.x,walk.pos.z-w.z)<2.4){q.done=true;click(1);beep(1300,0.05,0.05);if(i===5){walkEnd();return;}toast('✓ '+q.n);}});}
+function walkCam(){camera.position.copy(walk.pos);camera.up.set(0,1,0);camera.lookAt(walk.pos.x+Math.sin(walk.yaw)*Math.cos(walk.pitch),walk.pos.y+Math.sin(walk.pitch),walk.pos.z-Math.cos(walk.yaw)*Math.cos(walk.pitch));}
+function walkHud(){ctx.direction='rtl';ctx.textAlign='right';ctx.textBaseline='middle';ctx.font='600 15px Assistant,Arial,sans-serif';const x0=vw-16,y0=70;ctx.fillStyle='rgba(8,12,14,0.72)';ctx.fillRect(vw-250,y0-22,234,walk.pts.length*22+30);
+  ctx.fillStyle='#f1ead8';ctx.fillText('סיור לפני טיסה',x0-8,y0-6);walk.pts.forEach((q,i)=>{ctx.fillStyle=q.done?'#74ff96':i===5?'#7fb8ff':'#d9d2c0';ctx.font=(q.done?'':'')+'14px Assistant,Arial,sans-serif';ctx.fillText((q.done?'✓ ':'○ ')+q.n,x0-8,y0+18+i*22);});
+  ctx.strokeStyle='rgba(255,255,255,0.7)';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(vw/2,vh/2,3,0,7);ctx.stroke();}
+glc.addEventListener('pointerdown',e=>{if(!walk.on||state!=='fly')return;walk.drag={x:e.clientX,y:e.clientY};});
+glc.addEventListener('pointermove',e=>{if(!walk.drag)return;walk.yaw+=(e.clientX-walk.drag.x)*0.006;walk.pitch=clamp(walk.pitch-(e.clientY-walk.drag.y)*0.005,-1.2,1.0);walk.drag={x:e.clientX,y:e.clientY};});
+for(const ev of['pointerup','pointercancel'])glc.addEventListener(ev,()=>{walk.drag=null;});
+function drawHUD(){tgpR=null;if(walk.on&&state==='fly'){ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,vw,vh);walkHud();return;}mfdR=null;mfdRR=null;if(W&&W.gtgt&&!W.gtgt.pt)podLast=W.gtgt;
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.direction='ltr';ctx.clearRect(0,0,vw,vh);if(state==='replay'&&rp.tac&&W)drawTac();if(state!=='fly'&&state!=='pause'||!W){if(!$('podBar').hidden)$('podBar').hidden=true;return;}podFrame();
   const p=W.player,w=W.w,m=Math.min(vw,vh),cx=vw/2,cy=vh/2;u=clamp(m/700,touchOn?0.72:0.62,1.3);
   const e=p.euler(),kcas=p.V*Math.sqrt((p.rho||1.225)/1.225)*KT,altF=p.pos.y*FT,blink=(clock*4|0)%2===0;
@@ -5159,7 +5200,7 @@ $('voiceTest').onclick=()=>{Snd.init();if(Snd.ac&&Snd.ac.state==='suspended')Snd
 const opts={diff:'normal',tod:'day',q:touchOn?'low':'high',plane:'F15I',mission:'strike',sens:'normal',inv:'off',tilt:'off',ui:'normal',betty:'on',wx:'clear',fail:'off',bomb:'spice',theatre:theatre0,foe:'mig29',wing:'on',lesson:'basic',fuelPct:'80',tanks:'0',aam:'full',voice:'off',vr:'off',isrBase:'ramatdavid',hand:'left',radio:'on',chatter:'on',atc:'simple',awacs:'on'};
 let qMine=false;try{const o=JSON.parse(localStorage.getItem('haniaflight-opts')||'{}');for(const k in opts)if(typeof o[k]==='string')opts[k]=o[k];qMine=!!o.q&&o.q!==(touchOn?'low':'high');}catch(e){}
 if(!['spice','lgb','jdam','delilah','sdb','bunker','rampage','mk84'].includes(opts.bomb))opts.bomb='spice';if(!['off','button','always'].includes(opts.voice))opts.voice='off';if(!R.ISR.BASES.some(b=>b[0]===opts.isrBase))opts.isrBase='ramatdavid';if(!R.PLANES[opts.plane])opts.plane='F15I';if(!['strike','intercept','sead','convoy','escort','duel','tanker','train','csar','recon','stealth','naval','cas','low'].includes(opts.mission))opts.mission='strike';if(!TOD[opts.tod])opts.tod='day';if(!R.DIFF[opts.diff])opts.diff='normal';if(!['high','low','eco'].includes(opts.q))opts.q='low';
-if(!['low','normal','high'].includes(opts.sens))opts.sens='normal';for(const k of['inv','tilt'])if(opts[k]!=='on')opts[k]='off';if(opts.betty!=='off')opts.betty='on';if(opts.radio!=='off')opts.radio='on';if(opts.hand!=='right')opts.hand='left';if(opts.chatter!=='off')opts.chatter='on';if(opts.breath!=='off')opts.breath='on';if(opts.wxdyn!=='on')opts.wxdyn='off';if(opts.atc!=='full')opts.atc='simple';if(opts.awacs!=='off')opts.awacs='on';if(opts.ui!=='large')opts.ui='normal';if(opts.fail!=='on')opts.fail='off';opts.theatre=theatre0;if(!['mig29','su27','mig21'].includes(opts.foe))opts.foe='mig29';if(opts.wing!=='off')opts.wing='on';if(!['basic','land','ils','refuel','ground','evade','carrier','form'].includes(opts.lesson))opts.lesson='basic';if(!['60','80','100'].includes(opts.fuelPct))opts.fuelPct='80';if(!['0','1','2','3'].includes(opts.tanks))opts.tanks='0';if(opts.aam!=='light')opts.aam='full';if(!['clear','wind','storm','fog'].includes(opts.wx))opts.wx='clear';
+if(!['low','normal','high'].includes(opts.sens))opts.sens='normal';for(const k of['inv','tilt'])if(opts[k]!=='on')opts[k]='off';if(opts.betty!=='off')opts.betty='on';if(opts.radio!=='off')opts.radio='on';if(opts.hand!=='right')opts.hand='left';if(opts.chatter!=='off')opts.chatter='on';if(opts.breath!=='off')opts.breath='on';if(opts.wxdyn!=='on')opts.wxdyn='off';if(opts.walk!=='off')opts.walk='on';if(opts.atc!=='full')opts.atc='simple';if(opts.awacs!=='off')opts.awacs='on';if(opts.ui!=='large')opts.ui='normal';if(opts.fail!=='on')opts.fail='off';opts.theatre=theatre0;if(!['mig29','su27','mig21'].includes(opts.foe))opts.foe='mig29';if(opts.wing!=='off')opts.wing='on';if(!['basic','land','ils','refuel','ground','evade','carrier','form'].includes(opts.lesson))opts.lesson='basic';if(!['60','80','100'].includes(opts.fuelPct))opts.fuelPct='80';if(!['0','1','2','3'].includes(opts.tanks))opts.tanks='0';if(opts.aam!=='light')opts.aam='full';if(!['clear','wind','storm','fog'].includes(opts.wx))opts.wx='clear';
 /* weapon stations, plane by plane: each option is what hangs there; the first one is the standard load */
 const SO={aa:{aim120:1,python:1,l:'AMRAAM + פייתון',c:'AA'},py:{python:1,l:'פייתון',c:'P'},py2:{python:2,l:'2 × פייתון',c:'2P'},amr:{aim120:1,l:'AMRAAM',c:'A'},amr2:{aim120:2,l:'2 × AMRAAM',c:'2A'},amr4:{aim120:4,l:'4 × AMRAAM',c:'4A'},
   ag:{ag:1,l:'חימוש לקרקע',c:'G'},ag2:{ag:2,l:'2 × חימוש לקרקע',c:'2G'},mix:{aim120:1,ag:1,l:'AMRAAM + חימוש לקרקע',c:'AG'},tank:{tank:1,l:'מכל דלק',c:'T'},py2t:{python:2,tank:1,l:'2 × פייתון + מכל',c:'2PT'},none:{l:'ריק',c:'—'}};
