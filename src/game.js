@@ -566,13 +566,16 @@ function buildTanker(){const G=new T.Group(),bd=lam(0xb4b8bc),dk=lam(0x4c5258);
 function buildDrone(){const G=new T.Group(),m=lam(0xb9b5a6);let g=new T.CylinderGeometry(0.28,0.3,3.3,8);g.rotateX(Math.PI/2);part(g,m,0,0,0,G);
   part(flatGeo([[0,-1.3],[1.3,1.5],[-1.3,1.5]],0.12),m,0,0.05,0,G);for(const s of[-1,1])part(new T.BoxGeometry(0.06,0.7,0.6),m,s*1.25,0,1.2,G);return G;}
 /* rescue helicopter: a spinning main rotor and a tail rotor */
-function buildHelo(){const G=new T.Group(),b=lam(0x55603f),dk=lam(0x2a2d27),gl=new T.MeshPhongMaterial({color:0x1d2a30,specular:0x8899aa,shininess:60});
+function buildHelo(enemy){const G=new T.Group(),b=lam(enemy?0x6b5e3e:0x55603f),dk=lam(0x2a2d27),gl=new T.MeshPhongMaterial({color:0x1d2a30,specular:0x8899aa,shininess:60});
   let g=new T.CylinderGeometry(1.35,1.1,9,12);g.rotateX(Math.PI/2);part(g,b,0,0,0,G);g=new T.SphereGeometry(1.35,12,8);part(g,gl,0,0.15,-4.6,G).scale.set(1,0.95,1.2);
   g=new T.CylinderGeometry(0.35,0.22,8,8);g.rotateX(Math.PI/2);part(g,b,0,0.5,8,G);part(finGeo([[11,0],[12.6,0],[13,2.4],[12,2.4]],0.18),b,0.09,0.4,0,G);
   part(new T.BoxGeometry(1.6,0.7,3),b,0,1.6,-0.4,G);for(const s of[-1,1])part(new T.BoxGeometry(0.12,0.12,4.2),dk,s*1.1,-1.75,-0.3,G);
   const rot=new T.Group();rot.position.set(0,2.2,-0.4);for(let i=0;i<4;i++){const bl=part(new T.BoxGeometry(0.42,0.05,8.2),dk,0,0,0,rot);bl.position.set(Math.sin(i*Math.PI/2)*4.1,0,Math.cos(i*Math.PI/2)*4.1);bl.rotation.y=i*Math.PI/2;}
   part(new T.CylinderGeometry(8.2,8.2,0.02,24),new T.MeshBasicMaterial({color:0x202020,transparent:true,opacity:0.18,depthWrite:false}),0,0,0,rot);G.add(rot);
   const tr=new T.Group();tr.position.set(0.35,1.1,12.4);for(let i=0;i<2;i++){const bl=part(new T.BoxGeometry(0.04,2.4,0.22),dk,0,0,0,tr);bl.rotation.x=i*Math.PI/2;}G.add(tr);
+  /* the attack helicopter: stub wings with rocket pods, a chin gun, a stepped double canopy */
+  if(enemy){for(const s of[-1,1]){part(new T.BoxGeometry(2.4,0.14,1.1),b,s*2.3,-0.5,0.4,G);const pd=new T.CylinderGeometry(0.28,0.28,1.6,8);pd.rotateX(Math.PI/2);part(pd,dk,s*3.1,-0.85,0.3,G);}
+    const gn=new T.CylinderGeometry(0.07,0.07,1.4,6);gn.rotateX(Math.PI/2);part(gn,dk,0,-1.1,-5.6,G);part(new T.SphereGeometry(0.8,10,8),gl,0,0.7,-3.2,G).scale.set(0.9,0.8,1.1);}
   G.userData.rot=rot;G.userData.trot=tr;return G;}
 function buildGround(gt){const G=new T.Group(),ol=lam(0x5e6247),gr=lam(0x9a9a8e);
   if(gt.kind==='ship'){const gy=lam(0x7d858c),dk=lam(0x4d5459);part(flatGeo([[0,-24],[4,-14],[4.2,20],[-4.2,20],[-4,-14]],3.4),dk,0,1.5,0,G);part(flatGeo([[0,-23],[3.7,-14],[3.9,19.6],[-3.9,19.6],[-3.7,-14]],0.3),gy,0,1.6,0,G);
@@ -752,7 +755,7 @@ function newGame(start,preview){
   if(cockpit.userData.kind!==ckKind(W.plane.type)){scene.remove(cockpit);cockpit=buildCockpit(ckKind(W.plane.type));scene.add(cockpit);layout();}chute.visible=false;rec.length=0;recObj=[...W.air,...W.friends,...(W.carrier?[W.carrier]:[])];recEv=[];recT=0;kills.length=0;myW.length=0;ridN=0;while(dyn.children.length)dyn.remove(dyn.children[0]);meshOf=new Map();emitters.length=0;for(const q of P)q.on=false;
   pMesh=mkPlayer(W.plane.type);dyn.add(pMesh);cvMesh=null;if(W.carrier){cvMesh=buildCarrier();dyn.add(cvMesh);meshOf.set(W.carrier,cvMesh);}
   for(const m of W.migs){const g=m.type==='MiG-21'?buildJet({camo:'mig',nose:0x5b6166,scale:0.62}):buildF15HD({camo:'mig',scale:m.type==='Su-27'?1.05:0.88});g.userData.gear.visible=false;dyn.add(g);meshOf.set(m,g);}
-  for(const d of W.drones){const g=mkDrone(d);dyn.add(g);meshOf.set(d,g);}
+  for(const d of W.drones){const g=mkDrone(d);dyn.add(g);meshOf.set(d,g);}for(const h of W.helis||[]){const g=buildHelo(true);dyn.add(g);meshOf.set(h,g);}
   for(const g of W.ground){const m=buildGround(g);dyn.add(m);meshOf.set(g,m);}
   for(const g of W.troops||[]){const m=buildGround(g);dyn.add(m);meshOf.set(g,m);}if(W.cas)emitters.push({pos:{...W.cas.smoke},vel:v3(),until:clock+1e7,rate:0.22,t:0,mark:true});
   for(const k of W.friends){const m=k.type==='TANKER'?buildTanker():k.type==='HELO'?buildHelo():mkPlayer(k.model||W.plane.type);if(k.type!=='TANKER'&&k.type!=='HELO'){m.userData.gear.visible=false;m.userData.wing=true;}dyn.add(m);meshOf.set(k,m);}
