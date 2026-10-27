@@ -233,7 +233,7 @@ details[open] summary{margin-bottom:10px}
   <div id="radio" aria-live="polite"></div>
   <div id="toast" role="status" aria-live="polite"></div>
   <button id="lookBack" hidden>חזרה למבט קדימה</button>
-  <div id="chips" hidden><button id="atcBtn" class="radio" hidden></button><button id="mfdBtn">מסך: מכ"ם ‹</button><button id="mfdBtnR">מסך ימין: איומים ‹</button><button id="panelBtn">לוח מתגים</button><button id="ufcBtn">UFC</button><button id="tiltBtn" hidden>כיול הטיה</button><button id="resetBtn" class="warn2" hidden>ריסט מערכות</button><button id="mapBtn" hidden>מפה מלאה</button><button id="ecmBtn" hidden>שיבוש</button><button id="wingBtn" hidden>שתיים</button><button id="padBtn" hidden>מבט למטרה</button><button id="nvgBtn" hidden>משקפת לילה</button><button id="micBtn" hidden>פקודה קולית</button><button id="wcamBtn" hidden>מצלמת החימוש</button><button id="pttBtn" class="radio" hidden>לחץ לדבר</button><button id="quickBtn" class="radio" hidden>הודעה</button><button id="doorBtn" hidden>פתח דלת תדלוק</button><button id="joinBtn" hidden>התקרבות אוטומטית</button><button id="hookBtn" hidden>וו בלימה</button><button id="relightBtn" class="warn" hidden>התנעה באוויר</button></div>
+  <div id="chips" hidden><button id="atcBtn" class="radio" hidden></button><button id="mfdBtn">מסך: מכ"ם ‹</button><button id="mfdBtnR">מסך ימין: איומים ‹</button><button id="panelBtn">לוח מתגים</button><button id="ufcBtn">UFC</button><button id="tiltBtn" hidden>כיול הטיה</button><button id="resetBtn" class="warn2" hidden>ריסט מערכות</button><button id="mapBtn" hidden>מפה מלאה</button><button id="ecmBtn" hidden>שיבוש</button><button id="wingBtn" hidden>שתיים</button><button id="padBtn" hidden>מבט למטרה</button><button id="nvgBtn" hidden>משקפת לילה</button><button id="micBtn" hidden>פקודה קולית</button><button id="wcamBtn" hidden>מצלמת החימוש</button><button id="pttBtn" class="radio" hidden>לחץ לדבר</button><button id="quickBtn" class="radio" hidden>הודעה</button><button id="doorBtn" hidden>פתח דלת תדלוק</button><button id="joinBtn" hidden>התקרבות אוטומטית</button><button id="hookBtn" hidden>וו בלימה</button><button id="formBtn" hidden>מבנה</button><button id="formKBtn" hidden>כנף</button><button id="relightBtn" class="warn" hidden>התנעה באוויר</button></div>
   <div id="check" hidden>
     <div class="chead"><b>רשימת תיוג להתנעה</b><button id="autoStart">התנעה אוטומטית</button></div>
     <ol id="checkList"></ol>
@@ -419,6 +419,7 @@ details[open] summary{margin-bottom:10px}
         <button data-opt="lesson" data-val="refuel">תדלוק</button>
         <button data-opt="lesson" data-val="ground">תקיפת קרקע</button>
         <button data-opt="lesson" data-val="evade">התחמקות מטיל</button>
+        <button data-opt="lesson" data-val="form">טיסה במבנה</button>
         <button data-opt="lesson" data-val="carrier">נחיתה על נושאת</button>
       </div>
       <p id="lessonText"></p>
@@ -747,6 +748,11 @@ details[open] summary{margin-bottom:10px}
           <li>כפתור "התקרבות אוטומטית" (או מקש \) מביא אותך עד 40 מטר מאחורי הזרוע. משם ממשיכים לבד. ברמות קל ורגיל המשבצת רחבה יותר והמשחק מושך אותך לעמדה.</li>
           <li>מפעיל הבום מדבר איתך ברדיו כשאתה קרוב: "קדימה 4", "למעלה 2", "יציב". הזרוע עצמה זזה אליך ונכנסת לפתח שמאחורי התא. התקרבות מהירה מדי נגמרת ב"ברייקאוויי": מורידים כוח ונסוגים.</li>
           <li>בסיום סוגרים את הדלת ומתרחקים למטה ואחורה.</li>
+        </ul></div>
+        <div><h4>טיסה במבנה</h4><ul>
+          <li>בהדרכה יש שיעור <b>טיסה במבנה</b>: אתה מספר שתיים אחרי מוביל ממוחשב, בכנף, בשובל (170 מטר מאחור) ובמבנה רחב (קילומטר וחצי לצד). המוביל מודיע ברדיו לפני כל פנייה, טיפוס או מעבר.</li>
+          <li>בתצוגה העילית מופיעים סוג המבנה, אחוז הזמן בעמדה, ומה לתקן במטרים: <b>FWD/AFT</b> קדימה או אחורה, <b>LEFT/RIGHT</b> והצידה, <b>UP/DOWN</b> למעלה או למטה. ירוק פירושו שאתה בעמדה, כתום שאתה קרוב, ואדום שאתה רחוק.</li>
+          <li>עם חברים (במצב "יחד"): הכפתור <b>הצטרף למבנה</b> מצמיד אותך לחבר הקרוב, עד 12 ק"מ. הכפתור שלידו מחליף בין כנף, שובל ומבנה רחב. ביציאה מהמבנה ובתחקיר מופיע הציון: אחוז הזמן בעמדה, הטעות הממוצעת והרצף הארוך ביותר.</li>
         </ul></div>
         <div><h4>תכנון משימה</h4><ul>
           <li>בלשונית <b>הכנה</b> מופיעה מפת המסלול של המשימה שנבחרה. נקודות עגולות (CAP, IP, נקודות כניסה ופנייה) אפשר לגרור. נקודות מרובעות (המטרה, הצי, הבית) קבועות במקומן. לחיצה על נקודה בוחרת אותה, ואז אפשר לשנות את הגובה שלה.</li>

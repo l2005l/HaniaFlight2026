@@ -389,6 +389,8 @@ class Tanker{
    to port with four arresting wires; two catapults at the bow. Positions on the ship are (a: forward, c: to starboard) from its centre. ---------- */
 const CV={len:[-160,170],wid:[-38,34],h:19,ang:9*D2R,lo:[-150,-8],wires:[52,64,76,88],wHalf:16,aim:70,cats:[[60,6],[60,-7]],stroke:95,gs:3.5*D2R,isl:[-5,35,25,33,20]};
 let DECK=null;
+/* formation slots, in the leader's frame (x right, y up, z back), and how close counts as in position (green) and near (amber) */
+const FORM={wing:{x:28,y:-3,z:60,g:10,a:30,n:'כנף'},trail:{x:0,y:-10,z:170,g:30,a:80,n:'שובל'},spread:{x:1500,y:0,z:0,g:250,a:600,n:'מבנה רחב',flat:true}};
 const PLAN_MOVE=['CAP','IP','ENTRY','WP2','WP3','PH','MERGE'];
 const fleetAt=TH=>({south:{x:-62000,z:-8000},north:{x:-52000,z:-6000},far:{x:120000,z:-5000},israel:ISR.fleet||{x:-62000,z:8000}})[TH.id]||{x:-62000,z:-8000};
 class Carrier{
@@ -585,7 +587,7 @@ class World{
     /* ground crew for a start from the shelter: clears each engine, pulls the chocks, marshals the jet out and salutes */
     this.crew={phase:cold?'pre':'idle',t:0,warned:0,arm:'wait',armT:0,homeAt:null};this.sys.chocks=cold;this.sys.pins=cold;this.autoStart=false;this.autoT=0;this.dmg=[];this.dmgRadar=false;this.dmgRwr=false;
     this.radar={mode:'RWS',rng:40};this.ar={state:'none',t:0,taken:0,rel:v3(),dist:1e9,range:1e9};
-    this.lesson=train?(['land','ils','refuel','ground','evade',...(cvn?['carrier']:[])].includes(o.lesson)?o.lesson:'basic'):null;
+    this.lesson=train?(['land','ils','refuel','ground','evade','form',...(cvn?['carrier']:[])].includes(o.lesson)?o.lesson:'basic'):null;
     this.tanker=duel||(train&&this.lesson!=='refuel')?null:new Tanker(...(THEATRE.tanker||[26000,-24000]),6000);this.friends=this.tanker?[this.tanker]:[];
     if(air)this.player.vel=v3(250,0,0);
     if(tank||this.lesson==='refuel'){const k=this.tanker,p=this.player;p.pos=v3(k.pos.x-2200,k.pos.y-70,k.pos.z);p.vel=v3(190,0,0);p.fuel=Math.round(p.t.fuelMax*0.3);p.ctl.throttle=p.eng=0.75;}
@@ -679,6 +681,10 @@ class World{
     this.stats={uav:0,leak:0,mig:0,tgt:0,sam:!!this.stats0sam,shots:0,start:air?'air':cold?'cold':'runway'};this.over=null;this.flags={};this.tS=0;this.tM=0;this.tD=0;this.gunT=0;this.cmT=0;this.stopT=0;
     /* instrument landing: ten miles out in fog at night, off to one side of the runway, below the glide slope */
     if(this.lesson==='ils'){const p=this.player;p.pos=v3(RWY.x1-18500,SITES.base.h+800,1300);p.vel=v3(135,0,-18);p.q=qeuler(Math.PI/2-0.13,0.02,0);p.ctl.throttle=p.eng=0.6;p.gear=false;p.gearPos=0;}
+    this.form=null;
+    if(this.lesson==='form'){/* a leader of the same type ahead and to the left; the pilot is number two */
+      const p=this.player,L=new Aircraft(pl.type,{x:p.pos.x+260,y:p.pos.y+20,z:p.pos.z-70,hdg:Math.PI/2,pitch:0.04,speed:235,throttle:0.8,fuel:pl.fuelAir});L.label='1';L.model=pl.type;L.side=0;L.kind='air';L.lead=true;
+      this.formLead={ac:L,ph:0,t:0,hdg:Math.PI/2,alt:p.pos.y+20,spd:235};this.friends.push(L);this.air=this.air.filter(e=>e!==L);this.formJoin(L,'wing');}
     if(cvn){const cv=this.carrier,p=this.player;p.hasHook=true;
       if(this.lesson==='carrier'){/* on final, four miles behind the ship on the 3.5 degree slope, slow, nothing down yet */
         const d=7400,pt=cv.landPt(CV.aim-d),h=CV.h+d*Math.tan(CV.gs);p.pos=v3(pt.x,h,pt.z);p.q=qeuler(cv.landHdg,0.02,0);const f=v3(Math.sin(cv.landHdg),0,-Math.cos(cv.landHdg));p.vel=vmul(f,80);
@@ -695,7 +701,7 @@ class World{
       if(/^F35/.test(pl.type)&&['intercept','escort','csar','duel','stealth'].includes(this.missionId))w.aim120=Math.max(w.aim120,this.missionId==='intercept'?6:4);
       this.syncStores();}
     if(o.faults&&o.faults.length){const p=this.player;for(const f of o.faults){if(f==='RADAR'){this.dmgRadar=true;this.sys.radar=false;}else if(f==='RWR')this.dmgRwr=true;else if(f==='HYD')p.hyd=0.4;else if(f==='FUEL')p.leak=2;else if(f.startsWith('ENG'))p.engOK[0]=0.5;else if(f==='BRAKE')p.brakeK=0.12;}this.syncDmg();}
-    this.msg(this.lesson==='carrier'?'מדריך: נחיתה על נושאת. ארבעה מייל לפניך, הסיפון הזוויתי. הורד כן נסע, מדפים ווו נחיתה.':this.lesson==='ils'?'מדריך: נחיתת מכשירים. ערפל כבד ולילה, את המסלול לא תראה עד הרגע האחרון. עשרה מייל לנחיתה. התחל בהורדת כן נסע ומדפים.':this.lesson==='land'?'מדריך: שיעור נחיתה. המסלול לפניך, שבעה מייל. התחל בהורדת כן נסע ומדפים.':this.lesson==='refuel'?'מדריך: שיעור תדלוק. המתדלק לפניך, שני קילומטר. התחל בפתיחת דלת התדלוק.':this.lesson==='ground'?'מדריך: שיעור תקיפת קרקע. המטרה לפניך, 42 קילומטר. התחל בבחירת חימוש לקרקע.':this.lesson==='evade'?'מדריך: שיעור התחמקות מטיל. טוס ישר, בעוד רגע ישוגר אליך טיל אימון.':naval?(air?`בקר: פטיש אחת, שלוש ספינות טילים בים, ${Math.round(Math.hypot(SH.x,SH.z)/1000)} קילומטר ממך. לכל אחת נ"מ קצר טווח ותותח קרוב. שגר טילי ים מרחוק, רשאי אש.`:'מגדל חצרים: פטיש אחת, רשאי להמריא. שלוש ספינות טילים בים, טילי ים מוכנים.'):low?(air?'בקר: פטיש אחת, חדירה נמוכה. מכ"מי התרעה לאורך הציר: טוס נמוך, מתחת ל-500 רגל, והסתתר מאחורי הקרקע. זמן מעל המטרה בתצוגה, TOT.':'מגדל חצרים: פטיש אחת, רשאי להמריא. חדירה נמוכה, הישאר נמוך מהרגע שאתה חוצה את הקו. זמן מעל המטרה בתצוגה, TOT.'):cas?(air?'בקר: פטיש אחת, כוח שלנו במגע ומבקש סיוע קרוב. טוס לנקודה 2, הבקר הקרקעי אגוז יעלה אליך בקשר.':'מגדל: פטיש אחת, רשאי להמריא. כוח שלנו במגע, הבקר הקרקעי אגוז מחכה לך בנקודה 2.'):csar?(air?'בקר: פטיש אחת, טייס נטש מזרחה לך ומסוק החילוץ כבר בדרך אליו, נמוך. שמור עליו בדרך, בזמן האיסוף ובחזרה.':'מגדל חצרים: פטיש אחת, רשאי להמריא. מסוק החילוץ כבר בדרך לטייס, הדבק אותו.'):recon?(air?'בקר: פטיש אחת, משימת צילום. שלושה אתרים, צלם כל אחד בפוד: בחר 4, נעל על האתר והחזק אותו בתמונה שלוש שניות.':'מגדל חצרים: פטיש אחת, רשאי להמריא. משימת צילום, שלושה אתרים.'):stl?(air?'בקר: פטיש אחת, כטב"ם חמקן חוצה מערבה בגובה נמוך מאוד, בין כמה כטב"מי הטעיה. המכ"ם יראה אותו רק מקרוב. אני אתן לך כיוון אליו.':'מגדל חצרים: פטיש אחת, הזנקה! כטב"ם חמקן בדרך, נמוך מאוד.'):esc?'בקר: פטיש אחת, זוג המובילים לפניך בדרכו לאתר השיגור. הסוללה שותקה. מיירטים צפויים לעלות מולם, שמור עליהם עד לשחרור.':sead?(air?'בקר: פטיש אחת, משימת דיכוי הגנה אווירית. שלוש סוללות לפניך: אחת ארוכת טווח ושתיים בינוניות. הטיל ננעל רק על מכ"ם שמשדר. רשאי אש.':'מגדל חצרים: פטיש אחת, רשאי להמריא. משימת דיכוי הגנה אווירית, שלוש סוללות.'):conv?(air?'בקר: פטיש אחת, שיירת משאיות נעה מערבה על הציר, מלווה בסוללה קצרת טווח. עצור אותה לפני שתגיע לקו. מטרות נעות, פצצת לייזר או תותח.':'מגדל חצרים: פטיש אחת, רשאי להמריא. שיירה נעה מערבה על הציר.'):train?'מדריך: ברוך הבא, פטיש אחת. נתחיל בפשוט: משוך מעט את הסטיק וטפס מעל עשרים אלף רגל.':icpt?(air?'בקר: פטיש אחת, מטח כטב"מי תקיפה חוצה את הגבול מערבה בגובה נמוך, שני גלים. אחריהם טילי שיוט. אל תיתן להם לעבור. רשאי אש.':cold?'מגדל חצרים: פטיש אחת, הזנקה! התנע והמרא, מטח כטב"מים בדרך.':'מגדל חצרים: פטיש אחת, הזנקה! רשאי להמריא ממסלול 09. מטח כטב"מים בדרך.'):tank?'בקר: פטיש אחת, המתדלק לפניך, שני קילומטר. פתח דלת תדלוק והתקרב לעמדת המגע.':cold?'מגדל חצרים: פטיש אחת, רשאי להתניע. בצע רשימת תיוג ודווח מוכן.':duel?`בקר: פטיש אחת, ${this.migs.length===3?'שלישיית':'זוג'} ${this.foeName} מולך, 45 קילומטר, באותו גובה. רשאי אש.`:air?'בקר: פטיש אחת, אתה בדרך לנקודה 1. ארבעה כטב"מי תקיפה נעים מערבה בגובה נמוך. רשאי אש.':'מגדל חצרים: פטיש אחת, רשאי להמריא ממסלול 09. מבער מלא, הרמת אף ב-150 קשר.');
+    this.msg(this.lesson==='form'?'מדריך: טיסה במבנה. המוביל לפניך משמאל. התקרב לעמדת כנף ושמור עליה בתיקונים קטנים.':this.lesson==='carrier'?'מדריך: נחיתה על נושאת. ארבעה מייל לפניך, הסיפון הזוויתי. הורד כן נסע, מדפים ווו נחיתה.':this.lesson==='ils'?'מדריך: נחיתת מכשירים. ערפל כבד ולילה, את המסלול לא תראה עד הרגע האחרון. עשרה מייל לנחיתה. התחל בהורדת כן נסע ומדפים.':this.lesson==='land'?'מדריך: שיעור נחיתה. המסלול לפניך, שבעה מייל. התחל בהורדת כן נסע ומדפים.':this.lesson==='refuel'?'מדריך: שיעור תדלוק. המתדלק לפניך, שני קילומטר. התחל בפתיחת דלת התדלוק.':this.lesson==='ground'?'מדריך: שיעור תקיפת קרקע. המטרה לפניך, 42 קילומטר. התחל בבחירת חימוש לקרקע.':this.lesson==='evade'?'מדריך: שיעור התחמקות מטיל. טוס ישר, בעוד רגע ישוגר אליך טיל אימון.':naval?(air?`בקר: פטיש אחת, שלוש ספינות טילים בים, ${Math.round(Math.hypot(SH.x,SH.z)/1000)} קילומטר ממך. לכל אחת נ"מ קצר טווח ותותח קרוב. שגר טילי ים מרחוק, רשאי אש.`:'מגדל חצרים: פטיש אחת, רשאי להמריא. שלוש ספינות טילים בים, טילי ים מוכנים.'):low?(air?'בקר: פטיש אחת, חדירה נמוכה. מכ"מי התרעה לאורך הציר: טוס נמוך, מתחת ל-500 רגל, והסתתר מאחורי הקרקע. זמן מעל המטרה בתצוגה, TOT.':'מגדל חצרים: פטיש אחת, רשאי להמריא. חדירה נמוכה, הישאר נמוך מהרגע שאתה חוצה את הקו. זמן מעל המטרה בתצוגה, TOT.'):cas?(air?'בקר: פטיש אחת, כוח שלנו במגע ומבקש סיוע קרוב. טוס לנקודה 2, הבקר הקרקעי אגוז יעלה אליך בקשר.':'מגדל: פטיש אחת, רשאי להמריא. כוח שלנו במגע, הבקר הקרקעי אגוז מחכה לך בנקודה 2.'):csar?(air?'בקר: פטיש אחת, טייס נטש מזרחה לך ומסוק החילוץ כבר בדרך אליו, נמוך. שמור עליו בדרך, בזמן האיסוף ובחזרה.':'מגדל חצרים: פטיש אחת, רשאי להמריא. מסוק החילוץ כבר בדרך לטייס, הדבק אותו.'):recon?(air?'בקר: פטיש אחת, משימת צילום. שלושה אתרים, צלם כל אחד בפוד: בחר 4, נעל על האתר והחזק אותו בתמונה שלוש שניות.':'מגדל חצרים: פטיש אחת, רשאי להמריא. משימת צילום, שלושה אתרים.'):stl?(air?'בקר: פטיש אחת, כטב"ם חמקן חוצה מערבה בגובה נמוך מאוד, בין כמה כטב"מי הטעיה. המכ"ם יראה אותו רק מקרוב. אני אתן לך כיוון אליו.':'מגדל חצרים: פטיש אחת, הזנקה! כטב"ם חמקן בדרך, נמוך מאוד.'):esc?'בקר: פטיש אחת, זוג המובילים לפניך בדרכו לאתר השיגור. הסוללה שותקה. מיירטים צפויים לעלות מולם, שמור עליהם עד לשחרור.':sead?(air?'בקר: פטיש אחת, משימת דיכוי הגנה אווירית. שלוש סוללות לפניך: אחת ארוכת טווח ושתיים בינוניות. הטיל ננעל רק על מכ"ם שמשדר. רשאי אש.':'מגדל חצרים: פטיש אחת, רשאי להמריא. משימת דיכוי הגנה אווירית, שלוש סוללות.'):conv?(air?'בקר: פטיש אחת, שיירת משאיות נעה מערבה על הציר, מלווה בסוללה קצרת טווח. עצור אותה לפני שתגיע לקו. מטרות נעות, פצצת לייזר או תותח.':'מגדל חצרים: פטיש אחת, רשאי להמריא. שיירה נעה מערבה על הציר.'):train?'מדריך: ברוך הבא, פטיש אחת. נתחיל בפשוט: משוך מעט את הסטיק וטפס מעל עשרים אלף רגל.':icpt?(air?'בקר: פטיש אחת, מטח כטב"מי תקיפה חוצה את הגבול מערבה בגובה נמוך, שני גלים. אחריהם טילי שיוט. אל תיתן להם לעבור. רשאי אש.':cold?'מגדל חצרים: פטיש אחת, הזנקה! התנע והמרא, מטח כטב"מים בדרך.':'מגדל חצרים: פטיש אחת, הזנקה! רשאי להמריא ממסלול 09. מטח כטב"מים בדרך.'):tank?'בקר: פטיש אחת, המתדלק לפניך, שני קילומטר. פתח דלת תדלוק והתקרב לעמדת המגע.':cold?'מגדל חצרים: פטיש אחת, רשאי להתניע. בצע רשימת תיוג ודווח מוכן.':duel?`בקר: פטיש אחת, ${this.migs.length===3?'שלישיית':'זוג'} ${this.foeName} מולך, 45 קילומטר, באותו גובה. רשאי אש.`:air?'בקר: פטיש אחת, אתה בדרך לנקודה 1. ארבעה כטב"מי תקיפה נעים מערבה בגובה נמוך. רשאי אש.':'מגדל חצרים: פטיש אחת, רשאי להמריא ממסלול 09. מבער מלא, הרמת אף ב-150 קשר.');
     if(air)this.flags.airborne=true;
   }
   get vr(){const p=this.player,T=p.t,ref=T.mEmpty+T.fuelMax*0.8+2600;return Math.round(150*Math.sqrt(p.mass/ref)/5)*5;}
@@ -1225,6 +1231,8 @@ class World{
         ['מדריך: נעול. חמש את מערכת הנשק והמשך ישר אל המטרה. הסרגל מימין מראה מתי אתה בטווח.',()=>this.arm&&!!(this.bombSol()||{}).ok],
         ['מדריך: IN RNG. לחץ על הפיקל.',()=>this.stats.shots>0],
         ['מדריך: פצצה באוויר. עם פצצת לייזר שמור על המטרה בפוד עד הפגיעה.',()=>g0&&!g0.alive]]},
+      form:{win:'טיסת המבנה הושלמה',why:'כנף, שובל ומבנה רחב אחרי המוביל.',S:[
+        ['',()=>true],['מדריך: אתה מספר שתיים. המסגרת בתצוגה העילית היא העמדה שלך; החיצים אומרים לאן לזוז. ירוק: בעמדה.',()=>!!this.flags.formDone]]},
       carrier:{win:'נחיתה על הנושאת הושלמה',why:'גישה על מדרון 3.5 מעלות ותפיסת כבל.',S:[
         ['',()=>p.gear&&p.flaps&&p.hook],
         ['מדריך: מוכן לנחיתה. שמור על הכדור הכתום בגובה הקווים הירוקים, על הקו המרכזי, ועל זווית ההתקפה בסוגריים. אל תיישר לפני הנגיעה: הנושאת נוחתים בשקיעה.',()=>this.flags.ball],
@@ -1293,13 +1301,32 @@ class World{
     if(this.windT&&this.wind){const w=this.wind,k=Math.min(1,dt/30);this.windB=this.windB||{...w};for(const a of['x','z'])this.windB[a]+=(this.windT[a]-this.windB[a])*k;
       this.gT=(this.gT||0)-dt;if(this.gT<=0){this.gT=2+Math.random()*4;this.gK=0.8+Math.random()*0.45;}this.gk=(this.gk??1)+((this.gK||1)-(this.gk??1))*Math.min(1,dt*0.8);
       w.x=this.windB.x*this.gk;w.z=this.windB.z*this.gk;}}
+  /* formation: keep the slot by the leader. The error is measured in the leader's frame; time in position, average error and the best
+     unbroken stretch make the score. */
+  formSlot(F){const L=F.lead,S=FORM[F.kind];let q=L.q;if(S.flat){const f=qrot(q,FWD);q=qeuler(Math.atan2(f.x,-f.z),0,0);}return vadd(L.pos,qrot(q,v3(S.x,S.y,S.z)));}
+  formJoin(lead,kind){if(!lead){if(this.form)this.formEnd();this.form=null;return;}this.form={lead,kind:kind||'wing',t:0,inT:0,sum:0,run:0,best:0,err:null};}
+  formKind(k){const F=this.form;if(!F)return;F.kind=k||({wing:'trail',trail:'spread',spread:'wing'})[F.kind];F.run=0;}
+  formEnd(){const F=this.form;if(!F||F.t<5)return null;const r={pct:Math.round(F.inT/F.t*100),avg:Math.round(F.sum/F.t),best:Math.round(F.best),t:Math.round(F.t)};this.stats.form=r;return r;}
+  formStep(dt){const F=this.form,p=this.player;if(!F)return;const L=F.lead;if(!L||L.alive===false){this.formEnd();this.form=null;return;}
+    const S=FORM[F.kind],slot=this.formSlot(F),d=vsub(p.pos,slot);let q=L.q;if(S.flat){const f=qrot(q,FWD);q=qeuler(Math.atan2(f.x,-f.z),0,0);}const e=qrotInv(q,d),D=vlen(d);
+    F.err={x:e.x,y:e.y,z:e.z,d:D,lvl:D<S.g?2:D<S.a?1:0,slot};if(!p.alive||p.onGround)return;F.t+=dt;F.sum+=Math.min(D,S.a*3)*dt;
+    if(D<S.g){F.inT+=dt;F.run+=dt;F.best=Math.max(F.best,F.run);}else F.run=0;
+    if(D<6&&vlen(vsub(p.vel,L.vel||p.vel))>12&&F.kind==='wing'){p.die('התנגשות במוביל');}}
+  /* the leader in the formation lesson: a set route with calls on the radio before every change */
+  leadStep(dt){const A=this.formLead;if(!A)return;const L=A.ac,f=this.flags;if(!L.alive)return;A.t+=dt;
+    const R=[[25,0,0,null,'מוביל: מבנה כנף, צמוד מימין. מחזיקים ישר ואופקי.'],[30,-Math.PI/2,0,null,'מוביל: פונה שמאלה בעוד שלוש, שתיים, אחת, עכשיו.'],[35,0,1200,null,'מוביל: טיפוס, אלף ומאתיים מטר, כוח קבוע.'],
+      [35,Math.PI,0,null,'מוביל: פנייה ימינה, מאה ושמונים מעלות. שמור על הזווית שלי.'],[35,0,0,'trail','מוביל: מעבר לשובל, מאה ושבעים מטר מאחור.'],[40,Math.PI/2,-1500,null,'מוביל: בשובל, ירידה ופנייה ימינה.'],
+      [40,0,0,'spread','מוביל: פתח למבנה רחב, קילומטר וחצי ימינה.'],[35,-Math.PI/2,0,null,'מוביל: פונה שמאלה, תחליף צד אם צריך, שמור קו.'],[40,0,0,'wing','מוביל: חזור לכנף. התקרב לאט.'],[30,0,0,null,'מוביל: יפה. עוד חצי דקה ככה וסיימנו.']];
+    if(A.ph<R.length&&A.t>=(A.next||0)){const r=R[A.ph];A.hdg+=r[1];A.alt+=r[2];if(r[3])this.formKind(r[3]);this.msg(r[4]);this.events.push({type:'formcall'});A.next=A.t+r[0];A.ph++;}
+    const fh=v3(Math.sin(A.hdg),0,-Math.cos(A.hdg)),dir=vnorm(v3(fh.x,clamp((A.alt-L.pos.y)/3000,-0.12,0.12),fh.z));apSteer(L,dir,0.32);L.ctl.throttle=L.V<A.spd-3?0.95:L.V<A.spd+3?0.72:0.45;L.step(dt);
+    if(A.ph>=R.length&&A.t>=A.next&&!f.formDone){f.formDone=true;const r=this.formEnd();this.msg(`מוביל: סיימנו. בעמדה ${r?r.pct:0}% מהזמן, טעות ממוצעת ${r?r.avg:0} מטר.`);}}
   /* home: for the carrier jet, only a trap counts */
   homeD(p){return this.cvHome&&this.carrier?(this.flags.trap?0:1e9):Math.hypot(p.pos.x,p.pos.z);}
   step(dt){
     this.time+=dt;const p=this.player;
     this.wxStep(dt);p.turb=CLOUDS.length?turbAt(p.pos,this.wx==='storm')*(this.wx==='storm'?this.wxF:1):0;
     /* in the back seat the jet is flown on the pilot's machine: here it only follows */
-    this.systems(dt);if(!this.mirror){this.joinStep(dt);p.step(dt);this.catStep(dt);}this.cvStep(dt);for(const k of this.friends)if(k.type==='TANKER')k.step(dt);if(this.helo&&this.net!=='guest')this.helo.step(dt,this);
+    this.systems(dt);if(!this.mirror){this.joinStep(dt);p.step(dt);this.catStep(dt);}this.cvStep(dt);this.leadStep(dt);this.formStep(dt);for(const k of this.friends)if(k.type==='TANKER')k.step(dt);if(this.helo&&this.net!=='guest')this.helo.step(dt,this);
     if(this.net==='guest'){for(const L of[this.migs,this.drones,this.strikers.map(k=>k.ac)])for(const m of L)if(m.alive&&m.vel)m.pos=vadd(m.pos,vmul(m.vel,dt));if(this.helo&&this.helo.vel)this.helo.pos=vadd(this.helo.pos,vmul(this.helo.vel,dt));}
     else{
     for(const ai of this.migAI)ai.update(dt,this);
@@ -1327,5 +1354,5 @@ class World{
       this.dlz=T&&p.alive?launchZone(s==='AIM120'?this.mrm:this.srm,p.pos,p.vel,T.pos,T.vel):null;}
   }
 }
-const RAAM={PLAN_MOVE,CV,Carrier,findSea,setClouds,turbAt,Cruise,STANDOFF,ISR,LAKES,isWater,lakeAt,Helo,ARM_PT,StrikerAI,THEATRE,setTheatre,WingAI,DIFF,PLANES,PARK,Tanker,G0,D2R,R2D,KT,FT,NM,clamp,lerp,sstep,v3,vadd,vsub,vmul,vdot,vcross,vlen,vnorm,vdist,qmul,qrot,qrotInv,qaxis,qeuler,FWD,UP,RIGHT,atmo,TER,SITES,RWY,buildTerrain,terrainSteps,terrainH,TYPES,Aircraft,apSteer,MSL,Missile,flyout,launchZone,SPICE,spiceRange,Bomb,Drone,MigAI,SamSite,World};
+const RAAM={FORM,PLAN_MOVE,CV,Carrier,findSea,setClouds,turbAt,Cruise,STANDOFF,ISR,LAKES,isWater,lakeAt,Helo,ARM_PT,StrikerAI,THEATRE,setTheatre,WingAI,DIFF,PLANES,PARK,Tanker,G0,D2R,R2D,KT,FT,NM,clamp,lerp,sstep,v3,vadd,vsub,vmul,vdot,vcross,vlen,vnorm,vdist,qmul,qrot,qrotInv,qaxis,qeuler,FWD,UP,RIGHT,atmo,TER,SITES,RWY,buildTerrain,terrainSteps,terrainH,TYPES,Aircraft,apSteer,MSL,Missile,flyout,launchZone,SPICE,spiceRange,Bomb,Drone,MigAI,SamSite,World};
 if(typeof module!=='undefined')module.exports=RAAM;
