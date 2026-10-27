@@ -48,10 +48,10 @@ const rear={userT:-1e9,seat:null,pilot:null,wso:null,csT:0,podT:0,podSig:'',tgt:
   state(){const p=W.player,w=W.w,g=W.gtgt,r=v=>Math.round(v);
     return{t:'cs',lk:mpg.ref(W.lock),sel:w.sel,w:{aim120:w.aim120,python:w.python,spice:w.spice,gun:w.gun,chaff:w.chaff,flare:w.flare,tanks:w.tanks||0},arm:!!W.arm,
       gt:g&&g.alive?(g.pt||!mpg.ref(g)?{pt:[r(g.pos.x),r(g.pos.y),r(g.pos.z)],n:g.name||'POINT'}:{r:mpg.ref(g)}):null,wp:W.wp,wps:W.wps.map(q=>[q.n,r(q.x),r(q.z),q.alt|0]),
-      fuel:r(p.fuel),hook:!!p.hook,flaps:!!p.flaps,bn:W.plane.bomb.name,bg:!!W.plane.bomb.gps,bl:!!W.plane.bomb.lgb,sys:{arDoor:W.sys.arDoor,radar:W.sys.radar,ins:W.sys.ins,lights:W.sys.lights},ecm:!!W.ecm,radar:{mode:W.radar.mode,rng:W.radar.rng},dmg:W.dmg.map(d=>d.t),over:W.over||null};},
+      fuel:r(p.fuel),hook:!!p.hook,flaps:!!p.flaps,bn:W.plane.bomb.name,lc:W.laserCode,bg:!!W.plane.bomb.gps,bl:!!W.plane.bomb.lgb,sys:{arDoor:W.sys.arDoor,radar:W.sys.radar,ins:W.sys.ins,lights:W.sys.lights},ecm:!!W.ecm,radar:{mode:W.radar.mode,rng:W.radar.rng},dmg:W.dmg.map(d=>d.t),over:W.over||null};},
   apply(o){if(rear.seat!=='wso'||!W)return;const p=W.player;W.lock=mpg.deref(o.lk);W.w.sel=o.sel;Object.assign(W.w,o.w);W.arm=o.arm;
     if(o.gt){if(o.gt.r){const e=mpg.deref(o.gt.r);if(e)W.gtgt=e;}else if(!W.gtgt||!W.gtgt.pt||vdist(W.gtgt.pos,{x:o.gt.pt[0],y:o.gt.pt[1],z:o.gt.pt[2]})>2)W.gtgt={pos:{x:o.gt.pt[0],y:o.gt.pt[1],z:o.gt.pt[2]},alive:true,name:o.gt.n,kind:'pt',vel:v3(),pt:true};}else W.gtgt=null;
-    if(o.bn!=null&&W.plane.bomb.name!==o.bn)W.plane=Object.assign({},W.plane,{bomb:Object.assign({},W.plane.bomb,{name:o.bn,gps:o.bg,lgb:o.bl})});W.wp=o.wp;if(o.wps)W.wps=o.wps.map(q=>({n:q[0],x:q[1],z:q[2],alt:q[3]}));p.fuel=o.fuel;p.hook=o.hook;p.flaps=o.flaps;Object.assign(W.sys,o.sys);W.ecm=o.ecm;Object.assign(W.radar,o.radar);
+    if(o.lc)W.laserCode=o.lc;if(o.bn!=null&&W.plane.bomb.name!==o.bn)W.plane=Object.assign({},W.plane,{bomb:Object.assign({},W.plane.bomb,{name:o.bn,gps:o.bg,lgb:o.bl})});W.wp=o.wp;if(o.wps)W.wps=o.wps.map(q=>({n:q[0],x:q[1],z:q[2],alt:q[3]}));p.fuel=o.fuel;p.hook=o.hook;p.flaps=o.flaps;Object.assign(W.sys,o.sys);W.ecm=o.ecm;Object.assign(W.radar,o.radar);
     if(o.over&&!W.over)W.over=o.over;},
   podState(){const t=pod.trk;return{trk:t?(t.e?{r:mpg.ref(t.e)}:{p:[Math.round(t.p.x),Math.round(t.p.y),Math.round(t.p.z)]}):null,free:pod.free,dir:pod.dir?[+pod.dir.x.toFixed(4),+pod.dir.y.toFixed(4),+pod.dir.z.toFixed(4)]:null,laser:pod.laser,zoom:pod.zoom,mode:pod.mode};},
   podApply(s){if(rear.seat==='wso')return;pod.free=s.free;pod.dir=s.dir?v3(s.dir[0],s.dir[1],s.dir[2]):null;pod.laser=s.laser;pod.zoom=s.zoom;pod.mode=s.mode;
@@ -69,6 +69,7 @@ function crewDo(o){if(!W)return;const p=W.player;
 /* UFC entries change the flight plan or the target, on the machine that flies the jet */
 function ufcApply(u){if(!W)return;const p=W.player,x=u.e*1000,z=-u.n*1000;
   if(u.k==='wpt'){const n='MK'+((W.mkN=(W.mkN||0)+1));const i=Math.max(0,W.wps.findIndex(q=>q.n==='BASE'||q.n==='CVN'));const at=i>=0?i:W.wps.length;W.wps.splice(at,0,{n,x,z,alt:Math.max(1000,Math.round(p.pos.y/100)*100)});W.wp=at;radioQ.push(`UFC: נקודה ${n} נוספה למסלול ונבחרה.`);}
+  else if(u.k==='lc'){W.laserCode=u.v;radioQ.push(`UFC: קוד לייזר ${u.v}. פצצות לייזר שישוחררו מעכשיו יחפשו את הקוד הזה.`);}
   else if(u.k==='tgt'){W.gtgt={pos:{x,y:R.terrainH(x,z),z},alive:true,name:'COORD',kind:'pt',vel:v3(),pt:true};radioQ.push(W.w.sel==='SPICE'?'UFC: נקודת המטרה הוזנה. חימוש GPS יכוון אליה.':'UFC: נקודת המטרה הוזנה. בחר חימוש לקרקע.');}}
 
 const ufc={on:false,page:'nav',buf:'',e:null,n:null,flash:'',flashT:0,last:''};
@@ -78,9 +79,9 @@ const pad2=n=>String(n).padStart(2,'0'),mmssU=s=>s>5999?'--:--':pad2(Math.floor(
 function ufcShow(){const b=$('ufc');if(!b)return;const vis=ufc.on&&state==='fly'&&!!W;if(b.hidden===vis)b.hidden=!vis;if(!vis)return;
   $('ufcPages').innerHTML=UFCP.map(([k,l])=>`<button data-up="${k}" aria-pressed="${ufc.page===k}">${l}</button>`).join('');
   for(const x of $('ufcPages').querySelectorAll('button'))x.onclick=()=>{ufc.page=x.dataset.up;ufc.last='';ufcShow();beep(1100,0.02);};
-  const S={nav:[['הקודם','wpPrev'],['הבא','wp']],crd:[['E','setE'],['N','setN'],['מיקום שלי','here'],['מהפוד','pod'],['לנקודת ציון','wpt'],['למטרה','tgt']],wpn:[['בחר נשק','wpn'],['חימוש ראשי','arm']],gps:[]}[ufc.page];
+  const S={nav:[['הקודם','wpPrev'],['הבא','wp']],crd:[['E','setE'],['N','setN'],['מיקום שלי','here'],['מהפוד','pod'],['לנקודת ציון','wpt'],['למטרה','tgt']],wpn:[['קוד לייזר','lc'],['בחר נשק','wpn'],['חימוש ראשי','arm']],gps:[]}[ufc.page];
   $('ufcSoft').innerHTML=S.map(([l,k])=>`<button data-sk="${k}">${l}</button>`).join('');for(const x of $('ufcSoft').querySelectorAll('button'))x.onclick=()=>ufcSoft(x.dataset.sk);
-  b.dataset.pad=ufc.page==='crd'?'1':'';b.dataset.t=touchOn?'1':'';$('ufcSeat').textContent=rear.seat==='wso'?'BACK SEAT':rear.wso?'FRONT · WSO ON':'';ufc.last='';ufcDraw();}
+  b.dataset.pad=ufc.page==='crd'||ufc.page==='wpn'?'1':'';b.dataset.t=touchOn?'1':'';$('ufcSeat').textContent=rear.seat==='wso'?'BACK SEAT':rear.wso?'FRONT · WSO ON':'';ufc.last='';ufcDraw();}
 function ufcFlash(t){ufc.flash=t;ufc.flashT=2.2;ufc.last='';}
 function ufcSoft(k){click(0.6);const p=W.player,num=parseFloat(ufc.buf);
   if(k==='wp'||k==='wpPrev'){rear.cmd({a:k});if(rear.seat!=='wso')ufcFlash('WPT '+(W.wps[W.wp]||{}).n);}
@@ -88,6 +89,7 @@ function ufcSoft(k){click(0.6);const p=W.player,num=parseFloat(ufc.buf);
   else if(k==='here'){ufc.e=+(p.pos.x/1000).toFixed(1);ufc.n=+(-p.pos.z/1000).toFixed(1);ufcFlash('OWN POSITION');}
   else if(k==='pod'){const g=podTgt();if(!g||g.sky){ufcFlash('POD: NO POINT');return;}ufc.e=+(g.pos.x/1000).toFixed(1);ufc.n=+(-g.pos.z/1000).toFixed(1);ufcFlash('POD POINT');}
   else if(k==='wpt'||k==='tgt'){if(ufc.e==null||ufc.n==null){ufcFlash('SET E AND N');return;}rear.cmd({a:'ufc',u:{k,e:ufc.e,n:ufc.n}});ufcFlash(k==='wpt'?'WAYPOINT ADDED':'TARGET SET');}
+  else if(k==='lc'){const c=ufc.buf.replace(/\D/g,'');if(!/^1[1-7][1-8][1-8]$/.test(c)){ufcFlash('CODE 1111-1788');return;}ufc.buf='';rear.cmd({a:'ufc',u:{k:'lc',v:+c}});ufcFlash('LASER CODE '+c);}
   else if(k==='wpn')rear.cmd({a:'wpn'});else if(k==='arm')(rear.seat==='wso'?rear.cmd({a:'sw',id:'arm'}):W.sw('arm'));
   ufcDraw();}
 function ufcKey(k){if(!ufc.on)return;click(0.6);if(k==='clr'){ufc.buf=ufc.buf.slice(0,-1);}else if(k==='ent'){if(ufc.page!=='crd')return;ufcFlash('PRESS E OR N');}else if(k==='-'){ufc.buf=ufc.buf.startsWith('-')?ufc.buf.slice(1):'-'+ufc.buf;}else if(ufc.buf.length<7&&!(k==='.'&&ufc.buf.includes('.')))ufc.buf+=k;ufc.last='';ufcDraw();}
@@ -100,7 +102,7 @@ function ufcDraw(){if(!ufc.on||!W)return;const p=W.player,w=W.w,L=[];
     const g=W.gtgt;L.push(g&&g.alive?`TGT ${(g.name||'').slice(0,6).padEnd(6)} ${fE(g.pos.x/1000)} ${fN(-g.pos.z/1000)}`:'TGT NONE');}
   else if(ufc.page==='wpn'){const pl=W.plane,bn=(pl.bomb&&pl.bomb.name||'A/G').slice(0,10);
     L.push(`${(W.mrm&&W.mrm.name||'AIM-120').slice(0,8).padEnd(8)} x${w.aim120}  ${(W.srm&&W.srm.name||'PYTHON').slice(0,8).padEnd(8)} x${w.python}`,`${bn.padEnd(10)} x${w.spice}   GUN ${w.gun}`,`CHF ${w.chaff} FLR ${w.flare}  TNK ${w.tanks||0}`,
-      `SEL ${String(w.sel).padEnd(7)} ${W.arm?'ARM':'SAFE'}`);const g=W.gtgt;L.push(g&&g.alive?`TGT ${(g.name||g.type||'').slice(0,10)}${pl.bomb&&pl.bomb.gps?' GPS':''}`:W.lock?`LOCK ${(W.lock.label||W.lock.name||W.lock.type||'').slice(0,10)}`:'NO TGT');}
+      `SEL ${String(w.sel).padEnd(7)} ${W.arm?'ARM':'SAFE'}  LSR ${W.laserCode||1688}`);const g=W.gtgt;L.push(g&&g.alive?`TGT ${(g.name||g.type||'').slice(0,10)}${pl.bomb&&pl.bomb.gps?' GPS':''}`:W.lock?`LOCK ${(W.lock.label||W.lock.name||W.lock.type||'').slice(0,10)}`:'NO TGT');}
   else if(ufc.page==='gps'){const s=W.gpsState(),seed=Math.floor(W.time/40),prn=[];for(let i=0;i<12;i++){const n=((seed*7+i*11)%31)+1;if(!prn.includes(n))prn.push(n);}
     const bars=prn.slice(0,Math.max(s.sats,0)).map((n,i)=>pad2(n)+['▂','▄','▆','█'][(n+i+seed)%4]).join(' ');
     L.push(`GPS ${s.mode.padEnd(5)} SATS ${pad2(s.sats)}  EPE ${s.epe}M`,`INS ${s.ins>=1?'NAV':'ALIGN '+Math.round(s.ins*100)+'%'}  ${W.flt&&W.flt.gps?'GPS FAIL':''}`,bars.slice(0,26)||'NO SATELLITES',bars.slice(27,53),`JAM ${s.jam>0.66?'HEAVY':s.jam>0.2?'MODERATE':s.jam>0?'LIGHT':'NONE'}`);}

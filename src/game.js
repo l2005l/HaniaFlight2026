@@ -2005,14 +2005,39 @@ function drawHUD(){tgpR=null;if(walk.on&&state==='fly'){ctx.setTransform(dpr,0,0
   {const nt=(W.threats||[]).filter(t=>t.lvl>=1&&t.sym!=='M').length;if((W.mwarn&&!mfdAuto.mw)||nt>mfdAuto.thr){if(mfdPageR>1)mfdPageR=0;}mfdAuto.mw=!!W.mwarn;mfdAuto.thr=nt;}
   if(tgpHold&&mfdPage!==4&&!mfdAuto.held){mfdPage=4;}mfdAuto.held=!!tgpHold;
   const pt=podTgt(),ag=pw&&!!pt&&mfdPage===4;let podShown=null;
-  const mfdTgp=(x,y0,ms)=>{const g=podTgt(),v=podView(g),sees=!!v.wpn||podCanSee(g),c0=x+ms/2,c1=y0+ms/2,gp=ms*0.07,ln=ms*0.2;ctx.clearRect(x,y0,ms,ms);if(sees)tgpR={x,y:y0,s:ms};else{ctx.fillStyle='#030504';ctx.fillRect(x,y0,ms,ms);}
-    ctx.strokeStyle='rgba(116,255,150,0.6)';ctx.lineWidth=1.2*u;ctx.strokeRect(x+0.5,y0+0.5,ms-1,ms-1);ctx.strokeStyle='#f2f2ea';line(c0-ln,c1,c0-gp,c1);line(c0+gp,c1,c0+ln,c1);line(c0,c1-ln,c0,c1-gp);line(c0,c1+gp,c0,c1+ln);
-    ctx.fillStyle='rgba(0,0,0,0.42)';ctx.fillRect(x+1,y0+1,ms-2,30*u);ctx.fillRect(x+1,y0+ms-17*u,ms-2,16*u);
-    txt(v.lab,x+5*u,y0+10*u,'left',11,v.wpn?AMB:'#f2f2ea');txt((vdist(g.pos,v.src)/NM).toFixed(1)+' NM',x+ms-5*u,y0+10*u,'right',11,'#f2f2ea');txt(g.name,x+5*u,y0+ms-9*u,'left',10,'#f2f2ea');
-    const tf=tofOf(g);if(tf!=null)txt('TOF '+Math.max(0,Math.ceil(tf)),x+ms-5*u,y0+25*u,'right',12,tf<5&&blink?RED:'#f2f2ea');
-    if(g.held){const dt=clock-g.t0;if(dt<2.5&&blink)txt('IMPACT',c0,y0+25*u,'center',12,RED);txt('DESTROYED',x+ms-5*u,y0+ms-9*u,'right',11,'#f2f2ea');}
-    else if(g.pod){txt(['WFOV','MFOV','NFOV'][pod.zoom]+' '+PODM[pod.mode],c0,y0+25*u,'center',10,'#f2f2ea');txt(!sees?'MASKED':pod.laser&&!g.sky?'LASE':g.lab,x+ms-5*u,y0+ms-9*u,'right',11,!sees?AMB:pod.laser&&!g.sky?(blink?RED:'#f2f2ea'):'#f2f2ea');}
-    else{const lg=W.plane.bomb.lgb,fl=W.bombs.length>0;txt(v.wpn?(v.fwd?'NAV':'SEEKER'):sees?(pod.laser||lg&&fl?'LASING':lg?'LASER RDY':'TRACK'):'MASKED',x+ms-5*u,y0+ms-9*u,'right',11,sees?((pod.laser||lg&&fl)&&blink?RED:'#f2f2ea'):AMB);}};
+  /* the targeting pod, in the manner of the LANTIRN (AN/AAQ-14) display: field of view, sensor and track mode across the top, laser
+     code and the firing L, time to impact; the pod's pointing cue (where it looks relative to the nose) with azimuth and depression; slant
+     and ground range; the coordinates and elevation of the point under the cross; MASK when the jet's own body is in the way */
+  const mfdTgp=(x,y0,ms)=>{const g=podTgt(),v=podView(g),sees=!!v.wpn||podCanSee(g),c0=x+ms/2,c1=y0+ms/2,W2='#f2f2ea',k=ms/230,fs=n=>Math.max(8,n*k);
+    ctx.clearRect(x,y0,ms,ms);if(sees)tgpR={x,y:y0,s:ms};else{ctx.fillStyle='#050706';ctx.fillRect(x,y0,ms,ms);}
+    ctx.save();ctx.lineWidth=Math.max(1,1.3*k);ctx.strokeStyle='rgba(242,242,234,0.55)';ctx.strokeRect(x+0.5,y0+0.5,ms-1,ms-1);
+    const T2=(t,xx,yy,al,sz,col)=>{ctx.font=`600 ${Math.round(fs(sz))}px "Share Tech Mono",ui-monospace,Menlo,Consolas,monospace`;ctx.textAlign=al;ctx.textBaseline='middle';ctx.lineWidth=3;ctx.strokeStyle='rgba(0,0,0,0.75)';ctx.strokeText(t,xx,yy);ctx.fillStyle=col||W2;ctx.fillText(t,xx,yy);};
+    const p=W.player,trk=pod.trk?(pod.trk.e?'POINT':'AREA'):pod.free?'RATES':g.pod?'AREA':g.held?'AREA':'POINT',fov=['WIDE','NARO','NARO 2X'][pod.zoom],snsr=['TV','WHOT','BHOT'][pod.mode];
+    /* the cross: open in the middle; a gate round the target in POINT track */
+    ctx.strokeStyle=W2;ctx.lineWidth=Math.max(1,1.2*k);const gp=ms*0.05,ln=ms*0.22;line(c0-ln,c1,c0-gp,c1);line(c0+gp,c1,c0+ln,c1);line(c0,c1-ln*0.8,c0,c1-gp);line(c0,c1+gp,c0,c1+ln*0.8);
+    for(const s2 of[-1,1]){line(c0+s2*ln,c1-4*k,c0+s2*ln,c1+4*k);line(c0-4*k,c1+s2*ln*0.8,c0+4*k,c1+s2*ln*0.8);}
+    if(trk==='POINT'&&sees){const gb=ms*0.045;ctx.strokeRect(c0-gb,c1-gb,2*gb,2*gb);}
+    /* top lines */
+    ctx.fillStyle='rgba(0,0,0,0.35)';ctx.fillRect(x+1,y0+1,ms-2,32*k);ctx.fillRect(x+1,y0+ms-34*k,ms-2,33*k);
+    T2(fov,x+5*k,y0+9*k,'left',10);T2(v.wpn?'WPN':snsr,c0,y0+9*k,'center',10);T2(v.wpn?(v.fwd?'NAV':'SKR'):trk,x+ms-5*k,y0+9*k,'right',10);
+    const lz=pod.laser&&sees&&!g.sky,lgb=W.plane.bomb.lgb,falling=W.bombs.some(b=>b.alive&&b.owner===p);
+    T2(String(W.laserCode||1688),x+5*k,y0+23*k,'left',10,lgb?W2:'rgba(242,242,234,0.6)');if(lz||lgb&&falling&&sees){if(blink||!lz)T2('L',c0,y0+23*k,'center',13,lz?W2:AMB);}
+    const tf=tofOf(g);if(tf!=null)T2('TTI '+String(Math.max(0,Math.ceil(tf))).padStart(2,'0'),x+ms-5*k,y0+23*k,'right',10,tf<5&&blink?RED:W2);
+    /* pod pointing cue: a box for the field of regard (azimuth across, depression down), a dot for where the pod looks */
+    const src=v.src||p.pos,r=vsub(g.pos,p.pos),d=qrotInv(p.q,r),Rs=vlen(r),az=Math.atan2(d.x,-d.z)*R2D,el=Math.atan2(d.y,Math.hypot(d.x,d.z))*R2D,bx=x+6*k,by=y0+40*k,bw=40*k,bh=30*k;
+    ctx.strokeStyle='rgba(242,242,234,0.7)';ctx.lineWidth=Math.max(1,k);ctx.strokeRect(bx,by,bw,bh);line(bx+bw/2,by,bx+bw/2,by+3*k);
+    const px=bx+bw/2+clamp(az/180,-1,1)*bw/2,py=by+clamp((10-el)/160,0,1)*bh;ctx.fillStyle=W2;ctx.fillRect(px-2*k,py-2*k,4*k,4*k);
+    T2(`${String(Math.abs(Math.round(az))).padStart(3,'0')}${az<0?'L':'R'}`,bx,by+bh+8*k,'left',9);T2(`${String(Math.abs(Math.round(el))).padStart(2,'0')}${el<0?'D':'U'}`,bx+bw,by+bh+8*k,'right',9);
+    /* ranges, heading */
+    const sr=vdist(g.pos,src)/NM,gr=Math.hypot(g.pos.x-src.x,g.pos.z-src.z)/NM,e2=p.euler();
+    T2('SR '+sr.toFixed(1),x+ms-5*k,y0+44*k,'right',10);T2('GR '+gr.toFixed(1),x+ms-5*k,y0+57*k,'right',10);T2('HDG '+String(Math.round((e2.hdg*R2D+360)%360)).padStart(3,'0'),x+ms-5*k,y0+70*k,'right',9,'rgba(242,242,234,0.75)');
+    /* the point under the cross */
+    if(!g.sky){const L2=R.llOf(g.pos.x,g.pos.z),dm=(vv,pos,neg,w)=>{const a2=Math.abs(vv),dd=Math.floor(a2),mi=(a2-dd)*60;return(vv>=0?pos:neg)+String(dd).padStart(w,'0')+'°'+mi.toFixed(3).padStart(6,'0');};
+      T2(dm(L2.lat,'N','S',2)+'  '+dm(L2.lon,'E','W',3),c0,y0+ms-25*k,'center',9);T2('ELEV '+Math.round(g.pos.y*FT)+' FT',x+5*k,y0+ms-10*k,'left',9);}
+    if(g.held){const dt=clock-g.t0;T2(dt<2.5&&blink?'IMPACT':'DESTROYED',x+ms-5*k,y0+ms-10*k,'right',9,dt<2.5?RED:W2);}
+    else T2((g.name||'').slice(0,10),x+ms-5*k,y0+ms-10*k,'right',9);
+    if(!sees&&!g.held){const masked=!!(g.pod||g)&&(()=>{const dd=qrotInv(p.q,vsub(g.pos,p.pos));return dd.y/vlen(dd)>0.35;})();if(blink||!masked)T2(masked?'MASK':'NO LOS',c0,c1-ms*0.12,'center',13,AMB);}
+    ctx.restore();};
   const podBig=()=>{const S=touchOn?Math.min(vh-140,vw*0.45):Math.min(vw*0.45,vh*0.62);return{x:(vw-S)/2,y:touchOn?4:vh*0.06,s:S};};
   if(pw&&!!pt&&pod.big&&!deadS('L')){const B=podBig();mfdR=B;podShown=B;mfdTgp(B.x,B.y,B.s);}
   else if(mfdPage===5&&pw&&view===0&&!touchOn&&!deadS('L')){const S=clamp(m*0.3,120,250),B={x:10*u,y:vh-S-10*u,s:S};mfdR=B;mfdSar(B.x,B.y,S);tabs(B.x,B.y,S);}

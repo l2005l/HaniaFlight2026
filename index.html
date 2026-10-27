@@ -728,6 +728,14 @@ details[open] summary{margin-bottom:10px}
           <li><b>LANDING GEAR</b>: נמוך ואיטי בירידה בלי כן נסע. <b>BINGO FUEL</b>: דלק מספיק רק לחזרה הביתה. <b>FUEL LOW</b>: חצי מזה.</li>
           <li>כיבוי ההתרעות הקוליות: בלשונית "הגדרות". הכיתוב ב-HUD נשאר.</li>
         </ul></div>
+        <div><h4>תצוגת הפוד (בסגנון LANTIRN)</h4><ul>
+          <li><b>שורה עליונה</b>: שדה הראייה (<b>WIDE</b>, <b>NARO</b>, <b>NARO 2X</b>), החיישן (<b>TV</b>, <b>WHOT</b> חם לבן, <b>BHOT</b> חם שחור), ומצב המעקב. <b>POINT</b> ננעל על עצם, גם כשהוא זז, ומופיעה סביבו מסגרת. <b>AREA</b> נשאר על נקודה בקרקע. <b>RATES</b> אומר שהפוד מוזז ידנית ולא נעול.</li>
+          <li><b>שורה שנייה</b>: קוד הלייזר (ברירת מחדל 1688), <b>L</b> מהבהב כשהלייזר יורה, ו־<b>TTI</b>: הזמן עד פגיעת החימוש.</li>
+          <li><b>בצד שמאל</b>: לאן הפוד מסתכל. המלבן הוא תחום התנועה של הפוד והנקודה היא הכיוון שלו, עם מעלות ימינה או שמאלה (R/L) ולמטה (D). <b>בצד ימין</b>: טווח אלכסוני (<b>SR</b>) וטווח קרקע (<b>GR</b>) במייל, וכיוון המטוס.</li>
+          <li><b>למטה</b>: קו רוחב וקו אורך של הנקודה שמתחת לצלב, במעלות ודקות. הם זזים עם הפוד. מתחתם גובה הנקודה ברגל. במפת ישראל אלה קואורדינטות אמיתיות. בזירות האחרות הן מחושבות מהמיקום האמיתי של בסיס הבית. ב־UFC, הכפתור "מהפוד" מעתיק את הנקודה.</li>
+          <li><b>MASK</b> מהבהב כשגוף המטוס מסתיר את הפוד, ו־<b>NO LOS</b> מופיע כשהקרקע מסתירה.</li>
+          <li><b>קוד לייזר</b>: ב־UFC, בדף חימוש, מקלידים קוד (1111 עד 1788) ולוחצים "קוד לייזר". פצצת לייזר עוקבת רק אחרי לייזר עם הקוד שהיה בזמן השחרור, גם כשחבר מסמן לה ברשת. קוד לא תואם: הפצצה נופלת בלי הנחיה.</li>
+        </ul></div>
         <div><h4>הפוד</h4><ul>
           <li>במסך השמאלי, בעמוד <b>POD</b>, או אוטומטית כשבוחרים חימוש לקרקע. גרירה על חלון הפוד מזיזה את המצלמה; לחיצה קצרה מחליפה עמוד.</li>
           <li>מתחת לחלון: <b>זום</b> (רחב, בינוני, צר), <b>נעל</b> (על מטוס או מטרה ליד הצלב, אחרת על הנקודה בקרקע; הפוד נשאר עליה גם כשמתמרנים), <b>לייזר</b>, <b>TV/WHT/BHT</b> (תמונה רגילה, תרמית לבן־חם או שחור־חם), <b>הגדל</b>, <b>אוטומטי</b> (חזרה למטרה של המשימה).</li>
@@ -868,7 +876,7 @@ details[open] summary{margin-bottom:10px}
       </div>
       <p class="note">שלט משחק: מוט שמאלי להיגוי, מוט ימני למבט, RT ו־LT למצערת, RB הדק, A פיקל, B נורים, X נעילה, Y חימוש הבא, LB מעצור. בצלב: למעלה כן נסע, למטה מדפים, ימינה מאסטר ארם, שמאלה מבט. לחיצה על המוט השמאלי: וו בלימה, על הימני: מבט למטרה. Start מתחיל טיסה מהתפריט. באפליקציית האנדרואיד השלט עובד דרך האפליקציה עצמה.</p>
     </details>
-    <p class="note">גרסה 3.0 (0f06ca3, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
+    <p class="note">גרסה 3.1 (a1da1f5, נטען ב־<span id="loadMs">…</span> שניות). מודל הטיסה פיזיקלי, המערכות מפושטות, והמפה דחוסה כדי שמשימה תימשך כ־20 דקות. <a href="https://flight.hania360.com/privacy.html" target="_blank" rel="noopener">מדיניות פרטיות</a></p>
     </div>
     <div id="dock">
     <div id="update" role="status" aria-live="polite" hidden>
@@ -1032,6 +1040,9 @@ const ISR={lat0:32.6653,lon0:35.1797,cell:700,nx:336,nz:665,dem:null};ISR.kx=111
 ISR.bx=0;ISR.bz=0;ISR.seaX0=ISR.seaX;
 /* the map is centred on the home base chosen for the sortie: game X/Z are metres east/south of it */
 ISR.xy=(lat,lon)=>({x:(lon-ISR.lon0)*ISR.kx-ISR.bx,z:-(lat-ISR.lat0)*ISR.kz-ISR.bz});
+/* latitude and longitude of a point: real on the Israel map; on the other maps measured from the home base's real position */
+const LLO={south:[31.2333,34.6622],north:[32.6653,35.1797],far:[31.2083,35.0122]};
+function llOf(x,z){if(THEATRE.id==='israel')return ISR.ll(x,z);const o=LLO[THEATRE.id]||LLO.south,kx=111320*Math.cos(o[0]*D2R);return{lat:o[0]-z/110574,lon:o[1]+x/kx};}
 ISR.ll=(x,z)=>({lat:ISR.lat0-(z+ISR.bz)/ISR.kz,lon:ISR.lon0+(x+ISR.bx)/ISR.kx});
 /* the Air Force bases, with the rough heading of their main runway (the home base always uses the game's east-west runway) */
 ISR.BASES=[['ramatdavid','רמת דוד',32.6653,35.1797,90],['hatzor','חצור',31.7625,34.7272,110],['telnof','תל נוף',31.8394,34.8219,150],['palmachim','פלמחים',31.8975,34.6908,0],
@@ -1731,7 +1742,7 @@ class World{
     this.stats={uav:0,leak:0,mig:0,tgt:0,sam:!!this.stats0sam,shots:0,start:air?'air':cold?'cold':'runway'};this.over=null;this.flags={};this.tS=0;this.tM=0;this.tD=0;this.gunT=0;this.cmT=0;this.stopT=0;
     /* instrument landing: ten miles out in fog at night, off to one side of the runway, below the glide slope */
     if(this.lesson==='ils'){const p=this.player;p.pos=v3(RWY.x1-18500,SITES.base.h+800,1300);p.vel=v3(135,0,-18);p.q=qeuler(Math.PI/2-0.13,0.02,0);p.ctl.throttle=p.eng=0.6;p.gear=false;p.gearPos=0;}
-    this.form=null;
+    this.form=null;this.laserCode=[1111,1688,1511,1788].includes(+o.laserCode)||(+o.laserCode>=1111&&+o.laserCode<=1788)?+o.laserCode:1688;
     if(this.lesson==='form'){/* a leader of the same type ahead and to the left; the pilot is number two */
       const p=this.player,L=new Aircraft(pl.type,{x:p.pos.x+260,y:p.pos.y+20,z:p.pos.z-70,hdg:Math.PI/2,pitch:0.04,speed:235,throttle:0.8,fuel:pl.fuelAir});L.label='1';L.model=pl.type;L.side=0;L.kind='air';L.lead=true;
       this.formLead={ac:L,ph:0,t:0,hdg:Math.PI/2,alt:p.pos.y+20,spd:235};this.friends.push(L);this.air=this.air.filter(e=>e!==L);this.formJoin(L,'wing');}
@@ -1941,7 +1952,8 @@ class World{
       if(ok){delete F[k];if(k==='radar'){this.dmgRadar=false;this.sys.radar=true;}if(k==='ew')this.dmgRwr=false;if(k==='ins'&&!F.gps)this.insErr={x:0,z:0};this.msg(`ריסט הצליח: ${nm} חזר${['המפה','מערכת הל"א','מערכת הנורים והמוץ'].includes(nm)?'ה':''} לעבוד.`);}
       else this.msg(`ריסט לא עזר: ${nm} עדיין תקול${['המפה','מערכת הל"א','מערכת הנורים והמוץ'].includes(nm)?'ה':''}. ממשיכים ככה.`);this.syncDmg();}}
   /* a laser spot for this bomb: ours, or a friend's, whichever is nearest to where it is going (within 4 km) */
-  laserFor(b){const L=[];if(b.owner===this.player&&this.laserSpot)L.push(this.laserSpot);for(const q of this.netLasers||[])L.push(q);let best=null,bd=4000;for(const q of L){const d=Math.hypot(q.x-b.aim.x,q.z-b.aim.z);if(d<bd){bd=d;best=q;}}return best;}
+  /* a laser-guided bomb follows only a spot coded like it (the code is set before release); with the wrong code it falls ballistic */
+  laserFor(b){const L=[],bc=b.code||1688;if(b.owner===this.player&&this.laserSpot&&(this.laserCode||1688)===bc)L.push(this.laserSpot);for(const q of this.netLasers||[])if(q.c==null||q.c===bc)L.push(q);let best=null,bd=4000;for(const q of L){const d=Math.hypot(q.x-b.aim.x,q.z-b.aim.z);if(d<bd){bd=d;best=q;}}return best;}
   navPos(){const p=this.player;return{x:p.pos.x+this.insErr.x,y:p.pos.y,z:p.pos.z+this.insErr.z};}
   get fuelShown(){return this.flt&&this.flt.fuelq?this.flt.fuelq.v:this.player.fuel;}
   relight(){const p=this.player;if(!p.alive)return false;for(let i=0;i<p.nEng;i++)if(p.rpm[i]<0.98&&p.engOK[i]>0&&!this.sys.start[i])return this.sw('eng'+i);
@@ -2012,7 +2024,7 @@ class World{
     else if(w.sel==='SPICE'&&this.plane.bomb.cruise){const b=this.bombSol();if(w.spice>0&&b&&b.ok){const m=new Cruise(STANDOFF[this.plane.bomb.cruise],p,this.gtgt,vadd(p.pos,vmul(qrot(p.q,UP),-2)),p.vel);this.missiles.push(m);this.events.push({type:'launch',m});w.spice--;this.stats.shots++;this.syncStores();this.casRel();}else this.events.push({type:'deny'});}
     else if(w.sel==='SPICE'&&this.plane.bomb.arm){const b=this.bombSol();if(w.spice>0&&b&&b.ok){this.launch(MSL.ARM,p,this.gtgt);w.spice--;this.stats.shots++;this.syncStores();}else this.events.push({type:'deny'});}
     else if(w.sel==='SPICE'&&this.plane.bomb.gps&&this.flt.gps){this.events.push({type:'deny'});this.msg('אין קליטת לוויינים: פצצת הלוויין לא תשוחרר.');}
-    else if(w.sel==='SPICE'){const b=this.bombSol();if(w.spice>0&&b&&b.ok){const bb=new Bomb(p,this.gtgt&&this.gtgt.alive?this.gtgt:{pos:b.ccip||p.pos,alive:false},vadd(p.pos,vmul(qrot(p.q,UP),-2)),p.vel,this.plane.bomb);if(this.flt.dud){bb.dud=true;delete this.flt.dud;}if(bb.gps){const e=this.gpsState().epe,a=Math.random()*Math.PI*2,r=e*Math.sqrt(Math.random());bb.aim.x+=Math.cos(a)*r;bb.aim.z+=Math.sin(a)*r;}this.bombs.push(bb);this.casRel();w.spice--;this.stats.shots++;this.events.push({type:'release'});}else this.events.push({type:'deny'});}
+    else if(w.sel==='SPICE'){const b=this.bombSol();if(w.spice>0&&b&&b.ok){const bb=new Bomb(p,this.gtgt&&this.gtgt.alive?this.gtgt:{pos:b.ccip||p.pos,alive:false},vadd(p.pos,vmul(qrot(p.q,UP),-2)),p.vel,this.plane.bomb);if(this.flt.dud){bb.dud=true;delete this.flt.dud;}bb.code=this.laserCode||1688;if(bb.gps){const e=this.gpsState().epe,a=Math.random()*Math.PI*2,r=e*Math.sqrt(Math.random());bb.aim.x+=Math.cos(a)*r;bb.aim.z+=Math.sin(a)*r;}this.bombs.push(bb);this.casRel();w.spice--;this.stats.shots++;this.events.push({type:'release'});}else this.events.push({type:'deny'});}
     this.syncStores();}
   /* emergency jettison of the air-to-ground stores */
   jettison(){const w=this.w,p=this.player;if(!p.alive||p.onGround)return false;
@@ -2411,7 +2423,7 @@ class World{
       this.dlz=T&&p.alive?launchZone(s==='AIM120'?this.mrm:this.srm,p.pos,p.vel,T.pos,T.vel):null;}
   }
 }
-const RAAM={Airliner,LoyalWing,AttackHelo,FORM,PLAN_MOVE,CV,Carrier,findSea,setClouds,turbAt,Cruise,STANDOFF,ISR,LAKES,isWater,lakeAt,Helo,ARM_PT,StrikerAI,THEATRE,setTheatre,WingAI,DIFF,PLANES,PARK,Tanker,G0,D2R,R2D,KT,FT,NM,clamp,lerp,sstep,v3,vadd,vsub,vmul,vdot,vcross,vlen,vnorm,vdist,qmul,qrot,qrotInv,qaxis,qeuler,FWD,UP,RIGHT,atmo,TER,SITES,RWY,buildTerrain,terrainSteps,terrainH,TYPES,Aircraft,apSteer,MSL,Missile,flyout,launchZone,SPICE,spiceRange,Bomb,Drone,MigAI,SamSite,World};
+const RAAM={llOf,Airliner,LoyalWing,AttackHelo,FORM,PLAN_MOVE,CV,Carrier,findSea,setClouds,turbAt,Cruise,STANDOFF,ISR,LAKES,isWater,lakeAt,Helo,ARM_PT,StrikerAI,THEATRE,setTheatre,WingAI,DIFF,PLANES,PARK,Tanker,G0,D2R,R2D,KT,FT,NM,clamp,lerp,sstep,v3,vadd,vsub,vmul,vdot,vcross,vlen,vnorm,vdist,qmul,qrot,qrotInv,qaxis,qeuler,FWD,UP,RIGHT,atmo,TER,SITES,RWY,buildTerrain,terrainSteps,terrainH,TYPES,Aircraft,apSteer,MSL,Missile,flyout,launchZone,SPICE,spiceRange,Bomb,Drone,MigAI,SamSite,World};
 if(typeof module!=='undefined')module.exports=RAAM;
 
 return RAAM;})();
@@ -3922,13 +3934,13 @@ const mpg={on:false,cfg:null,role:'pilot',seatOf:null,room:{mode:'coop',start:'a
   /* ---- per frame ---- */
   tick(dt){if(!mpg.on||!W)return;const fly=state==='fly'||state==='pause';if(!fly)return;const p=W.player;
     mpg.sT-=dt;if(mpg.sT<=0&&rear.seat!=='wso'){mpg.sT=rear.wso?0.05:0.1;const q=p.q,r=v=>Math.round(v*10)/10;
-      MP.send({t:'s',p:[r(p.pos.x),r(p.pos.y),r(p.pos.z)],v:[r(p.vel.x),r(p.vel.y),r(p.vel.z)],q:[+q.x.toFixed(4),+q.y.toFixed(4),+q.z.toFixed(4),+q.w.toFixed(4)],e:+p.eng.toFixed(2),g:+p.gearPos.toFixed(2),a:p.alive?1:0,gd:p.onGround?1:0,gun:trigG&&W.w.sel==='GUN'&&p.alive?1:0,lk:W.lock&&W.lock.remote?W.lock.id:0,ty:W.plane.type,ls:W.laserSpot?[r(W.laserSpot.x),r(W.laserSpot.y),r(W.laserSpot.z)]:0,ld:[W.w.aim120,W.w.python,W.w.spice,W.w.tanks||0],ga:[+(p.g||1).toFixed(1),+(p.alpha||0).toFixed(3)]},false);}
+      MP.send({t:'s',p:[r(p.pos.x),r(p.pos.y),r(p.pos.z)],v:[r(p.vel.x),r(p.vel.y),r(p.vel.z)],q:[+q.x.toFixed(4),+q.y.toFixed(4),+q.z.toFixed(4),+q.w.toFixed(4)],e:+p.eng.toFixed(2),g:+p.gearPos.toFixed(2),a:p.alive?1:0,gd:p.onGround?1:0,gun:trigG&&W.w.sel==='GUN'&&p.alive?1:0,lk:W.lock&&W.lock.remote?W.lock.id:0,ty:W.plane.type,ls:W.laserSpot?[r(W.laserSpot.x),r(W.laserSpot.y),r(W.laserSpot.z)]:0,lc:W.laserCode,ld:[W.w.aim120,W.w.python,W.w.spice,W.w.tanks||0],ga:[+(p.g||1).toFixed(1),+(p.alpha||0).toFixed(3)]},false);}
     if(MP.host&&mpg.cfg.mode==='coop'){mpg.wT-=dt;if(mpg.wT<=0){mpg.wT=0.125;mpg.snap();}}
     /* remote jets: dead reckoning towards the last state, gentle correction */
     const now=performance.now()/1000;W.netThreats=[];W.netLasers=W.remotes.filter(e=>e.alive&&e.laser).map(e=>e.laser);
     for(const e of W.remotes){const t=e.tgt;if(!t||!e.alive)continue;const k=Math.min(now-t.at,0.6),tp=vadd(t.pos,vmul(t.vel,k)),d=vdist(tp,e.pos);
       e.pos=d>400?tp:vadd(e.pos,vmul(vsub(tp,e.pos),Math.min(1,dt*8)));e.vel=t.vel;const qa=new T.Quaternion(e.q.x,e.q.y,e.q.z,e.q.w),qb=new T.Quaternion(t.q[0],t.q[1],t.q[2],t.q[3]);qa.slerp(qb,Math.min(1,dt*10));e.q={x:qa.x,y:qa.y,z:qa.z,w:qa.w};
-      e.eng=t.e;e.gearPos=t.g;e.onGround=!!t.gd;e.ld=t.ld;e.laser=t.ls&&e.side===0?{x:t.ls[0],y:t.ls[1],z:t.ls[2]}:null;
+      e.eng=t.e;e.gearPos=t.g;e.onGround=!!t.gd;e.ld=t.ld;e.laser=t.ls&&e.side===0?{x:t.ls[0],y:t.ls[1],z:t.ls[2],c:t.lc}:null;
       if(t.gun&&state==='fly'){e.gunT=(e.gunT||0)-dt;if(e.gunT<=0){e.gunT=1/14;const f=qrot(e.q,FWD);W.bullets.push({pos:vadd(e.pos,vmul(f,8)),vel:vadd(e.vel,vmul(f,1000)),t:0,owner:e,ghost:true});}}
       if(t.lk===MP.id&&p.alive&&e.side===1){const fl=W.missiles.some(m=>m.alive&&m.owner===e&&m.target===p);W.netThreats.push({sym:({F15I:'15',F15C:'15',F16I:'16',F35I:'35',F35C:'35',M346:'46'})[e.type]||'F',pos:e.pos,lvl:fl?2:1});}}
     /* my bombs: send a copy so the others see them fall */
@@ -3973,7 +3985,7 @@ const mpg={on:false,cfg:null,role:'pilot',seatOf:null,room:{mode:'coop',start:'a
     if(o.t==='cmd'){if(from===rear.wso)crewDo(o);return;}
     if(o.t==='pod'){if(from===rear.wso)rear.podApply(o.s);return;}
     if(o.t==='s'){if(P){P.plane=o.ty||P.plane;P.st={pos:{x:o.p[0],y:o.p[1],z:o.p[2]}};}if(!re)return;
-      re.tgt={pos:{x:o.p[0],y:o.p[1],z:o.p[2]},vel:{x:o.v[0],y:o.v[1],z:o.v[2]},q:o.q,e:o.e,g:o.g,gd:o.gd,gun:o.gun,lk:o.lk,ls:o.ls,ld:o.ld,at:performance.now()/1000};
+      re.tgt={pos:{x:o.p[0],y:o.p[1],z:o.p[2]},vel:{x:o.v[0],y:o.v[1],z:o.v[2]},q:o.q,e:o.e,g:o.g,gd:o.gd,gun:o.gun,lk:o.lk,ls:o.ls,lc:o.lc,ld:o.ld,at:performance.now()/1000};
       if(!o.a&&re.alive){re.alive=false;W.events.push({type:'boom',pos:re.pos,size:1.4});W.events.push({type:'kill',e:re});if(W.lock===re)W.lock=null;}}
     else if(o.t==='w'){if(!MP.host)mpg.applySnap(o);}
     else if(o.t==='m'){const spec=R.MSL[o.k];if(!spec)return;const own=mpg.deref(o.o),tg=mpg.deref(o.tg);if(!tg)return;
@@ -4105,10 +4117,10 @@ const rear={userT:-1e9,seat:null,pilot:null,wso:null,csT:0,podT:0,podSig:'',tgt:
   state(){const p=W.player,w=W.w,g=W.gtgt,r=v=>Math.round(v);
     return{t:'cs',lk:mpg.ref(W.lock),sel:w.sel,w:{aim120:w.aim120,python:w.python,spice:w.spice,gun:w.gun,chaff:w.chaff,flare:w.flare,tanks:w.tanks||0},arm:!!W.arm,
       gt:g&&g.alive?(g.pt||!mpg.ref(g)?{pt:[r(g.pos.x),r(g.pos.y),r(g.pos.z)],n:g.name||'POINT'}:{r:mpg.ref(g)}):null,wp:W.wp,wps:W.wps.map(q=>[q.n,r(q.x),r(q.z),q.alt|0]),
-      fuel:r(p.fuel),hook:!!p.hook,flaps:!!p.flaps,bn:W.plane.bomb.name,bg:!!W.plane.bomb.gps,bl:!!W.plane.bomb.lgb,sys:{arDoor:W.sys.arDoor,radar:W.sys.radar,ins:W.sys.ins,lights:W.sys.lights},ecm:!!W.ecm,radar:{mode:W.radar.mode,rng:W.radar.rng},dmg:W.dmg.map(d=>d.t),over:W.over||null};},
+      fuel:r(p.fuel),hook:!!p.hook,flaps:!!p.flaps,bn:W.plane.bomb.name,lc:W.laserCode,bg:!!W.plane.bomb.gps,bl:!!W.plane.bomb.lgb,sys:{arDoor:W.sys.arDoor,radar:W.sys.radar,ins:W.sys.ins,lights:W.sys.lights},ecm:!!W.ecm,radar:{mode:W.radar.mode,rng:W.radar.rng},dmg:W.dmg.map(d=>d.t),over:W.over||null};},
   apply(o){if(rear.seat!=='wso'||!W)return;const p=W.player;W.lock=mpg.deref(o.lk);W.w.sel=o.sel;Object.assign(W.w,o.w);W.arm=o.arm;
     if(o.gt){if(o.gt.r){const e=mpg.deref(o.gt.r);if(e)W.gtgt=e;}else if(!W.gtgt||!W.gtgt.pt||vdist(W.gtgt.pos,{x:o.gt.pt[0],y:o.gt.pt[1],z:o.gt.pt[2]})>2)W.gtgt={pos:{x:o.gt.pt[0],y:o.gt.pt[1],z:o.gt.pt[2]},alive:true,name:o.gt.n,kind:'pt',vel:v3(),pt:true};}else W.gtgt=null;
-    if(o.bn!=null&&W.plane.bomb.name!==o.bn)W.plane=Object.assign({},W.plane,{bomb:Object.assign({},W.plane.bomb,{name:o.bn,gps:o.bg,lgb:o.bl})});W.wp=o.wp;if(o.wps)W.wps=o.wps.map(q=>({n:q[0],x:q[1],z:q[2],alt:q[3]}));p.fuel=o.fuel;p.hook=o.hook;p.flaps=o.flaps;Object.assign(W.sys,o.sys);W.ecm=o.ecm;Object.assign(W.radar,o.radar);
+    if(o.lc)W.laserCode=o.lc;if(o.bn!=null&&W.plane.bomb.name!==o.bn)W.plane=Object.assign({},W.plane,{bomb:Object.assign({},W.plane.bomb,{name:o.bn,gps:o.bg,lgb:o.bl})});W.wp=o.wp;if(o.wps)W.wps=o.wps.map(q=>({n:q[0],x:q[1],z:q[2],alt:q[3]}));p.fuel=o.fuel;p.hook=o.hook;p.flaps=o.flaps;Object.assign(W.sys,o.sys);W.ecm=o.ecm;Object.assign(W.radar,o.radar);
     if(o.over&&!W.over)W.over=o.over;},
   podState(){const t=pod.trk;return{trk:t?(t.e?{r:mpg.ref(t.e)}:{p:[Math.round(t.p.x),Math.round(t.p.y),Math.round(t.p.z)]}):null,free:pod.free,dir:pod.dir?[+pod.dir.x.toFixed(4),+pod.dir.y.toFixed(4),+pod.dir.z.toFixed(4)]:null,laser:pod.laser,zoom:pod.zoom,mode:pod.mode};},
   podApply(s){if(rear.seat==='wso')return;pod.free=s.free;pod.dir=s.dir?v3(s.dir[0],s.dir[1],s.dir[2]):null;pod.laser=s.laser;pod.zoom=s.zoom;pod.mode=s.mode;
@@ -4126,6 +4138,7 @@ function crewDo(o){if(!W)return;const p=W.player;
 /* UFC entries change the flight plan or the target, on the machine that flies the jet */
 function ufcApply(u){if(!W)return;const p=W.player,x=u.e*1000,z=-u.n*1000;
   if(u.k==='wpt'){const n='MK'+((W.mkN=(W.mkN||0)+1));const i=Math.max(0,W.wps.findIndex(q=>q.n==='BASE'||q.n==='CVN'));const at=i>=0?i:W.wps.length;W.wps.splice(at,0,{n,x,z,alt:Math.max(1000,Math.round(p.pos.y/100)*100)});W.wp=at;radioQ.push(`UFC: נקודה ${n} נוספה למסלול ונבחרה.`);}
+  else if(u.k==='lc'){W.laserCode=u.v;radioQ.push(`UFC: קוד לייזר ${u.v}. פצצות לייזר שישוחררו מעכשיו יחפשו את הקוד הזה.`);}
   else if(u.k==='tgt'){W.gtgt={pos:{x,y:R.terrainH(x,z),z},alive:true,name:'COORD',kind:'pt',vel:v3(),pt:true};radioQ.push(W.w.sel==='SPICE'?'UFC: נקודת המטרה הוזנה. חימוש GPS יכוון אליה.':'UFC: נקודת המטרה הוזנה. בחר חימוש לקרקע.');}}
 
 const ufc={on:false,page:'nav',buf:'',e:null,n:null,flash:'',flashT:0,last:''};
@@ -4135,9 +4148,9 @@ const pad2=n=>String(n).padStart(2,'0'),mmssU=s=>s>5999?'--:--':pad2(Math.floor(
 function ufcShow(){const b=$('ufc');if(!b)return;const vis=ufc.on&&state==='fly'&&!!W;if(b.hidden===vis)b.hidden=!vis;if(!vis)return;
   $('ufcPages').innerHTML=UFCP.map(([k,l])=>`<button data-up="${k}" aria-pressed="${ufc.page===k}">${l}</button>`).join('');
   for(const x of $('ufcPages').querySelectorAll('button'))x.onclick=()=>{ufc.page=x.dataset.up;ufc.last='';ufcShow();beep(1100,0.02);};
-  const S={nav:[['הקודם','wpPrev'],['הבא','wp']],crd:[['E','setE'],['N','setN'],['מיקום שלי','here'],['מהפוד','pod'],['לנקודת ציון','wpt'],['למטרה','tgt']],wpn:[['בחר נשק','wpn'],['חימוש ראשי','arm']],gps:[]}[ufc.page];
+  const S={nav:[['הקודם','wpPrev'],['הבא','wp']],crd:[['E','setE'],['N','setN'],['מיקום שלי','here'],['מהפוד','pod'],['לנקודת ציון','wpt'],['למטרה','tgt']],wpn:[['קוד לייזר','lc'],['בחר נשק','wpn'],['חימוש ראשי','arm']],gps:[]}[ufc.page];
   $('ufcSoft').innerHTML=S.map(([l,k])=>`<button data-sk="${k}">${l}</button>`).join('');for(const x of $('ufcSoft').querySelectorAll('button'))x.onclick=()=>ufcSoft(x.dataset.sk);
-  b.dataset.pad=ufc.page==='crd'?'1':'';b.dataset.t=touchOn?'1':'';$('ufcSeat').textContent=rear.seat==='wso'?'BACK SEAT':rear.wso?'FRONT · WSO ON':'';ufc.last='';ufcDraw();}
+  b.dataset.pad=ufc.page==='crd'||ufc.page==='wpn'?'1':'';b.dataset.t=touchOn?'1':'';$('ufcSeat').textContent=rear.seat==='wso'?'BACK SEAT':rear.wso?'FRONT · WSO ON':'';ufc.last='';ufcDraw();}
 function ufcFlash(t){ufc.flash=t;ufc.flashT=2.2;ufc.last='';}
 function ufcSoft(k){click(0.6);const p=W.player,num=parseFloat(ufc.buf);
   if(k==='wp'||k==='wpPrev'){rear.cmd({a:k});if(rear.seat!=='wso')ufcFlash('WPT '+(W.wps[W.wp]||{}).n);}
@@ -4145,6 +4158,7 @@ function ufcSoft(k){click(0.6);const p=W.player,num=parseFloat(ufc.buf);
   else if(k==='here'){ufc.e=+(p.pos.x/1000).toFixed(1);ufc.n=+(-p.pos.z/1000).toFixed(1);ufcFlash('OWN POSITION');}
   else if(k==='pod'){const g=podTgt();if(!g||g.sky){ufcFlash('POD: NO POINT');return;}ufc.e=+(g.pos.x/1000).toFixed(1);ufc.n=+(-g.pos.z/1000).toFixed(1);ufcFlash('POD POINT');}
   else if(k==='wpt'||k==='tgt'){if(ufc.e==null||ufc.n==null){ufcFlash('SET E AND N');return;}rear.cmd({a:'ufc',u:{k,e:ufc.e,n:ufc.n}});ufcFlash(k==='wpt'?'WAYPOINT ADDED':'TARGET SET');}
+  else if(k==='lc'){const c=ufc.buf.replace(/\D/g,'');if(!/^1[1-7][1-8][1-8]$/.test(c)){ufcFlash('CODE 1111-1788');return;}ufc.buf='';rear.cmd({a:'ufc',u:{k:'lc',v:+c}});ufcFlash('LASER CODE '+c);}
   else if(k==='wpn')rear.cmd({a:'wpn'});else if(k==='arm')(rear.seat==='wso'?rear.cmd({a:'sw',id:'arm'}):W.sw('arm'));
   ufcDraw();}
 function ufcKey(k){if(!ufc.on)return;click(0.6);if(k==='clr'){ufc.buf=ufc.buf.slice(0,-1);}else if(k==='ent'){if(ufc.page!=='crd')return;ufcFlash('PRESS E OR N');}else if(k==='-'){ufc.buf=ufc.buf.startsWith('-')?ufc.buf.slice(1):'-'+ufc.buf;}else if(ufc.buf.length<7&&!(k==='.'&&ufc.buf.includes('.')))ufc.buf+=k;ufc.last='';ufcDraw();}
@@ -4157,7 +4171,7 @@ function ufcDraw(){if(!ufc.on||!W)return;const p=W.player,w=W.w,L=[];
     const g=W.gtgt;L.push(g&&g.alive?`TGT ${(g.name||'').slice(0,6).padEnd(6)} ${fE(g.pos.x/1000)} ${fN(-g.pos.z/1000)}`:'TGT NONE');}
   else if(ufc.page==='wpn'){const pl=W.plane,bn=(pl.bomb&&pl.bomb.name||'A/G').slice(0,10);
     L.push(`${(W.mrm&&W.mrm.name||'AIM-120').slice(0,8).padEnd(8)} x${w.aim120}  ${(W.srm&&W.srm.name||'PYTHON').slice(0,8).padEnd(8)} x${w.python}`,`${bn.padEnd(10)} x${w.spice}   GUN ${w.gun}`,`CHF ${w.chaff} FLR ${w.flare}  TNK ${w.tanks||0}`,
-      `SEL ${String(w.sel).padEnd(7)} ${W.arm?'ARM':'SAFE'}`);const g=W.gtgt;L.push(g&&g.alive?`TGT ${(g.name||g.type||'').slice(0,10)}${pl.bomb&&pl.bomb.gps?' GPS':''}`:W.lock?`LOCK ${(W.lock.label||W.lock.name||W.lock.type||'').slice(0,10)}`:'NO TGT');}
+      `SEL ${String(w.sel).padEnd(7)} ${W.arm?'ARM':'SAFE'}  LSR ${W.laserCode||1688}`);const g=W.gtgt;L.push(g&&g.alive?`TGT ${(g.name||g.type||'').slice(0,10)}${pl.bomb&&pl.bomb.gps?' GPS':''}`:W.lock?`LOCK ${(W.lock.label||W.lock.name||W.lock.type||'').slice(0,10)}`:'NO TGT');}
   else if(ufc.page==='gps'){const s=W.gpsState(),seed=Math.floor(W.time/40),prn=[];for(let i=0;i<12;i++){const n=((seed*7+i*11)%31)+1;if(!prn.includes(n))prn.push(n);}
     const bars=prn.slice(0,Math.max(s.sats,0)).map((n,i)=>pad2(n)+['▂','▄','▆','█'][(n+i+seed)%4]).join(' ');
     L.push(`GPS ${s.mode.padEnd(5)} SATS ${pad2(s.sats)}  EPE ${s.epe}M`,`INS ${s.ins>=1?'NAV':'ALIGN '+Math.round(s.ins*100)+'%'}  ${W.flt&&W.flt.gps?'GPS FAIL':''}`,bars.slice(0,26)||'NO SATELLITES',bars.slice(27,53),`JAM ${s.jam>0.66?'HEAVY':s.jam>0.2?'MODERATE':s.jam>0?'LIGHT':'NONE'}`);}
@@ -5232,14 +5246,39 @@ function drawHUD(){tgpR=null;if(walk.on&&state==='fly'){ctx.setTransform(dpr,0,0
   {const nt=(W.threats||[]).filter(t=>t.lvl>=1&&t.sym!=='M').length;if((W.mwarn&&!mfdAuto.mw)||nt>mfdAuto.thr){if(mfdPageR>1)mfdPageR=0;}mfdAuto.mw=!!W.mwarn;mfdAuto.thr=nt;}
   if(tgpHold&&mfdPage!==4&&!mfdAuto.held){mfdPage=4;}mfdAuto.held=!!tgpHold;
   const pt=podTgt(),ag=pw&&!!pt&&mfdPage===4;let podShown=null;
-  const mfdTgp=(x,y0,ms)=>{const g=podTgt(),v=podView(g),sees=!!v.wpn||podCanSee(g),c0=x+ms/2,c1=y0+ms/2,gp=ms*0.07,ln=ms*0.2;ctx.clearRect(x,y0,ms,ms);if(sees)tgpR={x,y:y0,s:ms};else{ctx.fillStyle='#030504';ctx.fillRect(x,y0,ms,ms);}
-    ctx.strokeStyle='rgba(116,255,150,0.6)';ctx.lineWidth=1.2*u;ctx.strokeRect(x+0.5,y0+0.5,ms-1,ms-1);ctx.strokeStyle='#f2f2ea';line(c0-ln,c1,c0-gp,c1);line(c0+gp,c1,c0+ln,c1);line(c0,c1-ln,c0,c1-gp);line(c0,c1+gp,c0,c1+ln);
-    ctx.fillStyle='rgba(0,0,0,0.42)';ctx.fillRect(x+1,y0+1,ms-2,30*u);ctx.fillRect(x+1,y0+ms-17*u,ms-2,16*u);
-    txt(v.lab,x+5*u,y0+10*u,'left',11,v.wpn?AMB:'#f2f2ea');txt((vdist(g.pos,v.src)/NM).toFixed(1)+' NM',x+ms-5*u,y0+10*u,'right',11,'#f2f2ea');txt(g.name,x+5*u,y0+ms-9*u,'left',10,'#f2f2ea');
-    const tf=tofOf(g);if(tf!=null)txt('TOF '+Math.max(0,Math.ceil(tf)),x+ms-5*u,y0+25*u,'right',12,tf<5&&blink?RED:'#f2f2ea');
-    if(g.held){const dt=clock-g.t0;if(dt<2.5&&blink)txt('IMPACT',c0,y0+25*u,'center',12,RED);txt('DESTROYED',x+ms-5*u,y0+ms-9*u,'right',11,'#f2f2ea');}
-    else if(g.pod){txt(['WFOV','MFOV','NFOV'][pod.zoom]+' '+PODM[pod.mode],c0,y0+25*u,'center',10,'#f2f2ea');txt(!sees?'MASKED':pod.laser&&!g.sky?'LASE':g.lab,x+ms-5*u,y0+ms-9*u,'right',11,!sees?AMB:pod.laser&&!g.sky?(blink?RED:'#f2f2ea'):'#f2f2ea');}
-    else{const lg=W.plane.bomb.lgb,fl=W.bombs.length>0;txt(v.wpn?(v.fwd?'NAV':'SEEKER'):sees?(pod.laser||lg&&fl?'LASING':lg?'LASER RDY':'TRACK'):'MASKED',x+ms-5*u,y0+ms-9*u,'right',11,sees?((pod.laser||lg&&fl)&&blink?RED:'#f2f2ea'):AMB);}};
+  /* the targeting pod, in the manner of the LANTIRN (AN/AAQ-14) display: field of view, sensor and track mode across the top, laser
+     code and the firing L, time to impact; the pod's pointing cue (where it looks relative to the nose) with azimuth and depression; slant
+     and ground range; the coordinates and elevation of the point under the cross; MASK when the jet's own body is in the way */
+  const mfdTgp=(x,y0,ms)=>{const g=podTgt(),v=podView(g),sees=!!v.wpn||podCanSee(g),c0=x+ms/2,c1=y0+ms/2,W2='#f2f2ea',k=ms/230,fs=n=>Math.max(8,n*k);
+    ctx.clearRect(x,y0,ms,ms);if(sees)tgpR={x,y:y0,s:ms};else{ctx.fillStyle='#050706';ctx.fillRect(x,y0,ms,ms);}
+    ctx.save();ctx.lineWidth=Math.max(1,1.3*k);ctx.strokeStyle='rgba(242,242,234,0.55)';ctx.strokeRect(x+0.5,y0+0.5,ms-1,ms-1);
+    const T2=(t,xx,yy,al,sz,col)=>{ctx.font=`600 ${Math.round(fs(sz))}px "Share Tech Mono",ui-monospace,Menlo,Consolas,monospace`;ctx.textAlign=al;ctx.textBaseline='middle';ctx.lineWidth=3;ctx.strokeStyle='rgba(0,0,0,0.75)';ctx.strokeText(t,xx,yy);ctx.fillStyle=col||W2;ctx.fillText(t,xx,yy);};
+    const p=W.player,trk=pod.trk?(pod.trk.e?'POINT':'AREA'):pod.free?'RATES':g.pod?'AREA':g.held?'AREA':'POINT',fov=['WIDE','NARO','NARO 2X'][pod.zoom],snsr=['TV','WHOT','BHOT'][pod.mode];
+    /* the cross: open in the middle; a gate round the target in POINT track */
+    ctx.strokeStyle=W2;ctx.lineWidth=Math.max(1,1.2*k);const gp=ms*0.05,ln=ms*0.22;line(c0-ln,c1,c0-gp,c1);line(c0+gp,c1,c0+ln,c1);line(c0,c1-ln*0.8,c0,c1-gp);line(c0,c1+gp,c0,c1+ln*0.8);
+    for(const s2 of[-1,1]){line(c0+s2*ln,c1-4*k,c0+s2*ln,c1+4*k);line(c0-4*k,c1+s2*ln*0.8,c0+4*k,c1+s2*ln*0.8);}
+    if(trk==='POINT'&&sees){const gb=ms*0.045;ctx.strokeRect(c0-gb,c1-gb,2*gb,2*gb);}
+    /* top lines */
+    ctx.fillStyle='rgba(0,0,0,0.35)';ctx.fillRect(x+1,y0+1,ms-2,32*k);ctx.fillRect(x+1,y0+ms-34*k,ms-2,33*k);
+    T2(fov,x+5*k,y0+9*k,'left',10);T2(v.wpn?'WPN':snsr,c0,y0+9*k,'center',10);T2(v.wpn?(v.fwd?'NAV':'SKR'):trk,x+ms-5*k,y0+9*k,'right',10);
+    const lz=pod.laser&&sees&&!g.sky,lgb=W.plane.bomb.lgb,falling=W.bombs.some(b=>b.alive&&b.owner===p);
+    T2(String(W.laserCode||1688),x+5*k,y0+23*k,'left',10,lgb?W2:'rgba(242,242,234,0.6)');if(lz||lgb&&falling&&sees){if(blink||!lz)T2('L',c0,y0+23*k,'center',13,lz?W2:AMB);}
+    const tf=tofOf(g);if(tf!=null)T2('TTI '+String(Math.max(0,Math.ceil(tf))).padStart(2,'0'),x+ms-5*k,y0+23*k,'right',10,tf<5&&blink?RED:W2);
+    /* pod pointing cue: a box for the field of regard (azimuth across, depression down), a dot for where the pod looks */
+    const src=v.src||p.pos,r=vsub(g.pos,p.pos),d=qrotInv(p.q,r),Rs=vlen(r),az=Math.atan2(d.x,-d.z)*R2D,el=Math.atan2(d.y,Math.hypot(d.x,d.z))*R2D,bx=x+6*k,by=y0+40*k,bw=40*k,bh=30*k;
+    ctx.strokeStyle='rgba(242,242,234,0.7)';ctx.lineWidth=Math.max(1,k);ctx.strokeRect(bx,by,bw,bh);line(bx+bw/2,by,bx+bw/2,by+3*k);
+    const px=bx+bw/2+clamp(az/180,-1,1)*bw/2,py=by+clamp((10-el)/160,0,1)*bh;ctx.fillStyle=W2;ctx.fillRect(px-2*k,py-2*k,4*k,4*k);
+    T2(`${String(Math.abs(Math.round(az))).padStart(3,'0')}${az<0?'L':'R'}`,bx,by+bh+8*k,'left',9);T2(`${String(Math.abs(Math.round(el))).padStart(2,'0')}${el<0?'D':'U'}`,bx+bw,by+bh+8*k,'right',9);
+    /* ranges, heading */
+    const sr=vdist(g.pos,src)/NM,gr=Math.hypot(g.pos.x-src.x,g.pos.z-src.z)/NM,e2=p.euler();
+    T2('SR '+sr.toFixed(1),x+ms-5*k,y0+44*k,'right',10);T2('GR '+gr.toFixed(1),x+ms-5*k,y0+57*k,'right',10);T2('HDG '+String(Math.round((e2.hdg*R2D+360)%360)).padStart(3,'0'),x+ms-5*k,y0+70*k,'right',9,'rgba(242,242,234,0.75)');
+    /* the point under the cross */
+    if(!g.sky){const L2=R.llOf(g.pos.x,g.pos.z),dm=(vv,pos,neg,w)=>{const a2=Math.abs(vv),dd=Math.floor(a2),mi=(a2-dd)*60;return(vv>=0?pos:neg)+String(dd).padStart(w,'0')+'°'+mi.toFixed(3).padStart(6,'0');};
+      T2(dm(L2.lat,'N','S',2)+'  '+dm(L2.lon,'E','W',3),c0,y0+ms-25*k,'center',9);T2('ELEV '+Math.round(g.pos.y*FT)+' FT',x+5*k,y0+ms-10*k,'left',9);}
+    if(g.held){const dt=clock-g.t0;T2(dt<2.5&&blink?'IMPACT':'DESTROYED',x+ms-5*k,y0+ms-10*k,'right',9,dt<2.5?RED:W2);}
+    else T2((g.name||'').slice(0,10),x+ms-5*k,y0+ms-10*k,'right',9);
+    if(!sees&&!g.held){const masked=!!(g.pod||g)&&(()=>{const dd=qrotInv(p.q,vsub(g.pos,p.pos));return dd.y/vlen(dd)>0.35;})();if(blink||!masked)T2(masked?'MASK':'NO LOS',c0,c1-ms*0.12,'center',13,AMB);}
+    ctx.restore();};
   const podBig=()=>{const S=touchOn?Math.min(vh-140,vw*0.45):Math.min(vw*0.45,vh*0.62);return{x:(vw-S)/2,y:touchOn?4:vh*0.06,s:S};};
   if(pw&&!!pt&&pod.big&&!deadS('L')){const B=podBig();mfdR=B;podShown=B;mfdTgp(B.x,B.y,B.s);}
   else if(mfdPage===5&&pw&&view===0&&!touchOn&&!deadS('L')){const S=clamp(m*0.3,120,250),B={x:10*u,y:vh-S-10*u,s:S};mfdR=B;mfdSar(B.x,B.y,S);tabs(B.x,B.y,S);}

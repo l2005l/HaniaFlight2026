@@ -45,6 +45,9 @@ const ISR={lat0:32.6653,lon0:35.1797,cell:700,nx:336,nz:665,dem:null};ISR.kx=111
 ISR.bx=0;ISR.bz=0;ISR.seaX0=ISR.seaX;
 /* the map is centred on the home base chosen for the sortie: game X/Z are metres east/south of it */
 ISR.xy=(lat,lon)=>({x:(lon-ISR.lon0)*ISR.kx-ISR.bx,z:-(lat-ISR.lat0)*ISR.kz-ISR.bz});
+/* latitude and longitude of a point: real on the Israel map; on the other maps measured from the home base's real position */
+const LLO={south:[31.2333,34.6622],north:[32.6653,35.1797],far:[31.2083,35.0122]};
+function llOf(x,z){if(THEATRE.id==='israel')return ISR.ll(x,z);const o=LLO[THEATRE.id]||LLO.south,kx=111320*Math.cos(o[0]*D2R);return{lat:o[0]-z/110574,lon:o[1]+x/kx};}
 ISR.ll=(x,z)=>({lat:ISR.lat0-(z+ISR.bz)/ISR.kz,lon:ISR.lon0+(x+ISR.bx)/ISR.kx});
 /* the Air Force bases, with the rough heading of their main runway (the home base always uses the game's east-west runway) */
 ISR.BASES=[['ramatdavid','רמת דוד',32.6653,35.1797,90],['hatzor','חצור',31.7625,34.7272,110],['telnof','תל נוף',31.8394,34.8219,150],['palmachim','פלמחים',31.8975,34.6908,0],
@@ -744,7 +747,7 @@ class World{
     this.stats={uav:0,leak:0,mig:0,tgt:0,sam:!!this.stats0sam,shots:0,start:air?'air':cold?'cold':'runway'};this.over=null;this.flags={};this.tS=0;this.tM=0;this.tD=0;this.gunT=0;this.cmT=0;this.stopT=0;
     /* instrument landing: ten miles out in fog at night, off to one side of the runway, below the glide slope */
     if(this.lesson==='ils'){const p=this.player;p.pos=v3(RWY.x1-18500,SITES.base.h+800,1300);p.vel=v3(135,0,-18);p.q=qeuler(Math.PI/2-0.13,0.02,0);p.ctl.throttle=p.eng=0.6;p.gear=false;p.gearPos=0;}
-    this.form=null;
+    this.form=null;this.laserCode=[1111,1688,1511,1788].includes(+o.laserCode)||(+o.laserCode>=1111&&+o.laserCode<=1788)?+o.laserCode:1688;
     if(this.lesson==='form'){/* a leader of the same type ahead and to the left; the pilot is number two */
       const p=this.player,L=new Aircraft(pl.type,{x:p.pos.x+260,y:p.pos.y+20,z:p.pos.z-70,hdg:Math.PI/2,pitch:0.04,speed:235,throttle:0.8,fuel:pl.fuelAir});L.label='1';L.model=pl.type;L.side=0;L.kind='air';L.lead=true;
       this.formLead={ac:L,ph:0,t:0,hdg:Math.PI/2,alt:p.pos.y+20,spd:235};this.friends.push(L);this.air=this.air.filter(e=>e!==L);this.formJoin(L,'wing');}
@@ -954,7 +957,8 @@ class World{
       if(ok){delete F[k];if(k==='radar'){this.dmgRadar=false;this.sys.radar=true;}if(k==='ew')this.dmgRwr=false;if(k==='ins'&&!F.gps)this.insErr={x:0,z:0};this.msg(`ריסט הצליח: ${nm} חזר${['המפה','מערכת הל"א','מערכת הנורים והמוץ'].includes(nm)?'ה':''} לעבוד.`);}
       else this.msg(`ריסט לא עזר: ${nm} עדיין תקול${['המפה','מערכת הל"א','מערכת הנורים והמוץ'].includes(nm)?'ה':''}. ממשיכים ככה.`);this.syncDmg();}}
   /* a laser spot for this bomb: ours, or a friend's, whichever is nearest to where it is going (within 4 km) */
-  laserFor(b){const L=[];if(b.owner===this.player&&this.laserSpot)L.push(this.laserSpot);for(const q of this.netLasers||[])L.push(q);let best=null,bd=4000;for(const q of L){const d=Math.hypot(q.x-b.aim.x,q.z-b.aim.z);if(d<bd){bd=d;best=q;}}return best;}
+  /* a laser-guided bomb follows only a spot coded like it (the code is set before release); with the wrong code it falls ballistic */
+  laserFor(b){const L=[],bc=b.code||1688;if(b.owner===this.player&&this.laserSpot&&(this.laserCode||1688)===bc)L.push(this.laserSpot);for(const q of this.netLasers||[])if(q.c==null||q.c===bc)L.push(q);let best=null,bd=4000;for(const q of L){const d=Math.hypot(q.x-b.aim.x,q.z-b.aim.z);if(d<bd){bd=d;best=q;}}return best;}
   navPos(){const p=this.player;return{x:p.pos.x+this.insErr.x,y:p.pos.y,z:p.pos.z+this.insErr.z};}
   get fuelShown(){return this.flt&&this.flt.fuelq?this.flt.fuelq.v:this.player.fuel;}
   relight(){const p=this.player;if(!p.alive)return false;for(let i=0;i<p.nEng;i++)if(p.rpm[i]<0.98&&p.engOK[i]>0&&!this.sys.start[i])return this.sw('eng'+i);
@@ -1025,7 +1029,7 @@ class World{
     else if(w.sel==='SPICE'&&this.plane.bomb.cruise){const b=this.bombSol();if(w.spice>0&&b&&b.ok){const m=new Cruise(STANDOFF[this.plane.bomb.cruise],p,this.gtgt,vadd(p.pos,vmul(qrot(p.q,UP),-2)),p.vel);this.missiles.push(m);this.events.push({type:'launch',m});w.spice--;this.stats.shots++;this.syncStores();this.casRel();}else this.events.push({type:'deny'});}
     else if(w.sel==='SPICE'&&this.plane.bomb.arm){const b=this.bombSol();if(w.spice>0&&b&&b.ok){this.launch(MSL.ARM,p,this.gtgt);w.spice--;this.stats.shots++;this.syncStores();}else this.events.push({type:'deny'});}
     else if(w.sel==='SPICE'&&this.plane.bomb.gps&&this.flt.gps){this.events.push({type:'deny'});this.msg('אין קליטת לוויינים: פצצת הלוויין לא תשוחרר.');}
-    else if(w.sel==='SPICE'){const b=this.bombSol();if(w.spice>0&&b&&b.ok){const bb=new Bomb(p,this.gtgt&&this.gtgt.alive?this.gtgt:{pos:b.ccip||p.pos,alive:false},vadd(p.pos,vmul(qrot(p.q,UP),-2)),p.vel,this.plane.bomb);if(this.flt.dud){bb.dud=true;delete this.flt.dud;}if(bb.gps){const e=this.gpsState().epe,a=Math.random()*Math.PI*2,r=e*Math.sqrt(Math.random());bb.aim.x+=Math.cos(a)*r;bb.aim.z+=Math.sin(a)*r;}this.bombs.push(bb);this.casRel();w.spice--;this.stats.shots++;this.events.push({type:'release'});}else this.events.push({type:'deny'});}
+    else if(w.sel==='SPICE'){const b=this.bombSol();if(w.spice>0&&b&&b.ok){const bb=new Bomb(p,this.gtgt&&this.gtgt.alive?this.gtgt:{pos:b.ccip||p.pos,alive:false},vadd(p.pos,vmul(qrot(p.q,UP),-2)),p.vel,this.plane.bomb);if(this.flt.dud){bb.dud=true;delete this.flt.dud;}bb.code=this.laserCode||1688;if(bb.gps){const e=this.gpsState().epe,a=Math.random()*Math.PI*2,r=e*Math.sqrt(Math.random());bb.aim.x+=Math.cos(a)*r;bb.aim.z+=Math.sin(a)*r;}this.bombs.push(bb);this.casRel();w.spice--;this.stats.shots++;this.events.push({type:'release'});}else this.events.push({type:'deny'});}
     this.syncStores();}
   /* emergency jettison of the air-to-ground stores */
   jettison(){const w=this.w,p=this.player;if(!p.alive||p.onGround)return false;
@@ -1424,5 +1428,5 @@ class World{
       this.dlz=T&&p.alive?launchZone(s==='AIM120'?this.mrm:this.srm,p.pos,p.vel,T.pos,T.vel):null;}
   }
 }
-const RAAM={Airliner,LoyalWing,AttackHelo,FORM,PLAN_MOVE,CV,Carrier,findSea,setClouds,turbAt,Cruise,STANDOFF,ISR,LAKES,isWater,lakeAt,Helo,ARM_PT,StrikerAI,THEATRE,setTheatre,WingAI,DIFF,PLANES,PARK,Tanker,G0,D2R,R2D,KT,FT,NM,clamp,lerp,sstep,v3,vadd,vsub,vmul,vdot,vcross,vlen,vnorm,vdist,qmul,qrot,qrotInv,qaxis,qeuler,FWD,UP,RIGHT,atmo,TER,SITES,RWY,buildTerrain,terrainSteps,terrainH,TYPES,Aircraft,apSteer,MSL,Missile,flyout,launchZone,SPICE,spiceRange,Bomb,Drone,MigAI,SamSite,World};
+const RAAM={llOf,Airliner,LoyalWing,AttackHelo,FORM,PLAN_MOVE,CV,Carrier,findSea,setClouds,turbAt,Cruise,STANDOFF,ISR,LAKES,isWater,lakeAt,Helo,ARM_PT,StrikerAI,THEATRE,setTheatre,WingAI,DIFF,PLANES,PARK,Tanker,G0,D2R,R2D,KT,FT,NM,clamp,lerp,sstep,v3,vadd,vsub,vmul,vdot,vcross,vlen,vnorm,vdist,qmul,qrot,qrotInv,qaxis,qeuler,FWD,UP,RIGHT,atmo,TER,SITES,RWY,buildTerrain,terrainSteps,terrainH,TYPES,Aircraft,apSteer,MSL,Missile,flyout,launchZone,SPICE,spiceRange,Bomb,Drone,MigAI,SamSite,World};
 if(typeof module!=='undefined')module.exports=RAAM;
