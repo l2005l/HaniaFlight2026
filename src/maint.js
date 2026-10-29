@@ -41,13 +41,13 @@ function mtBegin(plane){MT.plane=plane||MT.plane;opts.plane=MT.plane;opts.missio
   if(!MT.ring){MT.ring=new T.Mesh(new T.TorusGeometry(0.35,0.03,8,28),new T.MeshBasicMaterial({color:0xffffff,depthTest:false,transparent:true}));MT.ring.renderOrder=12;scene.add(MT.ring);}MT.ring.visible=false;
   for(const b of document.querySelectorAll('[data-mtp]'))b.setAttribute('aria-pressed',b.dataset.mtp===MT.plane?'true':'false');mtMode('edit');}
 function mtExit(){MT.on=false;for(const m of window.HF_SHELL||[])m.visible=true;for(const m of MT.marks)scene.remove(m);MT.marks=[];if(MT.tech)MT.tech.visible=false;if(MT.ring)MT.ring.visible=false;$('app').dataset.maint='';$('app').dataset.mtw='';show('maint',false);show('mtCard',false);show('mtDlg',false);toMenu();}
-function mtMode(m){MT.mode=m;MT.focus=null;MT.camP=null;$('app').dataset.mtw=m==='practice'?'1':'';MT.done=MT.pts.map(()=>false);MT.step=0;MT.phase='idle';MT.walk=null;show('mtCard',false);show('mtDlg',false);
+function mtMode(m){MT.mode=m;MT.focus=null;MT.camP=null;MT.tool='add';if(m!=='edit')MT.ecam='orbit';MT.done=MT.pts.map(()=>false);MT.step=0;MT.phase='idle';MT.walk=null;show('mtCard',false);show('mtDlg',false);
   for(const b of document.querySelectorAll('[data-mtm]'))b.setAttribute('aria-pressed',b.dataset.mtm===m?'true':'false');
   $('mtEdit').hidden=m!=='edit';$('mtPlay').hidden=m==='edit';$('mtPlayBtns').hidden=m!=='play';MT.tech.visible=m==='play';
   if(m!=='edit'&&!MT.pts.length){toast('אין נקודות. הוסף נקודות בעריכה: לחיצה על המטוס.');mtMode('edit');return;}
   if(m==='play'){const s=mtStand(MT.pts[0]),st={x:s.x-2,z:-(MTL[MT.plane]||16)/2-5};const w=mtW(st);MT.tech.position.set(w.x,terrainH(w.x,w.z),w.z);MT.cur={...st};MT.path=mtRoute(st,mtStand(MT.pts[0],st));MT.pi=1;MT.phase='walk';MT.paused=false;$('mtPause').textContent='עצור';}
   if(m==='practice'){const L=(MTL[MT.plane]||16)/2,w=mtW({x:-2.5,z:-L-6});MT.walk={pos:new T.Vector3(w.x,terrainH(w.x,w.z)+1.7,w.z),yaw:0,pitch:-0.15};const c=pMesh.position;MT.walk.yaw=Math.atan2(c.x-w.x,-(c.z-w.z));}
-  mtList();mtMarks();mtCardUpd();}
+  mtList();mtMarks();mtCardUpd();mtTools();}
 function mtList(){const el=$('mtList');el.innerHTML=MT.pts.length?MT.pts.map((q,i)=>{const ty=MTTYPES.find(t=>t[0]===q.type)||MTTYPES[3];return`<li data-i="${i}" class="${i===MT.sel?'sel':''}"><b style="color:#${ty[2].toString(16).padStart(6,'0')}">${i+1}</b> <span>${esc(q.name||'נקודה')}</span><small>${esc(ty[1])}</small>
     <button data-a="up" aria-label="הזז למעלה">▲</button><button data-a="dn" aria-label="הזז למטה">▼</button><button data-a="ed" aria-label="ערוך">✎</button><button data-a="rm" aria-label="מחק">✕</button></li>`;}).join(''):'<li class="note">עוד אין נקודות. לחץ על המטוס במקום שצריך לבדוק.</li>';
   for(const li of el.querySelectorAll('li[data-i]')){const i=+li.dataset.i;li.onclick=e=>{const a=e.target.dataset&&e.target.dataset.a;if(a==='up'&&i>0){[MT.pts[i-1],MT.pts[i]]=[MT.pts[i],MT.pts[i-1]];MT.sel=i-1;mtSave();}
@@ -55,9 +55,9 @@ function mtList(){const el=$('mtList');el.innerHTML=MT.pts.length?MT.pts.map((q,
       else{MT.sel=i;const w=pMesh.localToWorld(new T.Vector3(MT.pts[i].x,MT.pts[i].y,MT.pts[i].z)),c=pMesh.position;MT.az=Math.atan2(w.x-c.x,w.z-c.z);MT.focus=w;}mtList();mtMarks();};}}
 /* the point form: what it is, what to check there */
 function mtDlg(i,pos){const q=i!=null?MT.pts[i]:{name:'',text:'',type:'pin',...pos};MT.dlgI=i;MT.dlgP=q;$('mtName').value=q.name||'';$('mtText').value=q.text||'';$('mtType').innerHTML=MTTYPES.map(t=>`<option value="${t[0]}"${t[0]===q.type?' selected':''}>${t[1]}</option>`).join('');
-  $('mtDlgT').textContent=i!=null?`נקודה ${i+1}`:'נקודה חדשה';$('mtDel').hidden=i==null;show('mtDlg',true);setTimeout(()=>$('mtName').focus(),50);}
-$('mtOk').onclick=()=>{const q=MT.dlgP;q.name=$('mtName').value.trim().slice(0,60)||'נקודה';q.text=$('mtText').value.trim().slice(0,400);q.type=$('mtType').value;if(MT.dlgI==null){MT.pts.push(q);MT.sel=MT.pts.length-1;}mtSave();show('mtDlg',false);mtList();mtMarks();};
-$('mtCancel').onclick=()=>show('mtDlg',false);$('mtDel').onclick=()=>{if(MT.dlgI!=null){MT.pts.splice(MT.dlgI,1);MT.sel=-1;mtSave();}show('mtDlg',false);mtList();mtMarks();};
+  $('mtDlgT').textContent=i!=null?`נקודה ${i+1}`:'נקודה חדשה';$('mtDel').hidden=i==null;show('mtDlg',true);mtDlgPos();mtPreview();setTimeout(()=>$('mtName').focus(),50);}
+$('mtOk').onclick=()=>{const q=MT.dlgP;q.name=$('mtName').value.trim().slice(0,60)||'נקודה';q.text=$('mtText').value.trim().slice(0,400);q.type=$('mtType').value;if(MT.dlgI==null){MT.pts.push(q);MT.sel=MT.pts.length-1;}mtSave();show('mtDlg',false);mtPreview();mtList();mtMarks();};
+$('mtCancel').onclick=()=>{if(MT.dlgI!=null){const o=(mtLoad()[MT.plane]||[])[MT.dlgI];if(o)Object.assign(MT.pts[MT.dlgI],{x:o.x,y:o.y,z:o.z});}show('mtDlg',false);mtPreview();mtMarks();};$('mtDel').onclick=()=>{if(MT.dlgI!=null){MT.pts.splice(MT.dlgI,1);MT.sel=-1;mtSave();}show('mtDlg',false);mtList();mtMarks();};
 /* the card in play and practice */
 function mtCardUpd(){if(MT.mode==='edit'){show('mtCard',false);return;}const n=MT.pts.length,i=Math.min(MT.step,n-1),q=MT.pts[i],ty=MTTYPES.find(t=>t[0]===q.type)||MTTYPES[3];show('mtCard',true);
   if(MT.step>=n){$('mtCardN').textContent='הסיבוב הושלם';$('mtCardT').textContent=MT.mode==='practice'?'עברת על כל הנקודות.':'הטכנאי עבר על כל הנקודות. המטוס בטוח לאחזקה לפי הרשימה.';$('mtCardX').textContent='';$('mtCardY').textContent='';return;}
@@ -85,14 +85,30 @@ $('mtFile').onchange=()=>{const f=$('mtFile').files[0];if(!f)return;f.text().the
 /* camera and input */
 glc.addEventListener('pointerdown',e=>{if(state!=='maint')return;MT.drag={x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,id:e.pointerId};});
 glc.addEventListener('pointermove',e=>{if(state!=='maint'||!MT.drag)return;const dx=e.clientX-MT.drag.x,dy=e.clientY-MT.drag.y;MT.drag.x=e.clientX;MT.drag.y=e.clientY;
-  if(MT.mode==='practice'&&MT.walk){MT.walk.yaw+=dx*0.006;MT.walk.pitch=clamp(MT.walk.pitch-dy*0.005,-1.2,1);}else{MT.az-=dx*0.007;MT.el=clamp(MT.el+dy*0.005,0.05,1.45);}});
+  const fw=(MT.mode==='practice'&&MT.walk)?MT.walk:(MT.mode==='edit'&&MT.ecam==='eye')?MT.eye:null;if(fw){fw.yaw+=dx*0.005;fw.pitch=clamp(fw.pitch-dy*0.004,-1.45,1.45);}else{MT.az-=dx*0.007;MT.el=clamp(MT.el+dy*0.005,-0.6,1.45);}});
+function mtHit(cx,cy){const r=glc.getBoundingClientRect(),ndc=new T.Vector2((cx-r.left)/r.width*2-1,-(cy-r.top)/r.height*2+1),rc=new T.Raycaster();rc.setFromCamera(ndc,camera);
+  return rc.intersectObject(pMesh,true).filter(h=>{let o=h.object;while(o){if(!o.visible)return false;o=o.parent;}return true;})[0]||null;}
 glc.addEventListener('pointerup',e=>{if(state!=='maint'||!MT.drag)return;const d=MT.drag;MT.drag=null;if(Math.hypot(e.clientX-d.x0,e.clientY-d.y0)>6||MT.mode!=='edit')return;
-  /* a tap on the jet: a new point there */
-  const r=glc.getBoundingClientRect(),ndc=new T.Vector2((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1),rc=new T.Raycaster();rc.setFromCamera(ndc,camera);
-  const hits=rc.intersectObject(pMesh,true).filter(h=>{let o=h.object;while(o){if(!o.visible)return false;o=o.parent;}return true;});const h=hits[0];if(!h){toast('לחץ על המטוס עצמו');return;}
-  const l=pMesh.worldToLocal(h.point.clone());mtDlg(null,{x:+l.x.toFixed(2),y:+l.y.toFixed(2),z:+l.z.toFixed(2)});});
-glc.addEventListener('wheel',e=>{if(state!=='maint'||MT.mode==='practice')return;e.preventDefault();MT.dist=clamp(MT.dist*(e.deltaY>0?1.12:0.9),5,60);},{passive:false});
-$('mtIn').onclick=()=>{MT.dist=clamp(MT.dist*0.8,5,60);};$('mtOut').onclick=()=>{MT.dist=clamp(MT.dist*1.25,5,60);};
+  const h=mtHit(e.clientX,e.clientY),now=performance.now();if(!h){toast('לחץ על המטוס עצמו');return;}
+  /* the focus tool: the camera turns round the tapped spot and comes close, for fine work */
+  if(MT.tool==='focus'){MT.focus=h.point.clone();MT.dist=Math.min(MT.dist,3.5);MT.tool='add';mtTools();toast('המצלמה מסתובבת סביב הנקודה. גרירה מסובבת, + מקרב.');return;}
+  const l=pMesh.worldToLocal(h.point.clone());mtDlg(null,{x:+l.x.toFixed(3),y:+l.y.toFixed(3),z:+l.z.toFixed(3)});});
+glc.addEventListener('wheel',e=>{if(state!=='maint'||MT.mode==='practice')return;e.preventDefault();MT.dist=clamp(MT.dist*(e.deltaY>0?1.12:0.9),0.8,60);},{passive:false});
+$('mtIn').onclick=()=>{MT.dist=clamp(MT.dist*0.75,0.8,60);};$('mtOut').onclick=()=>{MT.dist=clamp(MT.dist*1.3,0.8,60);};
+/* edit cameras: round the jet (or round a spot), from under the jet, and on foot at a chosen height */
+function mtTools(){const c=MT.ecam||'orbit';for(const b of document.querySelectorAll('[data-mtc]'))b.setAttribute('aria-pressed',b.dataset.mtc===c?'true':'false');$('mtFocus').setAttribute('aria-pressed',MT.tool==='focus'?'true':'false');
+  $('mtEyeRow').hidden=c!=='eye';$('app').dataset.mtw=touchOn&&(MT.mode==='practice'||(MT.mode==='edit'&&c==='eye'))?'1':'';$('mtEyeH').textContent=MT.eye?MT.eye.h.toFixed(1)+' מ\'':'';}
+for(const b of document.querySelectorAll('[data-mtc]'))b.onclick=()=>{MT.ecam=b.dataset.mtc;const c=pMesh.position;MT.focus=null;
+  if(MT.ecam==='under'){MT.focus=c.clone();MT.focus.y=terrainH(c.x,c.z)+1.0;MT.el=-0.25;MT.dist=Math.min(MT.dist,7);}
+  if(MT.ecam==='eye'){const L=(MTL[MT.plane]||16)/2,w=pMesh.localToWorld(new T.Vector3(-3,0,-L*0.3));MT.eye={pos:new T.Vector3(w.x,terrainH(w.x,w.z)+1.2,w.z),h:1.2,yaw:0,pitch:0.15};MT.eye.yaw=Math.atan2(c.x-w.x,-(c.z-w.z));}
+  if(MT.ecam==='orbit'){MT.el=0.45;MT.dist=24;}mtTools();};
+$('mtFocus').onclick=()=>{MT.tool=MT.tool==='focus'?'add':'focus';mtTools();if(MT.tool==='focus')toast('לחץ על המטוס בנקודה שסביבה המצלמה תסתובב');};
+$('mtUp').onclick=()=>{if(MT.eye){MT.eye.h=clamp(MT.eye.h+0.2,0.3,3);mtTools();}};$('mtDown').onclick=()=>{if(MT.eye){MT.eye.h=clamp(MT.eye.h-0.2,0.3,3);mtTools();}};
+/* fine placement: the point moves in steps along the jet's own axes, the marker follows */
+function mtNudge(ax,d){const q=MT.dlgP;if(!q)return;const st=+($('mtStep').value||0.02);q[ax]=+((q[ax]||0)+d*st).toFixed(3);mtDlgPos();if(MT.dlgI!=null){mtMarks();}else mtPreview();click(0.4);}
+function mtDlgPos(){const q=MT.dlgP;$('mtPos').textContent=`ימינה ${q.x.toFixed(2)} · למעלה ${q.y.toFixed(2)} · אחורה ${q.z.toFixed(2)} מ'`;}
+function mtPreview(){if(!MT.prev){MT.prev=new T.Mesh(new T.SphereGeometry(0.05,10,8),new T.MeshBasicMaterial({color:0xffffff,depthTest:false}));MT.prev.renderOrder=13;scene.add(MT.prev);}const q=MT.dlgP;MT.prev.visible=!!q&&!$('mtDlg').hidden;if(q)MT.prev.position.copy(pMesh.localToWorld(new T.Vector3(q.x,q.y,q.z)));}
+for(const b of document.querySelectorAll('[data-nudge]'))b.onclick=()=>{const[a,d]=b.dataset.nudge.split(',');mtNudge(a,+d);};
 function maintStep(dt){if(!MT.on)return;if(crew.g.visible)crew.g.visible=false;const tech=MT.tech,ud=tech.userData;
   if(MT.ring&&MT.mode!=='edit'&&MT.step<MT.pts.length){const q=MT.pts[MT.step];MT.ring.visible=true;MT.ring.position.copy(pMesh.localToWorld(new T.Vector3(q.x,q.y,q.z)));MT.ring.lookAt(camera.position);const k=1+0.25*Math.sin(clock*5);MT.ring.scale.setScalar(k);}else if(MT.ring)MT.ring.visible=false;
   if(MT.mode==='play'&&!MT.paused){const sp=1.35*MT.speed;
@@ -103,6 +119,8 @@ function maintStep(dt){if(!MT.on)return;if(crew.g.visible)crew.g.visible=false;c
     else if(MT.phase==='look'){MT.t+=dt*MT.speed;const q=MT.pts[MT.step],w=pMesh.localToWorld(new T.Vector3(q.x,q.y,q.z)),tp=tech.position;tech.rotation.y=Math.atan2(w.x-tp.x,w.z-tp.z);
       ud.legL.rotation.x*=0.8;ud.legR.rotation.x*=0.8;ud.armL.rotation.x*=0.8;const up=clamp(Math.atan2(w.y-(tp.y+1.4),Math.hypot(w.x-tp.x,w.z-tp.z)),-0.9,1.3);ud.armR.rotation.x+=((-Math.PI/2-up)-ud.armR.rotation.x)*0.15;
       if(MT.auto&&MT.t>5)mtAdvance();}}
+  if(MT.mode==='edit'&&MT.ecam==='eye'&&MT.eye){const k=keys,E2=MT.eye,f=((k.KeyW||k.ArrowUp)?1:0)-((k.KeyS||k.ArrowDown)?1:0)-(touch.held?touch.y:0),sd=((k.KeyD||k.ArrowRight)?1:0)-((k.KeyA||k.ArrowLeft)?1:0)+(touch.held?touch.x:0),sp=(k.ShiftLeft?2.5:1)*dt;
+    E2.pos.x+=(Math.sin(E2.yaw)*clamp(f,-1,1)+Math.cos(E2.yaw)*clamp(sd,-1,1))*sp;E2.pos.z+=(-Math.cos(E2.yaw)*clamp(f,-1,1)+Math.sin(E2.yaw)*clamp(sd,-1,1))*sp;if(k.KeyE)E2.h=clamp(E2.h+dt,0.3,3);if(k.KeyQ)E2.h=clamp(E2.h-dt,0.3,3);E2.pos.y=terrainH(E2.pos.x,E2.pos.z)+E2.h;}
   if(MT.mode==='practice'&&MT.walk){const k=keys,f=((k.KeyW||k.ArrowUp)?1:0)-((k.KeyS||k.ArrowDown)?1:0)-(touch.held?touch.y:0),sd=((k.KeyD||k.ArrowRight)?1:0)-((k.KeyA||k.ArrowLeft)?1:0)+(touch.held?touch.x:0),sp=(k.ShiftLeft?3:1.5)*dt,W2=MT.walk;
     W2.pos.x+=(Math.sin(W2.yaw)*clamp(f,-1,1)+Math.cos(W2.yaw)*clamp(sd,-1,1))*sp;W2.pos.z+=(-Math.cos(W2.yaw)*clamp(f,-1,1)+Math.sin(W2.yaw)*clamp(sd,-1,1))*sp;
     const L=(MTL[MT.plane]||16)/2,lp=pMesh.worldToLocal(W2.pos.clone()),Wd=(MTW[MT.plane]||1.5)+0.3;if(Math.abs(lp.z)<L&&Math.abs(lp.x)<Wd){lp.x=Math.sign(lp.x||1)*Wd;W2.pos.copy(pMesh.localToWorld(lp));}W2.pos.y=terrainH(W2.pos.x,W2.pos.z)+1.7;
@@ -114,6 +132,7 @@ function maintCam(){if(!MT.on)return;if(crew.g.visible)crew.g.visible=false;cons
     if(MT.cam==='top'){camera.position.set(c.x+0.01,c.y+28,c.z+6);camera.lookAt(c.x,c.y,c.z);return;}
     const back=new T.Vector3(t.x-pw.x,0,t.z-pw.z);if(back.length()<0.1)back.set(1,0,0);back.normalize().multiplyScalar(4.2);const want=new T.Vector3(t.x+back.x,t.y+2.6,t.z+back.z);
     MT.camP=MT.camP||want.clone();MT.camP.lerp(want,0.06);camera.position.copy(MT.camP);const look=new T.Vector3((t.x+pw.x)/2,(t.y+1.2+pw.y)/2,(t.z+pw.z)/2);camera.lookAt(look);return;}
-  const f=MT.focus||c,ce=Math.cos(MT.el);camera.position.set(f.x+Math.sin(MT.az)*ce*MT.dist,Math.max(f.y+MT.dist*Math.sin(MT.el),terrainH(f.x,f.z)+0.6),f.z+Math.cos(MT.az)*ce*MT.dist);camera.lookAt(f.x,f.y,f.z);}
+  if(MT.ecam==='eye'&&MT.eye){const w=MT.eye;camera.position.copy(w.pos);camera.lookAt(w.pos.x+Math.sin(w.yaw)*Math.cos(w.pitch),w.pos.y+Math.sin(w.pitch),w.pos.z-Math.cos(w.yaw)*Math.cos(w.pitch));return;}
+  const f=MT.focus||c,ce=Math.cos(MT.el),cx=f.x+Math.sin(MT.az)*ce*MT.dist,cz=f.z+Math.cos(MT.az)*ce*MT.dist;camera.position.set(cx,Math.max(f.y+MT.dist*Math.sin(MT.el),terrainH(cx,cz)+0.25),cz);camera.lookAt(f.x,f.y,f.z);}
 if(/[?&]maint\b/.test(location.search)||window.HF_MAINT)setTimeout(()=>{if(state==='menu')mtBegin('F15I');},1200);
 window.__mt=MT;
