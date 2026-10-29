@@ -4,7 +4,7 @@ const R=require('../src/core.js');const {qrot,FWD}=R;let bad=0;const ok=(c,m)=>{
 const msgs=W=>{const m=W.events.filter(e=>e.type==='msg').map(e=>e.text);W.events.length=0;return m;};
 function run(W,s,f){const out=[];for(let i=0;i<s*20;i++){if(f)f(W);W.step(0.05);out.push(...msgs(W));}return out;}
 function place(W,g,d,alt){const p=W.player,a=Math.random()*6.28;p.pos={x:g.pos.x+Math.sin(a)*d,y:R.terrainH(g.pos.x,g.pos.z)+alt,z:g.pos.z-Math.cos(a)*d};const h=Math.atan2(g.pos.x-p.pos.x,-(g.pos.z-p.pos.z));p.q=R.qeuler(h,0,0);const f=qrot(p.q,FWD);p.vel={x:f.x*230,y:0,z:f.z*230};p.hp=p.hpMax=1e9;}
-{const W=new R.World({plane:'F15I',mission:'cas',start:'air',bomb:'lgb'});W.arm=true;
+{const W=new R.World({plane:'F15I',mission:'cas',start:'air',bomb:'lgb'});W.arm=true;W.helis.forEach(h=>{h.alive=false;});
   ok(W.missionId==='cas'&&W.troops.length===4&&W.cas.order.length===3,'mission set up: 4 own units, 3 targets, '+W.ground.length+' enemy objects');
   const own=W.troops[0];ok(W.cas.order.every(g=>R.vdist(g.pos,own.pos)>450),'targets at least 450 m from our troops');
   for(const q of W.sams)q.alive=false;place(W,own,20000,5000);let m=run(W,6);
