@@ -163,6 +163,17 @@ details[open] summary{margin-bottom:10px}
 #app[data-walk="1"] #check,#app[data-walk="1"] #chips,#app[data-walk="1"] #obj{display:none!important}
 #lwBox{position:absolute;z-index:7;top:50%;left:50%;transform:translate(-50%,-50%);display:grid;grid-template-columns:1fr 1fr;gap:8px;background:rgba(8,12,14,.86);border:1px solid var(--line);padding:12px}#lwBox[hidden]{display:none}#lwBox button{padding:10px 18px}
 #walkBar{position:absolute;z-index:6;bottom:14px;left:50%;transform:translateX(-50%)}#walkBar[hidden]{display:none}#walkBar button{background:rgba(8,12,14,.75);padding:8px 22px}
+#app[data-maint="1"] #touch,#app[data-maint="1"] #chips,#app[data-maint="1"] #radio,#app[data-maint="1"] #obj,#app[data-maint="1"] #check,#app[data-maint="1"] #toast:empty{display:none!important}
+#app[data-maint="1"] #touch .stick,#app[data-maint="1"][data-mtw="1"] #touch{display:block!important}
+#maint{position:absolute;z-index:6;top:8px;inset-inline-end:8px;width:min(22rem,calc(100% - 16px));max-height:calc(100% - 16px);overflow:auto;background:rgba(8,12,14,.88);border:1px solid var(--line);padding:8px 10px;display:flex;flex-direction:column;gap:6px}#maint[hidden]{display:none}
+#maint .mtTop{display:flex;gap:6px;flex-wrap:wrap;align-items:center}#maint .mtTop .seg{margin:0}#maint button{padding:4px 10px;font-size:.82rem}#maint [aria-pressed="true"]{border-color:var(--sand);color:var(--sand)}
+#mtList{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px;max-height:40vh;overflow:auto}#mtList li{display:flex;gap:6px;align-items:center;padding:3px 4px;border:1px solid transparent;cursor:pointer;font-size:.85rem}
+#mtList li.sel{border-color:var(--sand)}#mtList li span{flex:1}#mtList li small{color:var(--dim)}#mtList li button{padding:1px 6px;font-size:.75rem}
+#mtCard{position:absolute;z-index:6;bottom:12px;left:12px;width:min(24rem,calc(100% - 24px));background:rgba(8,12,14,.9);border:1px solid var(--line);border-top:3px solid var(--sand);padding:10px 12px}#mtCard[hidden]{display:none}
+#mtCard .mtCh{display:flex;justify-content:space-between;font-size:.82rem;color:var(--dim)}#mtCard h3{margin:4px 0}#mtCard p{margin:0 0 8px;white-space:pre-wrap}#mtNext[data-on="1"]{background:var(--sand);color:#111}
+#mtDlg{position:absolute;z-index:8;top:50%;left:50%;transform:translate(-50%,-50%);width:min(24rem,calc(100% - 24px));background:rgba(10,14,16,.97);border:1px solid var(--line);padding:12px;display:flex;flex-direction:column;gap:8px}#mtDlg[hidden]{display:none}
+#mtDlg label{display:flex;flex-direction:column;gap:3px;font-size:.85rem}#mtDlg input,#mtDlg textarea,#mtDlg select{font:inherit;padding:6px;background:#0c1214;color:inherit;border:1px solid var(--line)}
+.maintRow{margin-top:10px}
 #chips button.warn2{border-color:var(--amber);color:var(--amber)}
 @media (pointer:fine){#chips{top:44px;left:auto;transform:none;inset-inline-start:16px;flex-direction:column;align-items:flex-start;gap:4px}}
 .tb button[data-st="1"]{border-color:var(--sand);color:var(--sand)}
@@ -792,6 +803,11 @@ details[open] summary{margin-bottom:10px}
           <li>בהגדרה "כטב"ם נאמן בכנף" (לשונית הכנה) טס לצידך כטב"ם סילוני בלי טייס, 250 מטר מימין ו־300 מאחור, במשימות עם חימוש לקרקע. הכפתור <b>נאמן</b> פותח את הפקודות:</li>
           <li><b>כנף</b>: חזרה לצידך. <b>הטעיה</b>: טס אל סוללת הנ"מ הקרובה ומקיף אותה ממרחק 14 ק"מ, עם משדרים שנראים כמו מבנה תקיפה. הסוללה יורה עליו במקום עליך, והוא לרוב לא חוזר. <b>תקיפה</b>: שתי פצצות GPS על המטרה שבחרת, או על מכ"ם הסוללה הקרובה. <b>צילום</b>: טס מעל המטרה ומצלם, וגם נחשב באתרי משימת הצילום.</li>
         </ul></div>
+        <div><h4>סיבוב בטיחות לטכנאי</h4><ul>
+          <li>בתפריט, הכפתור <b>סיבוב בטיחות לטכנאי</b> פותח מטוס חונה (רעם או סופה) בלי הדת"ק סביבו. ב<b>עריכה</b> לוחצים על המטוס במקום שצריך לבדוק, ונותנים לנקודה שם, סוג (פין בטיחות, וידוא חוסר, נורים ומוצים, בדיקה) והנחיה. ברשימה אפשר לשנות סדר, לערוך ולמחוק.</li>
+          <li>הנקודות נשמרות רק במכשיר הזה, בנפרד לכל מטוס, ולא נשלחות לשום מקום. "ייצוא לקובץ" שומר אותן לקובץ, ו"ייבוא מקובץ" טוען אותן במכשיר אחר.</li>
+          <li><b>הדמיה</b>: טכנאי הולך מנקודה לנקודה סביב המטוס (מסביב לחרטום או לזנב, אף פעם לא דרכו), עוצר, מצביע, ומופיע כרטיס עם ההנחיה. יש מעבר אוטומטי או צעד אחר צעד, מהירות, ושלוש מצלמות: מאחור, עיני הטכנאי, מלמעלה. <b>תרגול</b>: הולכים בעצמכם לפי הסדר, ומאשרים כל נקודה כשעומדים לידה.</li>
+        </ul></div>
         <div><h4>סיור סביב המטוס</h4><ul>
           <li>בהתנעה מהדת"ק מתחילים ברגל מול המטוס. מסתובבים סביבו ומגיעים לחמש הנקודות המסומנות בטבעות: חרטום ופיטו, גלגל ראשי, כניסת אוויר, חימוש ופינים, זנב. אחר כך נגשים לסולם (הטבעת הכחולה) ועולים לתא.</li>
           <li>הליכה בסטיק או במקשי WASD (Shift לריצה), גרירה על המסך כדי להסתכל. "לתא" מדלג על הסיור. אפשר לכבות את הסיור בהגדרות, בלשונית הכנה.</li>
@@ -879,6 +895,7 @@ details[open] summary{margin-bottom:10px}
       <button id="startCold" title="התנעה מהדת&quot;ק">מהדת"ק</button>
       <button id="startAir">באוויר</button>
     </div>
+    <p class="note maintRow"><button id="maintGo">סיבוב בטיחות לטכנאי</button> הדמיה של סיבוב בדיקה סביב מטוס חונה: מסמנים את הנקודות בעצמכם, והטכנאי עובר עליהן אחת אחת.</p>
     </div>
   </section>
 
@@ -894,6 +911,18 @@ details[open] summary{margin-bottom:10px}
     <pre id="ufcScr"></pre><p id="ufcHelp" dir="rtl"></p><div id="ufcSoft"></div>
     <div id="ufcPad"><button>1</button><button>2</button><button>3</button><button>4</button><button>5</button><button>6</button><button>7</button><button>8</button><button>9</button><button>-</button><button>0</button><button>.</button><button data-k="clr">CLR</button><button data-k="ent" class="go">ENT</button></div></div>
   <div id="lwBox" hidden><button data-lw="form">כנף</button><button data-lw="decoy">הטעיה</button><button data-lw="attack">תקיפה</button><button data-lw="recon">צילום</button></div>
+  <div id="maint" hidden>
+    <div class="mtTop"><div class="seg"><button data-mtp="F15I">רעם</button><button data-mtp="F16I">סופה</button></div>
+      <div class="seg"><button data-mtm="edit">עריכה</button><button data-mtm="play">הדמיה</button><button data-mtm="practice">תרגול</button></div>
+      <button id="mtExit">יציאה</button></div>
+    <div id="mtEdit"><p class="note">לחיצה על המטוס מוסיפה נקודה. גרירה מסובבת את המצלמה. <span id="mtSaved"></span></p><ol id="mtList"></ol>
+      <div class="acts"><button id="mtExport">ייצוא לקובץ</button><button id="mtImport">ייבוא מקובץ</button><button id="mtIn" aria-label="התקרב">+</button><button id="mtOut" aria-label="התרחק">−</button></div><input type="file" id="mtFile" accept=".json,application/json" hidden></div>
+    <div id="mtPlay" hidden><div class="acts" id="mtPlayBtns"><button id="mtPause">עצור</button><button id="mtPrev">הקודמת</button><button id="mtAuto">מעבר אוטומטי</button><button id="mtSpd">×1</button><button id="mtCam">מצלמה: מאחור</button></div></div>
+  </div>
+  <div id="mtCard" hidden><div class="mtCh"><b id="mtCardN"></b><span id="mtCardY"></span></div><h3 id="mtCardT"></h3><p id="mtCardX"></p><button id="mtNext" class="go">הבא</button></div>
+  <div id="mtDlg" hidden><h3 id="mtDlgT">נקודה חדשה</h3><label>שם<input id="mtName" maxlength="60" placeholder="למשל: פין בטיחות, תחנה 2 שמאל"></label>
+    <label>סוג<select id="mtType"></select></label><label>מה לבדוק<textarea id="mtText" rows="3" maxlength="400" placeholder="ההנחיה שתופיע לטכנאי בנקודה הזאת"></textarea></label>
+    <div class="acts"><button id="mtOk" class="go">שמור</button><button id="mtDel">מחק</button><button id="mtCancel">ביטול</button></div></div>
   <div id="walkBar" hidden><button id="walkSkip">לתא</button></div>
   <div id="podBar" hidden><button data-pod="zoom">זום</button><button data-pod="trk">נעל</button><button data-pod="laser">לייזר</button><button data-pod="mode">TV</button><button data-pod="big">הגדל</button><button data-pod="auto">אוטומטי</button></div>
   <div id="quickBox" hidden></div>

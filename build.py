@@ -11,7 +11,7 @@ read = lambda p: open(os.path.join(root, p), encoding='utf8').read()
 def write(p, s):
     os.makedirs(os.path.dirname(os.path.join(root, p)) or root, exist_ok=True)
     open(os.path.join(root, p), 'w', encoding='utf8').write(s)
-head, core, game = read('src/head.html'), read('src/core.js'), read('src/game.js').replace('/*@HD@*/', read('src/hd.js')).replace('/*@VO@*/', read('src/vo.js')).replace('/*@NET@*/', read('src/net.js')).replace('/*@UFC@*/', read('src/ufc.js'))
+head, core, game = read('src/head.html'), read('src/core.js'), read('src/game.js').replace('/*@HD@*/', read('src/hd.js')).replace('/*@VO@*/', read('src/vo.js')).replace('/*@NET@*/', read('src/net.js')).replace('/*@UFC@*/', read('src/ufc.js')).replace('/*@MAINT@*/', read('src/maint.js'))
 assert '</script' not in core and '</script' not in game
 CDN = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'
 def scripts(three):
@@ -53,4 +53,10 @@ page = page.replace('__BUILD__', ver)
 write('index.html', page)
 write('sw.js', read('src/sw.js').replace('__VERSION__', ver))
 write('dist/artifact.html', (head + scripts(CDN)).replace('__BUILD__', ver))
+# the technician's safety round as one file that works offline, opened straight from the computer (three.js inside)
+local = ('<!doctype html>\n<html lang="he">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">\n'
+         '<title>סיבוב בטיחות לטכנאי</title>\n<style>body{margin:0}[hidden]{display:none!important}</style>\n' + head[:i] + '</head>\n<body>\n' + head[i:]
+         + '<script>window.HF_MAINT=true;</script>\n<script>\n' + read('vendor/three.min.js') + '\n</script>\n'
+         + '<script>\nrequestAnimationFrame(function(){setTimeout(function(){\nwindow.RAAM=(function(){\n' + core + '\nreturn RAAM;})();\n' + game + '\n},30);});\n</script>\n</body>\n</html>\n').replace('__BUILD__', ver)
+write('dist/maint-local.html', local)
 print('index.html', len(page), 'bytes, build', ver)

@@ -246,12 +246,12 @@ const BY=SITES.base.h;
   const shel=lam(0xb39e78),conc=lam(0xa9a595);
   /* the player's own shelter is hollow, with a back wall, a floor and strip lights; the others stay closed */
   {const px=R.PARK.x,pz=R.PARK.z-4,inner=new T.MeshLambertMaterial({color:0x8d8a7c,side:T.DoubleSide});
-    const g=new T.CylinderGeometry(10.5,10.5,36,22,1,true,0,Math.PI);g.rotateZ(Math.PI/2);g.rotateY(Math.PI/2);part(g,inner,px,BY,pz,scene);
-    const g2=new T.CylinderGeometry(11.1,11.1,36.6,22,1,true,0,Math.PI);g2.rotateZ(Math.PI/2);g2.rotateY(Math.PI/2);part(g2,shel,px,BY,pz,scene);
+    const SH=window.HF_SHELL=[];const g=new T.CylinderGeometry(10.5,10.5,36,22,1,true,0,Math.PI);g.rotateZ(Math.PI/2);g.rotateY(Math.PI/2);SH.push(part(g,inner,px,BY,pz,scene));
+    const g2=new T.CylinderGeometry(11.1,11.1,36.6,22,1,true,0,Math.PI);g2.rotateZ(Math.PI/2);g2.rotateY(Math.PI/2);SH.push(part(g2,shel,px,BY,pz,scene));
     /* the back wall is one-sided, so the chase camera behind the jet looks into the shelter */
-    const wall=part(new T.CircleGeometry(10.5,22,0,Math.PI),lam(0x858274),px,BY,pz+18,scene);wall.rotation.y=Math.PI;
+    const wall=part(new T.CircleGeometry(10.5,22,0,Math.PI),lam(0x858274),px,BY,pz+18,scene);wall.rotation.y=Math.PI;SH.push(wall);
     const fl=part(new T.PlaneGeometry(21,36),lam(0x6f706b),px,BY+0.34,pz,scene);fl.rotation.x=-Math.PI/2;
-    for(const lx of[-4.5,0,4.5])part(new T.BoxGeometry(0.4,0.1,24),new T.MeshBasicMaterial({color:0xfff2c8,fog:false}),px+lx,BY+(lx?9.3:10.35),pz,scene);
+    for(const lx of[-4.5,0,4.5])SH.push(part(new T.BoxGeometry(0.4,0.1,24),new T.MeshBasicMaterial({color:0xfff2c8,fog:false}),px+lx,BY+(lx?9.3:10.35),pz,scene));
     const ln=part(new T.PlaneGeometry(0.5,150),new T.MeshBasicMaterial({color:0xd8b020}),px,BY+0.36,pz-90,scene);ln.rotation.x=-Math.PI/2;}
   for(let i=0;i<8;i++){if(-480+i*80===R.PARK.x)continue;const g=new T.CylinderGeometry(15,15,34,14,1,false,0,Math.PI);g.rotateZ(Math.PI/2);g.rotateY(Math.PI/2);part(g,shel,-480+i*80,BY,470,scene);}
   part(new T.BoxGeometry(9,30,9),conc,260,BY+15,330,scene);part(new T.BoxGeometry(15,6,15),lam(0x394a52),260,BY+33,330,scene);
@@ -945,6 +945,7 @@ let rwrT=0,warnT=0,gunSnd=0;
 /*@VO@*/
 /*@NET@*/
 /*@UFC@*/
+/*@MAINT@*/
 /* cockpit voice warnings: one clip at a time, a more urgent one cuts in; each warning has its own repeat interval */
 const Betty={buf:{},src:null,pri:0,last:{},ready:false,
   load(){if(this.ready||!Snd.ac)return;this.ready=true;for(const k in VO_SRC){try{const b64=VO_SRC[k].split(',')[1],bin=atob(b64),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
@@ -1603,7 +1604,7 @@ let last=performance.now();
 let slowT=0;
 function frame(now){if(!xr.on)requestAnimationFrame(frame);if(eco&&now-last<31&&!xr.on)return;if(state!=='fly')readPad(0);const wall=Math.min(1,(now-last)/1000),dt=Math.min(0.05,Math.max(0.001,(now-last)/1000));last=now;clock+=dt;
   if(state==='fly'&&opts.q!=='eco'){slowT=wall>(opts.q==='high'?1/24:1/18)?slowT+wall:Math.max(0,slowT-wall*2);if(slowT>(opts.q==='high'?5:8)){slowT=0;const hi=opts.q==='high';opts.q=hi?'low':'eco';applyOpts();radioQ.push(hi?'המחשב: הגרפיקה הועברה למצב חסכוני כדי לשפר את הקצב.':'המחשב: עדיין איטי, עברתי למצב חיסכון סוללה.');}}
-  if(state==='fly'&&walk.on)walkStep(Math.min(dt,0.1));
+  if(state==='fly'&&walk.on)walkStep(Math.min(dt,0.1));if(state==='maint')maintStep(Math.min(dt,0.1));
   if(state==='fly'&&!tour.on&&!walk.on){
     readInput(dt);if(W.mwarn&&timeAcc>1)timeAcc=1;
     simAcc+=dt*timeAcc;const h=1/120;let n=0;
@@ -1618,7 +1619,7 @@ function frame(now){if(!xr.on)requestAnimationFrame(frame);if(eco&&now-last<31&&
   mpg.tick(dt);rear.tick(dt);ufcTick(dt);if(sdt>0)updParticles(sdt);syncScene(sdt);updWx();updRadio(dt);updCheck(dt);updAudio(dt);
   if(xr.on&&W){const p=W.player;view=0;look.panel=false;xr.rig.position.copy(camera.position);xr.rig.quaternion.set(p.q.x,p.q.y,p.q.z,p.q.w);camera.position.set(0,0,0);camera.quaternion.identity();
     const vis=state==='fly'||state==='pause';vrHud.m.visible=vrHud.m2.visible=vis&&p.alive;if(vis&&p.alive){vrHud.m.position.set(0,0.02,-0.62);vrHud.m2.position.set(0,-0.3,-0.55);vrHud.m2.rotation.x=-0.5;drawVrHud();}}
-  if(walk.on)walkCam();
+  if(walk.on)walkCam();if(state==='maint')maintCam();
   if(window.__cam)try{window.__cam(camera,W,T);}catch(e){}
   renderer.render(scene,camera);renderTgp();drawHUD();}
 /* ================= HUD ================= */
