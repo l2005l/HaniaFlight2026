@@ -544,7 +544,7 @@ function updCarrier(dt){const cv=W.carrier,m=cvMesh;if(!cv||!m)return;m.position
   if(dt>0&&state==='fly'&&rnd()<0.6){const b=cv.world(-165,(rnd()-0.5)*30,0.8);spawn(v3(b.x,0.8,b.z),v3((rnd()-0.5)*3,1,(rnd()-0.5)*3),3,7,25,[0.9,0.93,0.95],0.3);}}
 /* the loyal wingman: a small tailless jet with a V tail, intake on the back, no canopy */
 /* an airliner: white body, swept wings, two engines under them, a tall fin */
-function buildAirliner(){const G=new T.Group(),w=lam(0xeef0f2),g=lam(0x9aa2a8),bl=lam(0x2a5a9a);let c=new T.CylinderGeometry(2,2,34,14);c.rotateX(Math.PI/2);part(c,w,0,0,0,G);c=new T.SphereGeometry(2,14,10);part(c,w,0,0,-17,G).scale.set(1,1,1.6);
+function buildCivJet(){const G=new T.Group(),w=lam(0xeef0f2),g=lam(0x9aa2a8),bl=lam(0x2a5a9a);let c=new T.CylinderGeometry(2,2,34,14);c.rotateX(Math.PI/2);part(c,w,0,0,0,G);c=new T.SphereGeometry(2,14,10);part(c,w,0,0,-17,G).scale.set(1,1,1.6);
   c=new T.ConeGeometry(2,7,14);c.rotateX(Math.PI/2);part(c,w,0,0.4,20.4,G);for(const s of[-1,1]){part(flatGeo([[1.5,-3],[17,6],[17,8],[1.5,5]].map(q=>[q[0]*s,q[1]]),0.35),g,0,-0.9,0,G);c=new T.CylinderGeometry(0.9,0.9,4,10);c.rotateX(Math.PI/2);part(c,g,s*6,-2,0.5,G);
     part(flatGeo([[0.8,15],[6.5,20],[6.5,21.5],[0.8,20]].map(q=>[q[0]*s,q[1]]),0.2),w,0,0.8,0,G);}
   part(finGeo([[15,1.5],[21,1.5],[23.5,9],[20.5,9]],0.3),bl,0.15,0,0,G);for(let i=0;i<14;i++)part(new T.BoxGeometry(0.05,0.35,0.5),lam(0x1a2430),2.0,0.5,-12+i*1.8,G);G.scale.setScalar(1);return G;}
@@ -764,7 +764,7 @@ function newGame(start,preview){
   if(cockpit.userData.kind!==ckKind(W.plane.type)){scene.remove(cockpit);cockpit=buildCockpit(ckKind(W.plane.type));scene.add(cockpit);layout();}chute.visible=false;rec.length=0;recObj=[...W.air,...W.friends,...(W.carrier?[W.carrier]:[])];recEv=[];recT=0;kills.length=0;myW.length=0;ridN=0;while(dyn.children.length)dyn.remove(dyn.children[0]);meshOf=new Map();emitters.length=0;for(const q of P)q.on=false;
   pMesh=mkPlayer(W.plane.type);dyn.add(pMesh);cvMesh=null;if(W.carrier){cvMesh=buildCarrier();dyn.add(cvMesh);meshOf.set(W.carrier,cvMesh);}
   for(const m of W.migs){const g=m.type==='MiG-21'?buildJet({camo:'mig',nose:0x5b6166,scale:0.62}):buildF15HD({camo:'mig',scale:m.type==='Su-27'?1.05:0.88});g.userData.gear.visible=false;dyn.add(g);meshOf.set(m,g);}
-  for(const d of W.drones){const g=mkDrone(d);dyn.add(g);meshOf.set(d,g);}for(const c of W.civs||[]){const g=buildAirliner();dyn.add(g);meshOf.set(c,g);}for(const h of W.helis||[]){const g=buildHelo(true);dyn.add(g);meshOf.set(h,g);}
+  for(const d of W.drones){const g=mkDrone(d);dyn.add(g);meshOf.set(d,g);}for(const c of W.civs||[]){const g=buildCivJet();dyn.add(g);meshOf.set(c,g);}for(const h of W.helis||[]){const g=buildHelo(true);dyn.add(g);meshOf.set(h,g);}
   for(const g of W.ground){const m=buildGround(g);dyn.add(m);meshOf.set(g,m);}
   for(const g of W.troops||[]){const m=buildGround(g);dyn.add(m);meshOf.set(g,m);}if(W.cas)emitters.push({pos:{...W.cas.smoke},vel:v3(),until:clock+1e7,rate:0.22,t:0,mark:true});
   for(const k of W.friends){const m=k.type==='TANKER'?buildTanker():k.type==='HELO'?buildHelo():k.type==='LW'?buildLW():mkPlayer(k.model||W.plane.type);if(k.type!=='TANKER'&&k.type!=='HELO'&&k.type!=='LW'){m.userData.gear.visible=false;m.userData.wing=true;}dyn.add(m);meshOf.set(k,m);}
