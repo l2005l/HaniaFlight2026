@@ -970,6 +970,15 @@ details[open] summary{margin-bottom:10px}
 /* lets a start button work while the world is still loading: the tap is remembered and the flight starts when ready */
 (function(){var q=null;window.__hfQueue=function(){return q;};['startRwy','startAir','startCold'].forEach(function(id){document.getElementById(id).addEventListener('click',function(){if(!(window.__raam&&window.__raam.ready)){q=id;document.getElementById('loadText').textContent='טוען את הזירה. הטיסה תתחיל מיד…';}});});})();
 </script>
+  <script>
+/* Private usage counts for the Hania360 dashboard: a view, shares, installs, and taps that lead on to the
+   rest of Hania360. Only the event name is sent (no location, no user, no game data); only on the real site. */
+(function(){try{if(location.hostname!=='flight.hania360.com')return;var s=function(e){try{var u='https://hania360.com/api/stat?app=flight',b=JSON.stringify({e:e});if(navigator.sendBeacon)navigator.sendBeacon(u,b);else fetch(u,{method:'POST',body:b,mode:'no-cors',keepalive:true,credentials:'include'})}catch(x){}};
+s('view');window.addEventListener('appinstalled',function(){s('install');try{localStorage.setItem('h360_inst','1')}catch(x){}});
+try{if((matchMedia('(display-mode: standalone)').matches||navigator.standalone===true)&&!localStorage.getItem('h360_inst')){localStorage.setItem('h360_inst','1');s('install')}}catch(x){}
+document.addEventListener('click',function(ev){var a=ev.target&&ev.target.closest&&ev.target.closest('a');if(!a)return;var h=a.getAttribute('href')||'';if(/wa\.me|whatsapp/i.test(h))s('share');else if(/^https:\/\/([a-z]+\.)?hania360\.com/.test(h)&&!/\/\/(flight|pass)\./.test(h))s('action')},true);
+if(navigator.share){var sh=navigator.share.bind(navigator);navigator.share=function(d){s('share');return sh(d)}}}catch(e){}})();
+</script>
   <section id="brief" class="modal" hidden>
     <div class="card wide">
       <div><div class="eyebrow" id="bStage"></div><h2 id="bTitle"></h2><div class="note" id="bPlane"></div><div class="note" id="bFleet" hidden></div></div>
