@@ -94,7 +94,7 @@ details.more[open] summary{margin-bottom:6px}
 .keys kbd{font-family:var(--mono);font-size:.82rem;direction:ltr;text-align:start;color:var(--hud);white-space:nowrap}
 details summary{cursor:pointer;font-weight:700;padding-block:4px}
 details[open] summary{margin-bottom:10px}
-.note{font-size:.88rem;color:var(--dim)}
+.note{font-size:.88rem;color:var(--dim)}#more360 a,#debrief .note a{color:var(--sand)}
 .err{color:var(--red);font-weight:700}
 .modal{z-index:5;position:absolute;inset:0;display:grid;place-items:center;background:rgba(4,7,9,.6);padding:16px;overflow:auto;touch-action:pan-y}
 .card{width:min(30rem,100%);background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--sand);padding:24px 22px;display:flex;flex-direction:column;gap:18px}
@@ -449,6 +449,14 @@ details[open] summary{margin-bottom:10px}
       <span>מספר שתיים</span>
       <button data-opt="wing" data-val="on">טס איתך</button>
       <button data-opt="wing" data-val="off">לבד</button>
+    </div>
+    <div id="more360" class="note" style="border:1px solid var(--line);padding:8px 10px;margin:8px 0">
+      <b>עוד מ־Hania360, בחינם ובלי פרסומות:</b>
+      <a href="https://kids.hania360.com/?ref=flight" target="_blank" rel="noopener">🧒 הילדים שלי</a> ·
+      <a href="https://yahadut.hania360.com/?ref=flight" target="_blank" rel="noopener">🕯️ היהדות שלי</a> ·
+      <a href="https://bayit.hania360.com/?ref=flight" target="_blank" rel="noopener">🏠 הבית שלנו</a> ·
+      <a href="https://tisa.hania360.com/?ref=flight" target="_blank" rel="noopener">🛫 טיסות חיות מנתב״ג</a> ·
+      <a href="https://hania360.com/?ref=flight" target="_blank" rel="noopener">הכול ←</a>
     </div>
     </div>
     <div class="tab" data-tab="camp" hidden>
@@ -977,6 +985,7 @@ details[open] summary{margin-bottom:10px}
       <p id="dReason"></p><p id="dCamp" class="note"></p><button id="campSkip" hidden>המשך במערכה בלי השלב הזה</button><div id="dAch"></div><p id="dPts" class="note" hidden></p>
       <canvas id="dMap" dir="ltr" aria-label="המסלול שטסת"></canvas><div id="dKills"></div><dl id="dStats"></dl>
       <div class="acts"><button id="again" class="go">טיסה נוספת</button><button id="watch">צפייה חוזרת</button><button id="back">לתדריך</button></div>
+      <p class="note" style="margin-top:8px">בנוי ע״י Hania360, שבונה עוד אפליקציות חינמיות לבית ולמשפחה. <a href="https://hania360.com/?ref=flight-debrief" target="_blank" rel="noopener">להציץ ←</a></p>
     </div>
   </section>
 </div>
